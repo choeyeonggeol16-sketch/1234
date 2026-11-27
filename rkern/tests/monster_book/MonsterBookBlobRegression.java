@@ -1,10 +1,16 @@
 import java.util.Arrays;
 import java.util.HexFormat;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import l1j.server.server.model.BookQuest.UserSide.BQSCharacterCriteriaProgress;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
+import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.CompletedAchievement;
+import l1j.server.server.packets.Protocol.MainServer.Proto.MonsterBook.CriteriaProgress;
 
 public final class MonsterBookBlobRegression {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // Legacy body: negative uint32 object id, progress with absent level,
         // sparse IDs, duplicate achievement (last wins), and a 64-bit deck version.
         byte[] legacy = HexFormat.of().parseHex(
@@ -23,7 +29,41 @@ public final class MonsterBookBlobRegression {
         check(reloaded.get_progress(300000).getCurrentQuantity() == 123
                 && reloaded.get_achievement(301).get_get_reward(), "progress and reward survive the round trip");
         check(Arrays.equals(saved, reloaded.save()), "deterministic serialization");
-        System.out.println("PASS legacy monster book blob, sparse IDs, field presence and reward flags");
+        concurrentSnapshots();
+        System.out.println("PASS legacy monster book blob, reward flags and concurrent reset/snapshot");
+    }
+
+    private static void concurrentSnapshots() throws Exception {
+        final var book = BQSCharacterData.newInstance();
+        final var progress = BQSCharacterCriteriaProgress.newInstance();
+        progress.set_progress(CriteriaProgress.newInstance(7));
+        final var achievement = CompletedAchievement.newInstance(37);
+        final var start = new CountDownLatch(1);
+        try (var pool = Executors.newVirtualThreadPerTaskExecutor()) {
+            var writes = pool.submit(() -> {
+                start.await();
+                for (int i = 0; i < 25_000; i++) {
+                    book.resetProgress();
+                    book.add_progresses(progress);
+                    book.add_achievements(achievement);
+                }
+                return null;
+            });
+            var snapshots = pool.submit(() -> {
+                start.await();
+                for (int i = 0; i < 25_000; i++) {
+                    var saved = BQSCharacterData.load(book.save());
+                    if (saved.get_achievement(37) != null)
+                        check(saved.get_progress(7) != null, "achievement without matching progress");
+                }
+                return null;
+            });
+            start.countDown();
+            writes.get(10, TimeUnit.SECONDS);
+            snapshots.get(10, TimeUnit.SECONDS);
+        }
+        check(Arrays.equals(book.resetProgress(), new int[] {7}), "reset returns removed criteria IDs");
+        check(book.get_progress(7) == null && book.get_achievement(37) == null, "reset clears both indexes");
     }
 
     private static void check(boolean condition, String detail) {

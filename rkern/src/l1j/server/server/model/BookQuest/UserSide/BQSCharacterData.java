@@ -11,12 +11,10 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
-import l1j.server.server.model.BookQuest.Loader.BQSInformationLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSLoadManager;
 import l1j.server.server.model.BookQuest.Loader.BQSWQDecksLoader;
 import l1j.server.server.model.BookQuest.Loader.BQSWQRewardsLoader;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ACHIEVEMENT_COMPLETE_NOTI;
@@ -61,9 +59,9 @@ public class BQSCharacterData {
     private int _object_id;
     private TIntObjectHashMap<BQSCharacterCriteriaProgress> _progresses;
     private TIntObjectHashMap<CompletedAchievement> _achievements;
-    private ArrayList<MonsterBookV2Info.DeckT> _decks;
-    private long _decks_version;
-    private int _bit;   // 도메인 내부 has_* 용도로만 유지 (realloc_decks에서 사용)
+    private volatile ArrayList<MonsterBookV2Info.DeckT> _decks;
+    private volatile long _decks_version;
+    private volatile int _bit;   // 도메인 내부 has_* 용도로만 유지 (realloc_decks에서 사용)
 
     private BQSCharacterData(){}
 
@@ -122,11 +120,11 @@ public class BQSCharacterData {
     }
 
     /** 도메인 → DB body 직렬화. storeCharacterBqs가 이걸 저장 (body-only, 구와 동일 포맷) */
-    public byte[] save(){
+    public synchronized byte[] save(){
         try (ProtoWriter w = ProtoWriter.borrow()) {
             if(has_object_id())
                 w.uint32(1, _object_id);
-            if(has_progresses()){
+            if (_progresses != null){
                 int[] ids = sortedKeys(_progresses);
                 for (int id : ids) {
                     BQSCharacterCriteriaProgress p = _progresses.get(id);
@@ -135,7 +133,7 @@ public class BQSCharacterData {
                     w.end();
                 }
             }
-            if(has_achievements()){
+            if (_achievements != null){
                 int[] ids = sortedKeys(_achievements);
                 for (int id : ids) {
                     CompletedAchievement a = _achievements.get(id);
@@ -229,70 +227,48 @@ public class BQSCharacterData {
     }
 
     
-    private void onProgress(BQSInformation bqsInfo){
-        int criteria_id = bqsInfo.getCriteriaId();
-        BQSCharacterCriteriaProgress progress = get_progress(criteria_id);
-
-        if(progress == null){
-            progress = BQSCharacterCriteriaProgress.newInstance(bqsInfo);
-            add_progresses(progress);
-        }else if(progress.get_current_ahcievement_level() >= 3){
-            return;
-        }
-
-        L1PcInstance pc = (L1PcInstance) CWorld.getInstance().findObject(_object_id);
-
-        // =========================================================
-        // 몬스터 도감 단계 버그 확인 로그
-        // =========================================================
-        final int beforeLevel = progress.get_current_ahcievement_level();
-
-//        System.out.println(
-//            "[MONSTER_BOOK][BEFORE]"
-//            + " criteria=" + criteria_id
-//            + " baseAchievement=" + bqsInfo.getAchievementId()
-//            + " level=" + beforeLevel
-//        );
-
-        boolean isComplete = progress.onUpdateIsComplete(bqsInfo);
-
-        final int afterLevel = progress.get_current_ahcievement_level();
-
-//        System.out.println(
-//            "[MONSTER_BOOK][AFTER]"
-//            + " criteria=" + criteria_id
-//            + " baseAchievement=" + bqsInfo.getAchievementId()
-//            + " level=" + beforeLevel + " -> " + afterLevel
-//            + " complete=" + isComplete
-//        );
-
-        if(pc != null){
-            SC_CRITERIA_UPDATE_NOTI.sendOf(pc, progress.get_progress());
-        }
-
-        if(isComplete){
-            final int achievementId =
-                    bqsInfo.getAchievementId()
-                    + progress.get_current_ahcievement_level();
-
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Monster book completed criteria " + bqsInfo.getCriteriaId()
-                        + ", achievement " + achievementId);
+    private void onProgress(BQSInformation bqsInfo) {
+        final int criteriaId = bqsInfo.getCriteriaId();
+        final long quantity;
+        final CompletedAchievement achievement;
+        synchronized (this) {
+            if (!has_object_id()) return;
+            BQSCharacterCriteriaProgress progress = get_progress(criteriaId);
+            if (progress == null) {
+                progress = BQSCharacterCriteriaProgress.newInstance(bqsInfo);
+                add_progresses(progress);
+            } else if (progress.get_current_ahcievement_level() >= 3) {
+                return;
             }
+            if (progress.onUpdateIsComplete(bqsInfo)) {
+                int id = bqsInfo.getAchievementId() + progress.get_current_ahcievement_level();
+                achievement = CompletedAchievement.newInstance(id);
+                add_achievements(achievement);
+            } else {
+                achievement = null;
+            }
+            quantity = progress.get_progress().get_quantity();
+        }
 
-            CompletedAchievement achievement =
-                    CompletedAchievement.newInstance(achievementId);
-
-            add_achievements(achievement);
-
-            if(pc != null){
+        if (achievement != null && LOG.isLoggable(Level.FINE))
+            LOG.fine("Monster book completed criteria " + criteriaId + ", achievement " + achievement.get_achievement_id());
+        if (CWorld.getInstance().findObject(_object_id) instanceof L1PcInstance pc && pc.getBqs() == this) {
+            SC_CRITERIA_UPDATE_NOTI.sendFields(pc, criteriaId, quantity);
+            if (achievement != null) {
                 SC_ACHIEVEMENT_COMPLETE_NOTI.sendOf(pc, achievement);
-                BQSCharacterDataLoader.storeCharacterBqs(pc.getBqs(), false);
+                BQSCharacterDataLoader.storeCharacterBqs(this, false);
             }
         }
     }
-    
- 
+
+    /** Remove both indexes together and return the criteria IDs for client updates. */
+    public synchronized int[] resetProgress() {
+        final int[] ids = _progresses == null ? new int[0] : sortedKeys(_progresses);
+        _progresses = null;
+        _achievements = null;
+        return ids;
+    }
+
     public BQSCharacterData send_bqs_batch(L1PcInstance pc){
         return send_bqs_batch(pc, true);
     }
@@ -303,35 +279,17 @@ public class BQSCharacterData {
         ArrayList<SC_ADD_COMPLETED_ACHIEVEMENT_BATCH.Achievement> achievementBatch = new ArrayList<>();
         ArrayList<SC_ADD_CRITERIA_PROGRESS_BATCH.Progress> criteriaBatch = new ArrayList<>();
 
-        if(has_progresses()){
-            for (int id : sortedKeys(_progresses)) {
-                CriteriaProgress p = _progresses.get(id).get_progress();
-
-//                System.out.println(
-//                    "[MONSTER_BOOK][BATCH_PROGRESS]"
-//                    + " criteria=" + p.get_criteria_id()
-//                    + " quantity=" + p.get_quantity()
-//                    + " level=" + val.get_current_ahcievement_level()
-//                );
-
-                criteriaBatch.add(new SC_ADD_CRITERIA_PROGRESS_BATCH.Progress(
-                    p.get_criteria_id(), p.get_quantity()));
+        synchronized (this) {
+            if (_progresses != null) {
+                for (int id : sortedKeys(_progresses)) {
+                    CriteriaProgress p = _progresses.get(id).get_progress();
+                    criteriaBatch.add(new SC_ADD_CRITERIA_PROGRESS_BATCH.Progress(
+                            p.get_criteria_id(), p.get_quantity()));
+                }
             }
-        }
-
-        if(has_achievements()){
-            for (int id : sortedKeys(_achievements)) {
-                CompletedAchievement val = _achievements.get(id);
-
-//                System.out.println(
-//                    "[MONSTER_BOOK][BATCH_ACHIEVEMENT]"
-//                    + " achievementId=" + val.get_achievement_id()
-//                    + " reward=" + val.get_get_reward()
-//                );
-
-                achievementBatch.add(
-                    SC_ADD_COMPLETED_ACHIEVEMENT_BATCH.Achievement.of(val)
-                );
+            if (_achievements != null) {
+                for (int id : sortedKeys(_achievements))
+                    achievementBatch.add(SC_ADD_COMPLETED_ACHIEVEMENT_BATCH.Achievement.of(_achievements.get(id)));
             }
         }
 
@@ -348,44 +306,26 @@ public class BQSCharacterData {
     public int get_object_id(){
         return _object_id;
     }
-    public void set_object_id(int id){
+    public synchronized void set_object_id(int id){
         _bit |= 0x01;
         _object_id = id;
     }
     public boolean has_object_id(){
         return (_bit & 0x01) == 0x01;
     }
-    public BQSCharacterCriteriaProgress get_progress(int criteria_id){
-        return has_progresses() ? _progresses.get(criteria_id) : null;
+    public synchronized BQSCharacterCriteriaProgress get_progress(int criteria_id){
+        return _progresses != null ? _progresses.get(criteria_id) : null;
     }
-    public TIntObjectHashMap<BQSCharacterCriteriaProgress> get_progresses(){
-        return _progresses;
-    }
-    public void add_progresses(BQSCharacterCriteriaProgress progress){
-        if(!has_progresses()){
-            _progresses = new TIntObjectHashMap<>();
-            _bit |= 0x02;
-        }
+    public synchronized void add_progresses(BQSCharacterCriteriaProgress progress){
+        if (_progresses == null) _progresses = new TIntObjectHashMap<>();
         _progresses.put(progress.get_criteria_id(), progress);
     }
-    public boolean has_progresses(){
-        return (_bit & 0x02) == 0x02;
+    public synchronized CompletedAchievement get_achievement(int achievement_id){
+        return _achievements != null ? _achievements.get(achievement_id) : null;
     }
-    public TIntObjectHashMap<CompletedAchievement> get_achievements(){
-        return _achievements;
-    }
-    public CompletedAchievement get_achievement(int achievement_id){
-        return has_achievements() ? _achievements.get(achievement_id) : null;
-    }
-    public void add_achievements(CompletedAchievement achievement){
-        if(!has_achievements()){
-            _achievements = new TIntObjectHashMap<>();
-            _bit |= 0x04;
-        }
+    public synchronized void add_achievements(CompletedAchievement achievement){
+        if (_achievements == null) _achievements = new TIntObjectHashMap<>();
         _achievements.put(achievement.get_achievement_id(), achievement);
-    }
-    public boolean has_achievements(){
-        return (_bit & 0x04) == 0x04;
     }
     public MonsterBookV2Info.DeckT get_deck(int difficulty){
         final var decks = _decks;
@@ -408,7 +348,7 @@ public class BQSCharacterData {
             replace_decks.add(deck.deepCopy(level));
         set_decks(replace_decks);
     }
-    public void set_decks(ArrayList<MonsterBookV2Info.DeckT> decks){
+    public synchronized void set_decks(ArrayList<MonsterBookV2Info.DeckT> decks){
         ArrayList<MonsterBookV2Info.DeckT> old = _decks;
         _bit |= 0x08;
         _decks = decks;
@@ -424,7 +364,7 @@ public class BQSCharacterData {
             old.clear();
         }
     }
-    public void add_decks(MonsterBookV2Info.DeckT deck){
+    public synchronized void add_decks(MonsterBookV2Info.DeckT deck){
         if(!has_decks()){
             _decks = new ArrayList<MonsterBookV2Info.DeckT>(BQSLoadManager.BQS_WQ_HEIGHT);
             _bit |= 0x08;
@@ -438,7 +378,7 @@ public class BQSCharacterData {
     public long get_decks_version(){
         return _decks_version;
     }
-    public BQSCharacterData set_decks_version(long val){
+    public synchronized BQSCharacterData set_decks_version(long val){
         _bit |= 0x10;
         _decks_version = val;
         return this;
@@ -448,14 +388,14 @@ public class BQSCharacterData {
     }
 
     /** 자원 정리 — 서브메시지들의 dispose는 각 클래스 변환 후 재정비 */
-    public void dispose(){
-        if(has_progresses()){
+    public synchronized void dispose(){
+        if (_progresses != null){
             for(BQSCharacterCriteriaProgress val : _progresses.valueCollection())
                 val.dispose();
             _progresses.clear();
             _progresses = null;
         }
-        if(has_achievements()){
+        if (_achievements != null){
             _achievements.clear();
             _achievements = null;
         }

@@ -8,7 +8,6 @@ import java.util.Calendar;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.BookQuest.BQSInformation;
 import l1j.server.server.model.BookQuest.BQSWQUpdator;
-import l1j.server.server.model.BookQuest.UserSide.BQSCharacterCriteriaProgress;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
@@ -197,16 +196,10 @@ public class BQSLoadManager implements Command{
                     public void run(){
                         try{
                             BQSCharacterData bqs = pc.getBqs();
-                            if(bqs.has_progresses()){
-                                for(BQSCharacterCriteriaProgress progress : bqs.get_progresses().valueCollection()){
-                                    progress.set_current_ahcievement_level(0);
-                                    progress.get_progress().set_quantity(0L);
-                                    SC_CRITERIA_UPDATE_NOTI.sendOf(pc, progress.get_progress());
-                                }
-                            }
-                            if (bqs.has_progresses()) bqs.get_progresses().clear();
-                            if (bqs.has_achievements()) bqs.get_achievements().clear();
-                            BQSCharacterDataLoader.storeCharacterBqs(pc.getBqs(), false);
+                            if (bqs == null) return;
+                            for (int criteriaId : bqs.resetProgress())
+                                SC_CRITERIA_UPDATE_NOTI.sendFields(pc, criteriaId, 0L);
+                            BQSCharacterDataLoader.storeCharacterBqs(bqs, false);
                             pc.sendPackets("운영자에 의해 도감 정보가 초기화되었습니다. 몬스터는 갱신되나, 보상을 위해서는 리스하시기 바랍니다.");
                             gm.sendPackets(String.format("%s의 몬스터북 정보를 초기화 하였습니다.", pc.getName()));
                         }catch(Exception e){
@@ -237,16 +230,9 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
                                     continue;
                                 
                                 ++amount;
-                                if(bqs.has_progresses()){
-                                    for(BQSCharacterCriteriaProgress progress : bqs.get_progresses().valueCollection()){
-                                        progress.set_current_ahcievement_level(0);
-                                        progress.get_progress().set_quantity(0L);
-                                        SC_CRITERIA_UPDATE_NOTI.sendOf(pc, progress.get_progress());
-                                    }
-                                }
-                                if (bqs.has_progresses()) bqs.get_progresses().clear();
-                                if (bqs.has_achievements()) bqs.get_achievements().clear();
-                                BQSCharacterDataLoader.storeCharacterBqs(pc.getBqs(), false);
+                                for (int criteriaId : bqs.resetProgress())
+                                    SC_CRITERIA_UPDATE_NOTI.sendFields(pc, criteriaId, 0L);
+                                BQSCharacterDataLoader.storeCharacterBqs(bqs, false);
                                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
                             }
 }

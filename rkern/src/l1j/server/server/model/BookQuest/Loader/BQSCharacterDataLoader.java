@@ -89,10 +89,14 @@ public class BQSCharacterDataLoader {
     public static void storeCharacterBqs(BQSCharacterData bqs, boolean isDisposeBqs) {
         if (bqs == null) return;
         try {
-            final int characterId = bqs.get_object_id();
-            final byte[] bytes = bqs.save();
-            CacheD.getInstance().submitDbJobOrdered(characterId, () -> saveSnapshot(characterId, bytes));
-            if (isDisposeBqs) bqs.dispose();
+            synchronized (bqs) {
+                if (!bqs.has_object_id()) return;
+                final int characterId = bqs.get_object_id();
+                final byte[] bytes = bqs.save();
+                // Keep snapshot capture and CacheD FIFO admission in the same order.
+                CacheD.getInstance().submitDbJobOrdered(characterId, () -> saveSnapshot(characterId, bytes));
+                if (isDisposeBqs) bqs.dispose();
+            }
         } catch (Exception e) {
             throw new IllegalStateException("BQS snapshot/save failed", e);
         }
