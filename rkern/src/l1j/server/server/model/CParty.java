@@ -1,8 +1,9 @@
 package l1j.server.server.model;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Objects;
+import java.util.function.IntUnaryOperator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,14 +35,53 @@ public class CParty {
 
     private static final Logger _log = Logger.getLogger(CParty.class.getName());
 
-    protected final List<L1PcInstance> _membersList = new CopyOnWriteArrayList<>();
-    protected final ConcurrentHashMap<Integer, Integer> _membersMark = new ConcurrentHashMap<>();
+    private static final Object MEMBERSHIP = new Object();
+    private static final Roster EMPTY = new Roster(new Slot[0], null);
 
-    /** 전체 LIST 재전송 쿨다운 — 멘트/도배 방지 */
-    private static final long FULL_LIST_COOLDOWN_MS = 1500L;
-    private final ConcurrentHashMap<Integer, Long> _lastFullListSentAt = new ConcurrentHashMap<>();
+    private static final class Slot {
+        final L1PcInstance player;
+        final int session;
+        volatile int mark;
 
-    private volatile L1PcInstance _leader;
+        Slot(L1PcInstance player) {
+            this.player = player;
+            session = player.getSessionStamp();
+        }
+    }
+
+    private static final class Roster implements IntUnaryOperator {
+        final Slot[] slots;
+        final L1PcInstance[] players;
+        final L1PcInstance leader;
+        final List<L1PcInstance> view;
+
+        Roster(Slot[] slots, L1PcInstance leader) {
+            this.slots = slots;
+            this.leader = leader;
+            players = new L1PcInstance[slots.length];
+            for (int i = 0; i < slots.length; i++) players[i] = slots[i].player;
+            view = List.of(players);
+        }
+
+        int indexOf(L1PcInstance player) {
+            for (int i = 0; i < players.length; i++) if (players[i] == player) return i;
+            return -1;
+        }
+
+        boolean hasId(int id) {
+            for (L1PcInstance player : players) if (player.getId() == id) return true;
+            return false;
+        }
+
+        int mark(L1PcInstance player) {
+            int index = indexOf(player);
+            return index < 0 ? 0 : slots[index].mark;
+        }
+
+        public int applyAsInt(int index) { return slots[index].mark; }
+    }
+
+    private volatile Roster roster = EMPTY;
     private long lootCursor;
     private static final AtomicLong LOOT_IDENTITIES = new AtomicLong();
     private final long lootIdentity = LOOT_IDENTITIES.incrementAndGet();
@@ -61,40 +101,40 @@ public class CParty {
         return pc != null && pc.getNetConnection() != null;
     }
 
-    private boolean canSendFullListNow(int objectId) {
-        long now = System.currentTimeMillis();
-        Long last = _lastFullListSentAt.get(objectId);
-        if (last != null && (now - last.longValue()) < FULL_LIST_COOLDOWN_MS) {
-            return false;
-        }
-        _lastFullListSentAt.put(objectId, now);
-        return true;
-    }
-
-    /** 파티 전원에게 공유 바이트 전송 */
     public void broadcastRaw(byte[] data) {
-        CSharedBroadcast.sendRawArray(getMembers(), data);
-    }
-
-    private void broadcastOwned(byte[] data) {
-        CSharedBroadcast.sendOwnedRawArray(getMembers(), data);
-    }
-
-    /**
-     * 전체 LIST 전송 (쿨다운 적용, force=true면 무시)
-     */
-    private void sendPartyListTo(L1PcInstance[] targets, L1PcInstance[] snapshot, boolean force) {
-        if (targets == null || targets.length == 0) return;
-        final L1PcInstance leader = getLeader();
-        final byte[] data = SC_PARTY_MEMBER_LIST.encodeConnectedMembers(
-                leader != null ? leader.getName() : "", snapshot, _membersMark);
-        try (var shared = CSharedBroadcast.openOwnedRaw(data)) {
-            for (L1PcInstance target : targets) {
-                if (!ok(target)) continue;
-                if (!force && !canSendFullListNow(target.getId())) continue;
-                CSharedBroadcast.sendRecipient(shared, target);
-            }
+        final Roster snapshot = roster;
+        if (snapshot.players.length == 0) return;
+        try (var shared = CSharedBroadcast.openRaw(data)) {
+            if (shared == null) return;
+            for (L1PcInstance member : snapshot.players)
+                if (stillMember(snapshot, member)) CSharedBroadcast.sendRecipientBestEffort(shared, member);
         }
+    }
+
+    private void broadcastSnapshot(Roster snapshot, byte[] data) {
+        if (snapshot.players.length == 0) return;
+        try (var shared = CSharedBroadcast.openOwnedRaw(data)) {
+            if (shared == null) return;
+            for (L1PcInstance member : snapshot.players)
+                if (stillMember(snapshot, member)) CSharedBroadcast.sendRecipientBestEffort(shared, member);
+        }
+    }
+
+    private void sendPartyListTo(L1PcInstance target, Roster snapshot) {
+        if (!ok(target) || !stillMember(snapshot, target)) return;
+        try (var shared = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST.encodeConnectedMembers(
+                snapshot.leader != null ? snapshot.leader.getName() : "", snapshot.players, snapshot))) {
+            if (stillMember(snapshot, target)) CSharedBroadcast.sendRecipient(shared, target);
+        }
+    }
+
+    private boolean stillMember(Roster snapshot, L1PcInstance player) {
+        int index = snapshot.indexOf(player);
+        if (index < 0 || player.getParty() != this || player.isLogoutStarted()) return false;
+        Roster current = roster;
+        int currentIndex = current.indexOf(player);
+        return currentIndex >= 0 && current.slots[currentIndex] == snapshot.slots[index]
+                && player.getSessionStamp() == snapshot.slots[index].session;
     }
 
     /** 탈퇴자/해산자 UI 완전 정리 — out_user + 빈 LIST (피바/HP바 잔존 방지) */
@@ -109,147 +149,133 @@ public class CParty {
     // ─────────────────────────────────────────────
     // party ops
     // ─────────────────────────────────────────────
-    public void addMember(L1PcInstance pc) {
-        if (pc == null) {
-            throw new NullPointerException();
-        }
+    public void addMember(L1PcInstance pc) { tryAddMember(pc); }
+
+    public boolean tryAddMember(L1PcInstance pc) {
+        Objects.requireNonNull(pc);
         if (pc.getAutoHunt()) {
             pc.sendPackets("자동사냥 중에는 파티에 참가할 수 없습니다.");
-            return;
+            return false;
         }
-        final L1PcInstance leader = getLeader();
-        if ((_membersList.size() >= Config.MAX_PT && (leader == null || !leader.isGm()))
-                || _membersList.contains(pc)) {
-            SC_ServerMessage.send(pc, 417);
-            return;
+        Roster added = null;
+        synchronized (MEMBERSHIP) {
+            final Roster current = roster;
+            if (pc.getParty() == null && !pc.isLogoutStarted() && !current.hasId(pc.getId())
+                    && (current.players.length < Config.MAX_PT || current.leader != null && current.leader.isGm()))
+                added = append(current, pc);
         }
+        if (added == null) SC_ServerMessage.send(pc, 417);
+        else joined(pc, added);
+        return added != null;
+    }
 
-        if (_membersList.isEmpty()) {
-            setLeader(pc);
-        }
-
-        if (pc.isCrown()) {
-            if (SkillsTable.getInstance().spellCheck(pc.getId(), 121)) {
-                AuraController.getInstance().addMember(pc);
+    /** Publish a new inviter/replier pair together. An existing party keeps its leader and quota. */
+    public static CParty acceptInvite(L1PcInstance inviter, L1PcInstance replier, int partyType) {
+        if (inviter.getId() == replier.getId() || inviter.getAutoHunt() || replier.getAutoHunt()) return null;
+        final CParty party;
+        final Roster added;
+        final boolean created;
+        synchronized (MEMBERSHIP) {
+            if (inviter.isLogoutStarted() || replier.isLogoutStarted() || replier.getParty() != null) return null;
+            CParty existing = inviter.getParty();
+            created = existing == null;
+            if (created) {
+                if (Config.MAX_PT < 2 && !inviter.isGm()) return null;
+                party = new CParty();
+                added = new Roster(new Slot[] {new Slot(inviter), new Slot(replier)}, inviter);
+                inviter.setPartyType(partyType);
+                inviter.setParty(party);
+                replier.setParty(party);
+                party.roster = added;
+            } else {
+                party = existing;
+                Roster current = party.roster;
+                if (current.leader != inviter || current.hasId(replier.getId())
+                        || (current.players.length >= Config.MAX_PT && !inviter.isGm())) return null;
+                added = party.append(current, replier);
             }
         }
+        if (created) party.trackCrown(inviter, added);
+        party.joined(replier, added);
+        return party;
+    }
 
-        _membersMark.put(pc.getId(), 0);
-        _membersList.add(pc);
+    private Roster append(Roster current, L1PcInstance pc) {
+        Slot[] slots = Arrays.copyOf(current.slots, current.slots.length + 1);
+        slots[current.slots.length] = new Slot(pc);
+        Roster added = new Roster(slots, current.leader == null ? pc : current.leader);
         pc.setParty(this);
+        roster = added;
+        return added;
+    }
 
-        int beforeSize = _membersList.size() - 1;
-        L1PcInstance[] after = getMembers();
+    private void trackCrown(L1PcInstance pc, Roster added) {
+        if (pc.isCrown() && SkillsTable.getInstance().spellCheck(pc.getId(), 121)
+                && stillMember(added, pc)) AuraController.getInstance().addMember(pc);
+    }
 
-        final L1PcInstance currentLeader = getLeader();
-        if (beforeSize > 0 && currentLeader != null) {
-            // 신규 멤버: 전체 LIST (여기서 멘트 1번)
-            SC_PARTY_MEMBER_LIST.sendMembers(pc, currentLeader.getName(), after, _membersMark);
-        }
-        if (beforeSize == 1 && after.length == 2) {
-            // 2인 파티 성립: 기존 멤버에게도 LIST (CHANGE 아님)
-            L1PcInstance existing = (after[0].getId() == pc.getId()) ? after[1] : after[0];
-            sendPartyListTo(new L1PcInstance[]{ existing }, after, true);
+    private void joined(L1PcInstance pc, Roster added) {
+        if (pc.isLogoutStarted()) {
+            leaveMember(pc);
             return;
         }
-        if (after.length > 1) {
-            // 3인 이상 확장: 기존 멤버들에게만 new_user 알림
-            final L1PcInstance[] recipients = getMembers();
-            try (var shared = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeNewMember(pc, 0))) {
-                for (L1PcInstance member : recipients) {
-                    if (member.getId() != pc.getId()) CSharedBroadcast.sendRecipient(shared, member);
-                }
-            }
+        trackCrown(pc, added);
+        if (added.players.length <= 1 || !stillMember(added, pc)) return;
+        SC_PARTY_MEMBER_LIST.sendMembers(pc, added.leader.getName(), added.players, added);
+        if (added.players.length == 2) {
+            sendPartyListTo(added.players[0], added);
+            return;
+        }
+        try (var shared = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeNewMember(pc, 0))) {
+            for (L1PcInstance member : added.players)
+                if (member != pc && stillMember(added, member) && stillMember(added, pc))
+                    CSharedBroadcast.sendRecipient(shared, member);
         }
     }
 
-    protected void removeMember(L1PcInstance pc) {
-        if (pc == null || !_membersList.contains(pc)) {
-            return;
-        }
+    private static boolean detached(Slot member) {
+        return member.player.getParty() == null && member.player.getSessionStamp() == member.session;
+    }
 
-        final boolean wasLeader = isLeader(pc);
-        if (!_membersList.remove(pc)) return;
-        _membersMark.remove(pc.getId());
-        _lastFullListSentAt.remove(pc.getId());
-        if (pc.getParty() == this) pc.setParty(null);
-
-        final L1PcInstance[] rest = getMembers();
-        final L1PcInstance newLeader = wasLeader && rest.length != 0 ? rest[0] : null;
-        if (wasLeader) setLeader(newLeader);
-
-        try (var outUser = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeOutUser(pc.getName()))) {
-            // 잔여 멤버와 탈퇴자에게 같은 out_user 전송, 탈퇴자는 빈 LIST 추가.
-            for (L1PcInstance member : rest) CSharedBroadcast.sendRecipient(outUser, member);
-            clearPartyUIForLeaver(pc, outUser);
-        }
-
-        if (newLeader != null) {
-            CSharedBroadcast.sendOwnedRawArray(rest, SC_PARTY_MEMBER_LIST_CHANGE.encodeLeaderChange(newLeader.getName()));
-        }
-
-        if (wasLeader && pc.isCrown()) {
-            AuraController.getInstance().removeMember(pc);
-        }
-        if (pc.getPbavatar()) {
-            AuraController.getInstance().brave_end(pc);
-        }
-
-        if (pc._CubeEffect) {
-            if (pc.hasSkillEffect(L1SkillId.CUBE_AVATAR))
-                pc.removeSkillEffect(L1SkillId.CUBE_AVATAR);
-            if (pc.hasSkillEffect(L1SkillId.CUBE_RICH))
-                pc.removeSkillEffect(L1SkillId.CUBE_RICH);
-            if (pc.hasSkillEffect(L1SkillId.CUBE_GOLEM))
-                pc.removeSkillEffect(L1SkillId.CUBE_GOLEM);
-            if (pc.hasSkillEffect(L1SkillId.CUBE_OGRE))
-                pc.removeSkillEffect(L1SkillId.CUBE_OGRE);
+    private static void cleanupEffects(Slot member) {
+        if (!detached(member)) return;
+        var pc = member.player;
+        if (pc.isCrown()) AuraController.getInstance().removeMember(pc);
+        if (pc.getPbavatar()) AuraController.getInstance().brave_end(pc);
+        if (pc._CubeEffect && detached(member)) {
+            if (pc.hasSkillEffect(L1SkillId.CUBE_AVATAR)) pc.removeSkillEffect(L1SkillId.CUBE_AVATAR);
+            if (pc.hasSkillEffect(L1SkillId.CUBE_RICH)) pc.removeSkillEffect(L1SkillId.CUBE_RICH);
+            if (pc.hasSkillEffect(L1SkillId.CUBE_GOLEM)) pc.removeSkillEffect(L1SkillId.CUBE_GOLEM);
+            if (pc.hasSkillEffect(L1SkillId.CUBE_OGRE)) pc.removeSkillEffect(L1SkillId.CUBE_OGRE);
             pc._CubeEffect = false;
         }
     }
 
-    public boolean isVacancy() {
-        return _membersList.size() < Config.MAX_PT;
-    }
+    public boolean isVacancy() { return roster.players.length < Config.MAX_PT; }
 
-    public int getVacancy() {
-        return Config.MAX_PT - _membersList.size();
-    }
+    public int getVacancy() { return Config.MAX_PT - roster.players.length; }
 
-    public boolean isMember(L1PcInstance pc) {
-        return _membersList.contains(pc);
-    }
+    public boolean isMember(L1PcInstance pc) { return roster.indexOf(pc) >= 0; }
 
-    protected void setLeader(L1PcInstance pc) {
-        _leader = pc;
-    }
+    public L1PcInstance getLeader() { return roster.leader; }
 
-    public L1PcInstance getLeader() {
-        return _leader;
-    }
-
-    public boolean isLeader(L1PcInstance pc) {
-        final L1PcInstance leader = getLeader();
-        return pc != null && leader != null && pc.getId() == leader.getId();
-    }
+    public boolean isLeader(L1PcInstance pc) { return pc != null && roster.leader == pc; }
 
     public boolean isAutoDivision(L1PcInstance pc) {
         return pc.getPartyType() == 1 || pc.getPartyType() == 4;
     }
 
     public String getMembersNameList() {
-        String _result = new String("");
-        for (L1PcInstance pc : _membersList) {
-            _result = _result + pc.getName() + " ";
-        }
-        return _result;
+        StringBuilder names = new StringBuilder();
+        for (L1PcInstance pc : roster.players) names.append(pc.getName()).append(' ');
+        return names.toString();
     }
 
     public void refresh(L1PcInstance pc) {
         final int partyColor = isLeader(pc) ? 2 : 1;
         try (var shared = new CAsyncSendConstBuffer(
                 SC_Party.nativeNameColorWriter(pc.getId(), partyColor), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-            for (L1PcInstance member : getMembers()) {
+            for (L1PcInstance member : roster.players) {
                 if (member == null || pc.getId() == member.getId()) continue;
                 CSharedBroadcast.sendRecipient(shared, member);
             }
@@ -266,118 +292,115 @@ public class CParty {
     }
 
     public void refreshPartyList() {
-        final L1PcInstance[] members = getMembers();
-        if (members.length == 0) return;
-        CSharedBroadcast.sendOwnedRawArray(members, SC_PARTY_SYNC_PERIODIC_INFO.encodeConnectedMembers(members, _membersMark));
+        final Roster snapshot = roster;
+        if (snapshot.players.length == 0) return;
+        broadcastSnapshot(snapshot, SC_PARTY_SYNC_PERIODIC_INFO.encodeConnectedMembers(snapshot.players, snapshot));
     }
 
     public void handshakePartyMemberStatus(L1PcInstance pc1, L1PcInstance pc2) {
         if (!ok(pc1) || !ok(pc2)) return;
-        SC_PARTY_MEMBER_STATUS.sendFrom(pc2, pc1, _membersMark.getOrDefault(pc1.getId(), 0), true);
-        SC_PARTY_MEMBER_STATUS.sendFrom(pc1, pc2, _membersMark.getOrDefault(pc2.getId(), 0), true);
+        SC_PARTY_MEMBER_STATUS.sendFrom(pc2, pc1, roster.mark(pc1), true);
+        SC_PARTY_MEMBER_STATUS.sendFrom(pc1, pc2, roster.mark(pc2), true);
     }
 
     public void refreshPartyMemberStatus(L1PcInstance pc) {
-        if (!ok(pc)) return;
-        broadcastOwned(SC_PARTY_MEMBER_STATUS.encodeFrom(pc, _membersMark.getOrDefault(pc.getId(), 0), true));
+        final Roster snapshot = roster;
+        if (!ok(pc) || !stillMember(snapshot, pc)) return;
+        broadcastSnapshot(snapshot, SC_PARTY_MEMBER_STATUS.encodeFrom(pc, snapshot.mark(pc), true));
     }
 
-    protected void breakup() {
-        ResetLootIndex();
-        L1PcInstance[] members=getMembers();
-        _membersList.clear();
-        _membersMark.clear();
-        _lastFullListSentAt.clear();
-        _leader=null;
-        for (L1PcInstance member : members) {
-            if (member != null && member.getParty() == this) member.setParty(null);
+    public void passLeader(L1PcInstance requester, L1PcInstance pc) {
+        final Roster changed;
+        synchronized (MEMBERSHIP) {
+            Roster current = roster;
+            if (requester != current.leader || pc == null || current.indexOf(pc) < 0) return;
+            roster = changed = new Roster(current.slots, pc);
         }
-        try(var shared=new CAsyncSendConstBuffer(
-                SC_ServerMessage.nativeWriter(418),Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            for(L1PcInstance m:members){
-                if (m == null || m.getParty() != null) continue;
-                if (ok(m)) {
-                    try (var outUser = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeOutUser(m.getName()))) {
-                        clearPartyUIForLeaver(m, outUser);
+        if (roster == changed) {
+            broadcastSnapshot(changed, SC_PARTY_MEMBER_LIST_CHANGE.encodeLeaderChange(pc.getName()));
+            refreshPartyList();
+        }
+    }
+
+    public void leaveMember(L1PcInstance pc) { leave(pc, true, false); }
+
+    public void kickMember(L1PcInstance pc) { leave(pc, false, true); }
+
+    protected final void leave(L1PcInstance pc, boolean dissolveIfLeader, boolean kick) {
+        final Roster previous;
+        final Roster remaining;
+        final Slot leaver;
+        synchronized (MEMBERSHIP) {
+            previous = roster;
+            int index = previous.indexOf(pc);
+            if (pc == null || index < 0) return;
+            leaver = previous.slots[index];
+            if ((dissolveIfLeader && previous.leader == pc) || previous.players.length == 2) {
+                for (L1PcInstance player : previous.players)
+                    if (player.getParty() == this) player.setParty(null);
+                roster = remaining = EMPTY;
+                ResetLootIndex();
+            } else {
+                Slot[] slots = new Slot[previous.slots.length - 1];
+                System.arraycopy(previous.slots, 0, slots, 0, index);
+                System.arraycopy(previous.slots, index + 1, slots, index, slots.length - index);
+                remaining = slots.length == 0 ? EMPTY
+                        : new Roster(slots, previous.leader == pc ? slots[0].player : previous.leader);
+                if (pc.getParty() == this) pc.setParty(null);
+                roster = remaining;
+            }
+        }
+        if (remaining == EMPTY && previous.players.length > 1) {
+            try (var shared = new CAsyncSendConstBuffer(
+                    SC_ServerMessage.nativeWriter(418), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                for (Slot member : previous.slots) {
+                    try {
+                        cleanupEffects(member);
+                        if (!detached(member) || !ok(member.player)) continue;
+                        try (var out = CSharedBroadcast.openOwnedRaw(
+                                SC_PARTY_MEMBER_LIST_CHANGE.encodeOutUser(member.player.getName()))) {
+                            clearPartyUIForLeaver(member.player, out);
+                        }
+                        if (detached(member)) CSharedBroadcast.sendRecipientBestEffort(shared, member.player);
                     } catch (RuntimeException failure) {
-                        _log.log(Level.WARNING, "Could not clear party UI for " + m.getId(), failure);
+                        _log.log(Level.WARNING, "Could not clear party UI for " + member.player.getId(), failure);
                     }
                 }
-                if (ok(m)) CSharedBroadcast.sendRecipientBestEffort(shared, m);
             }
-        }
-    }
-
-    public void passLeader(L1PcInstance pc) { // 리더위임
-        if (pc == null || !_membersList.contains(pc)) return;
-        setLeader(pc);
-        broadcastOwned(SC_PARTY_MEMBER_LIST_CHANGE.encodeLeaderChange(pc.getName()));
-        refreshPartyList();
-    }
-
-    public void leaveMember(L1PcInstance pc) {
-        if (!isMember(pc)) return;
-        if(isLeader(pc) || getNumOfMembers()==2){
-            breakup();
         } else {
-            removeMember(pc);
-            try(var shared=new CAsyncSendConstBuffer(
-                    SC_ServerMessage.nativeWriter(420,pc.getName()),
-                    Integer.MIN_VALUE,Integer.MAX_VALUE)){
-                for(L1PcInstance member:getMembers())
-                    CSharedBroadcast.sendRecipientBestEffort(shared, member);
-                CSharedBroadcast.sendRecipientBestEffort(shared, pc);
+            cleanupEffects(leaver);
+            try (var out = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeOutUser(pc.getName()))) {
+                for (L1PcInstance member : remaining.players)
+                    if (stillMember(remaining, member)) CSharedBroadcast.sendRecipient(out, member);
+                if (detached(leaver)) clearPartyUIForLeaver(pc, out);
             }
-        }
-    }
-
-    public void kickMember(L1PcInstance pc) {
-        if (!isMember(pc)) return;
-        if(getNumOfMembers()==2){
-            breakup();
-        } else {
-            removeMember(pc);
-            try(var shared=new CAsyncSendConstBuffer(
-                    SC_ServerMessage.nativeWriter(420,pc.getName()),
-                    Integer.MIN_VALUE,Integer.MAX_VALUE)){
-                for(L1PcInstance member:getMembers())
-                    CSharedBroadcast.sendRecipientBestEffort(shared, member);
+            if (remaining.leader != null && previous.leader != remaining.leader && roster == remaining)
+                broadcastSnapshot(remaining, SC_PARTY_MEMBER_LIST_CHANGE.encodeLeaderChange(remaining.leader.getName()));
+            try (var shared = new CAsyncSendConstBuffer(
+                    SC_ServerMessage.nativeWriter(420, pc.getName()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+                for (L1PcInstance member : remaining.players)
+                    if (stillMember(remaining, member)) CSharedBroadcast.sendRecipientBestEffort(shared, member);
+                if (!kick && detached(leaver)) CSharedBroadcast.sendRecipientBestEffort(shared, pc);
             }
-            sendKickMessage(pc);
+            if (kick && detached(leaver)) SC_ServerMessage.send(pc, 419);
         }
-        SC_ServerMessage.send(pc,419); // original duplicate kick notification retained
+        if (kick && detached(leaver)) SC_ServerMessage.send(pc, 419);
     }
 
-    public L1PcInstance[] getMembers() {
-        return _membersList.toArray(L1PcInstance[]::new);
-    }
+    public L1PcInstance[] getMembers() { return roster.players.clone(); }
 
-    public int getNumOfMembers() {
-        return _membersList.size();
-    }
+    public int getNumOfMembers() { return roster.players.length; }
 
-    private void sendKickMessage(L1PcInstance kickpc) {
-        SC_ServerMessage.send(kickpc, 419);
-    }
+    public List<L1PcInstance> getList() { return roster.view; }
 
-    protected void sendLeftMessage(L1PcInstance sendTo, L1PcInstance left) {
-        SC_ServerMessage.send(sendTo, 420, left.getName());
-    }
-
-    public List<L1PcInstance> getList() {// 하딘 파티 멤버 리스트
-        return _membersList;
-    }
-
-    public Stream<L1PcInstance> createMembersStream(){
-        return _membersList.stream();
-    }
+    public Stream<L1PcInstance> createMembersStream() { return Arrays.stream(roster.players); }
 
     public void broadcastRootMent(String message) {
         if(message==null)return;
         try(var shared=new CAsyncSendConstBuffer(
                 SC_SystemMessage.nativeWriter(message),
                 Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            for(L1PcInstance pc:_membersList){
+            for(L1PcInstance pc:roster.players){
                 if(pc!=null && pc.RootMent1)
                     CSharedBroadcast.sendRecipient(shared,pc);
             }
@@ -496,10 +519,17 @@ public class CParty {
     // ─────────────────────────────────────────────
     // 표식 — 0x0153 전용 NOTI + 상태 갱신
     // ─────────────────────────────────────────────
-    public void setPartyMark(L1PcInstance target, int markId) {
+    public void setPartyMark(L1PcInstance requester, L1PcInstance target, int markId) {
         if (target == null) return;
-        _membersMark.put(target.getId(), markId);
-        broadcastOwned(SC_PARTY_MEMBER_MARK_CHANGE_NOTI.encodeFields(target.getId(), markId));
+        final Roster snapshot;
+        synchronized (MEMBERSHIP) {
+            snapshot = roster;
+            int index = snapshot.indexOf(target);
+            if (requester != snapshot.leader || index < 0) return;
+            snapshot.slots[index].mark = markId;
+        }
+        if (!stillMember(snapshot, target)) return;
+        broadcastSnapshot(snapshot, SC_PARTY_MEMBER_MARK_CHANGE_NOTI.encodeFields(target.getId(), markId));
         refreshPartyMemberStatus(target);
     }
 }

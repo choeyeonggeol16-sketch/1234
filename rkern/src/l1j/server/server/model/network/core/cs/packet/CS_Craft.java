@@ -614,7 +614,7 @@ public final class CS_Craft {
 				final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
 				try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
 				        chatBytes, Integer.MIN_VALUE, Integer.MAX_VALUE)) {
-					for (L1PcInstance listener : party.getMembers()) {
+					for (L1PcInstance listener : party.getList()) {
 						if (!SpamTable.getInstance().excludesChat(listener.getId(), pc.getName())) {
 							CSharedBroadcast.sendRecipientBestEffort(chatShared, listener);
 						}

@@ -316,7 +316,7 @@ public final class CGetItemAction extends CNewAction {
 
         final List<L1PcInstance> members = new ArrayList<>();
 
-        for (L1PcInstance m : party.getMembers()) {
+        for (L1PcInstance m : party.getList()) {
             if (m == null || m.isDead()) {
                 continue;
             }
@@ -467,7 +467,7 @@ public final class CGetItemAction extends CNewAction {
 
         try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
        SC_SystemMessage.nativeWriter(msg),Integer.MIN_VALUE,Integer.MAX_VALUE)) {
-for (L1PcInstance member : party.getMembers()) {
+for (L1PcInstance member : party.getList()) {
             if (member == null || member.getId() == owner.getId()) {
                 continue;
             }

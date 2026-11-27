@@ -139,8 +139,8 @@ public final class AuraController implements Runnable {
                 continue;
             }
 
-            final L1PcInstance[] members = party.getMembers();
-            if (members == null || members.length == 0) {
+            final var members = party.getList();
+            if (!members.contains(crown)) {
                 if (crown.getPbavatar()) safeEnd(crown);
                 continue;
             }
@@ -225,7 +225,7 @@ public final class AuraController implements Runnable {
         if (pc == null) return;
         final CParty party = pc.getParty();
         if (party == null) return;
-        for (L1PcInstance m : party.getMembers()) {
+        for (L1PcInstance m : party.getList()) {
             safeEnd(m);
         }
     }

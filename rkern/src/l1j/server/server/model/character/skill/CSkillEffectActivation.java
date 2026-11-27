@@ -1249,7 +1249,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		if (!submitContextBuff(caster, id, duration, option, gfx, null)) return false;
 		final CParty party = caster.getParty();
 		if (party == null) return true;
-		for (L1PcInstance member : party.getMembers()) {
+		for (L1PcInstance member : party.getList()) {
 			if (member != null && member != caster && member.getMapId() == caster.getMapId()
 					&& caster.getLocation().getTileLineDistance(member.getLocation()) <= PARTY_BUFF_RANGE) {
 				submitContextBuff(member, id, duration, option, gfx, party);

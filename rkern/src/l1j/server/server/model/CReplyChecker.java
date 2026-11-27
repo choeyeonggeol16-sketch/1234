@@ -427,14 +427,11 @@ public final class CReplyChecker {
                         else if (!live(replier, p.replierStamp) && replier.getChatParty() == current)
                             current.leaveMember(replier);
                     } else {
-                        CParty current = requester.getParty();
+                        CParty current = CParty.acceptInvite(requester, replier, kind == RANDOM_PARTY ? 1 : 0);
                         if (current == null) {
-                            requester.setPartyType(kind == RANDOM_PARTY ? 1 : 0);
-                            current = new CParty();
-                            current.addMember(requester);
+                            SC_ServerMessage.send(requester, 417);
+                            return;
                         }
-                        if (current.isVacancy() || requester.isGm()) current.addMember(replier);
-                        else SC_ServerMessage.send(requester, 417);
                         if (!live(requester, p.requesterStamp) && requester.getParty() == current)
                             current.leaveMember(requester);
                         else if (!live(replier, p.replierStamp) && replier.getParty() == current)

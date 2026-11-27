@@ -72,7 +72,7 @@ public final class CContributeData {
                 groups[index] = group;
                 groupCount++;
                 if (party != null) {
-                    for (L1PcInstance member : party.getMembers()) {
+                    for (L1PcInstance member : party.getList()) {
                         if (!eligible(member, origin) || member.getParty() != party) continue;
                         if (allowedCount == allowed.length) allowed = Arrays.copyOf(allowed, allowed.length * 2);
                         allowed[allowedCount++] = member.getId();

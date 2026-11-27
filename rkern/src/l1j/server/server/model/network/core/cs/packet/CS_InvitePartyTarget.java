@@ -177,6 +177,7 @@ public final class CS_InvitePartyTarget {
 			return;
 		}
 
-		pc.getParty().passLeader(targetPc);
+		final var currentParty = pc.getParty();
+		if (currentParty != null) currentParty.passLeader(pc, targetPc);
 	}
 }

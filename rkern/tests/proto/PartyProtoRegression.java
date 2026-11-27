@@ -45,7 +45,8 @@ public final class PartyProtoRegression {
         final var memberRow = SC_PARTY_MEMBER_LIST.Member.from(member, 0);
         final byte[] oldRoster = new SC_PARTY_MEMBER_LIST(leader.getName(), List.of(leaderRow, memberRow)).encode();
         final long before = System.currentTimeMillis();
-        final byte[] roster = SC_PARTY_MEMBER_LIST.encodeConnectedMembers(leader.getName(), snapshot, marks);
+        final int[] slotMarks = {marks.get(leader.getId()), 8, 0, 0};
+        final byte[] roster = SC_PARTY_MEMBER_LIST.encodeConnectedMembers(leader.getName(), snapshot, i -> slotMarks[i]);
         final long after = System.currentTimeMillis();
         final ProtoReader expected = body(oldRoster, ProtoMsg.SC_PARTY_MEMBER_LIST);
         final ProtoReader actual = body(roster, ProtoMsg.SC_PARTY_MEMBER_LIST);
@@ -88,8 +89,9 @@ public final class PartyProtoRegression {
                         42, leader.getLongLocation(), marks.get(leader.getId())),
                 new SC_PARTY_SYNC_PERIODIC_INFO.MemberStatus(member.getName(), member.getId(), 34, 65, 0,
                         42, member.getLongLocation(), 0)));
-        same(expected.encode(), SC_PARTY_SYNC_PERIODIC_INFO.encodeConnectedMembers(snapshot, marks),
-                "periodic order, forward location, alive flag and default mark");
+        final int[] slotMarks = {marks.get(leader.getId()), 8, 0, 0};
+        same(expected.encode(), SC_PARTY_SYNC_PERIODIC_INFO.encodeConnectedMembers(snapshot, i -> slotMarks[i]),
+                "periodic order, forward location, alive flag and slot mark");
     }
 
     private static void verifySingleMember(L1PcInstance leader, int mark) {

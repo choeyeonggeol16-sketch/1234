@@ -2,6 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntUnaryOperator;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -56,11 +57,16 @@ public final class SC_PARTY_SYNC_PERIODIC_INFO extends ProtoPacket {
     }
 
     public static byte[] encodeConnectedMembers(L1PcInstance[] members, Map<Integer, Integer> marks) {
+        return encodeConnectedMembers(members, i -> marks.getOrDefault(members[i].getId(), 0));
+    }
+
+    public static byte[] encodeConnectedMembers(L1PcInstance[] members, IntUnaryOperator marks) {
         try (ProtoWriter writer = ProtoWriter.borrow()) {
-            for (L1PcInstance member : members) {
+            for (int i = 0; i < members.length; i++) {
+                L1PcInstance member = members[i];
                 if (member == null || member.getNetConnection() == null) continue;
                 writer.msg(1);
-                SC_PARTY_MEMBER_STATUS.writeFrom(writer, member, marks.getOrDefault(member.getId(), 0), false);
+                SC_PARTY_MEMBER_STATUS.writeFrom(writer, member, marks.applyAsInt(i), false);
                 writer.end();
             }
             return writer.finishWithTrailer(ProtoMsg.SC_PARTY_SYNC_PERIODIC_INFO);

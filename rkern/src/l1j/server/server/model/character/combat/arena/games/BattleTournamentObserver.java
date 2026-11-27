@@ -388,8 +388,7 @@ public class BattleTournamentObserver extends CombatObserver{
 		CParty party = pc.getParty(); 
 		if(party != null){
 			party.leaveMember(pc);
-			pc.setParty(null);
-			
+
 		}
 		pc.set_instance_status(EPcStatus.WORLD);
 		pc.set_is_non_action(false);

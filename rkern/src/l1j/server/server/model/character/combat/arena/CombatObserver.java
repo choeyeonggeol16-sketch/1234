@@ -399,8 +399,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                 party = new Party();
                 _parties[team_id] = party;
             }
-            _parties[team_id].addMember(pc);
-            pc.setParty(_parties[team_id]);
+            if (!party.tryAddMember(pc)) continue;
             
             CombatTeamInformation tInfo = _combat_info.get_team_informations(team_id);
             _user_kda_dictionary.put(pc.getId(), UserKda.newInstance(team_id, pc.getId(), pc.getName()));
@@ -461,7 +460,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         CParty party = pc.getParty();
         if(party != null){
             party.leaveMember(pc);
-            pc.setParty(null);
+
         }
         
         

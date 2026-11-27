@@ -2,6 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntUnaryOperator;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -135,19 +136,20 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
     }
 
     private static void writeMembers(ProtoWriter writer, String leader, L1PcInstance[] members,
-            Map<Integer, Integer> marks, boolean connectedOnly) {
+            IntUnaryOperator marks, boolean connectedOnly) {
         writer.string(1, leader);
-        for (L1PcInstance member : members) {
+        for (int i = 0; i < members.length; i++) {
+            L1PcInstance member = members[i];
             if (connectedOnly && (member == null || member.getNetConnection() == null)) continue;
             writer.msg(2);
-            writeMemberFrom(writer, member, marks.getOrDefault(member.getId(), 0));
+            writeMemberFrom(writer, member, marks.applyAsInt(i));
             writer.end();
         }
     }
 
     /** The initial list sent directly to a new member includes the entire roster. */
     public static boolean sendMembers(L1PcInstance recipient, String leader, L1PcInstance[] members,
-            Map<Integer, Integer> marks) {
+            IntUnaryOperator marks) {
         long capacity = 128L + nameBytes(leader);
         for (L1PcInstance member : members) capacity += 256L + nameBytes(member.getName());
         final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_MEMBER_LIST, Proto.capacityBound(capacity));
@@ -162,6 +164,10 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
 
     public static byte[] encodeConnectedMembers(String leader, L1PcInstance[] members,
             Map<Integer, Integer> marks) {
+        return encodeConnectedMembers(leader, members, i -> marks.getOrDefault(members[i].getId(), 0));
+    }
+
+    public static byte[] encodeConnectedMembers(String leader, L1PcInstance[] members, IntUnaryOperator marks) {
         try (ProtoWriter writer = ProtoWriter.borrow()) {
             writeMembers(writer, leader, members, marks, true);
             return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST);

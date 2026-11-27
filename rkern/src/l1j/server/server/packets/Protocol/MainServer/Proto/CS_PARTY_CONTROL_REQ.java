@@ -164,7 +164,7 @@ public final class CS_PARTY_CONTROL_REQ {
                     pc.sendPackets("알 수 없는 대상입니다.");
                     return;
                 }
-                party.passLeader(target);
+                party.passLeader(pc, target);
                 break;
             }
             case Command_TransforMark: {
@@ -181,7 +181,7 @@ public final class CS_PARTY_CONTROL_REQ {
                     pc.sendPackets("알 수 없는 대상입니다.");
                     return;
                 }
-                party.setPartyMark(target, targetMark);
+                party.setPartyMark(pc, target, targetMark);
                 break;
             }
             case Command_KickUser: {

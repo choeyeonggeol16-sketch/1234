@@ -76,7 +76,7 @@ public final class CRaidAdmission {
         final int clanId = leader.getClanid();
         final int clanMemberId = leader.getClanMemberId();
         final List<Participant> admitted = new ArrayList<>();
-        for (L1PcInstance member : party.getMembers()) {
+        for (L1PcInstance member : party.getList()) {
             final CUserSocket session = member.getNetConnection();
             if (session != null) admitted.add(new Participant(member, session, member.getSessionStamp()));
         }
