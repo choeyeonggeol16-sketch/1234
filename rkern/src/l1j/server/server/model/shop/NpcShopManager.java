@@ -6,12 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import l1j.server.server.model.inventory.CInventory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,10 +53,8 @@ public class NpcShopManager {
         }
     }
 
-    // npcId → 가격표. reload 때 통째 교체만 함 
-    private volatile Map<Integer, List<ShopEntry>> _priceList = Collections.emptyMap();
-    // npcId → L1Shop. 구 경로 호환용 파생 캐시 
-    private volatile Map<Integer, L1Shop> _l1Shops = Collections.emptyMap();
+    private record Catalog(Map<Integer, List<ShopEntry>> entries, Map<Integer, L1Shop> shops) {}
+    private volatile Catalog catalog = new Catalog(Map.of(), Map.of());
     // 스폰된 상점 NPC — 스폰(부팅 1회)과 리필
     private final ArrayList<L1NpcInstance> _spawned = new ArrayList<>();
     // 가시성: 스케줄 스레드(read)와 GM 커맨드 스레드(write)가 공유
@@ -64,7 +62,7 @@ public class NpcShopManager {
     // 리필 스케줄 핸들 — stop 시 취소 (켬/끔 반복 시 스케줄 누적 방지)
     private CServerTimer _refillTask;
     // 템플릿 없는 아이템 경고 스팸 방지 (reload 시 초기화)
-    private final Set<Integer> _warnedItems = new HashSet<>();
+    private final Set<Integer> _warnedItems = ConcurrentHashMap.newKeySet();
 
     // ═══════════════════ 상태 조회 ═══════════════════
 
@@ -73,11 +71,11 @@ public class NpcShopManager {
     }
 
     public L1Shop getShop(int npcId) {
-        return _l1Shops.get(npcId);
+        return catalog.shops().get(npcId);
     }
 
     public Map<Integer, L1Shop> getAllShops() {
-        return _l1Shops;
+        return catalog.shops();
     }
 
     // ═══════════════════ 가격표 로드/리로드 ═══════════════════
@@ -88,23 +86,18 @@ public class NpcShopManager {
         refillAll();
     }
 
-    public void reload() {
-        Map<Integer, List<ShopEntry>> map = new HashMap<>();
-        loadTable(map, "shop_npc");
-
-        if (map.isEmpty() && !_priceList.isEmpty()) {
+    public synchronized void reload() {
+        Map<Integer, List<ShopEntry>> entries = new HashMap<>();
+        if (!loadTable(entries, "shop_npc")) return;
+        if (entries.isEmpty() && !catalog.entries().isEmpty()) {
             _log.warning("[NpcShop] 가격표 로드 결과가 비어 기존 가격표를 유지합니다.");
             return;
         }
-        _priceList = Collections.unmodifiableMap(map);
-        _warnedItems.clear();
+        entries.replaceAll((id, rows) -> List.copyOf(rows));
         Map<Integer, L1Shop> shops = new HashMap<>();
-        for (Map.Entry<Integer, List<ShopEntry>> e : map.entrySet()) {
-            shops.put(e.getKey(), buildL1Shop(e.getKey(), e.getValue()));
-        }
-        _l1Shops = Collections.unmodifiableMap(shops);
-
-      //  _log.info("[NpcShop] 가격표 로드 완료: 상점 " + map.size() + "개");
+        entries.forEach((id, rows) -> shops.put(id, buildL1Shop(id, rows)));
+        catalog = new Catalog(Map.copyOf(entries), Map.copyOf(shops));
+        _warnedItems.clear();
     }
 
     /** ShopEntry 목록 → 기존 L1Shop 구조 변환 */
@@ -120,7 +113,7 @@ public class NpcShopManager {
         return new L1Shop(npcId, sells, buys);
     }
 
-    private void loadTable(Map<Integer, List<ShopEntry>> map, String table) {
+    private boolean loadTable(Map<Integer, List<ShopEntry>> map, String table) {
         final String sql = "SELECT npc_id, item_id, selling_price, purchasing_price, count, enchant"
                 + " FROM " + table + " ORDER BY npc_id, item_id";
         try (Connection con = DatabaseFactory.getInstance().getConnection();
@@ -132,7 +125,7 @@ public class NpcShopManager {
                 int itemId = rs.getInt("item_id");
                 int sellPrice = rs.getInt("selling_price");
                 int buyPrice = rs.getInt("purchasing_price");
-                long count = rs.getLong("count");
+                long count = Math.clamp(rs.getLong("count"), 0, CInventory.MAX_AMOUNT);
                 int enchant = rs.getInt("enchant");
 
                 List<ShopEntry> list = map.get(npcId);
@@ -149,12 +142,14 @@ public class NpcShopManager {
             }
         } catch (SQLException e) {
             _log.log(Level.WARNING, "[NpcShop] " + table + " 로드 실패", e);
+            return false;
         }
+        return true;
     }
 
     // ═══════════════════ 가동/중지 ═══════════════════
 
-    public void start() {
+    public synchronized void start() {
         if (_power) {
             return; 
         }
@@ -165,7 +160,7 @@ public class NpcShopManager {
      //   _log.info("[NpcShop] 운영자 상점 가동: NPC " + _spawned.size() + "개");
     }
 
-    public void stop() {
+    public synchronized void stop() {
         if (!_power) {
             return; 
         }
@@ -174,16 +169,16 @@ public class NpcShopManager {
         cancelRefill();
 
   //      int count = _spawned.size();
-        ArrayList<L1NpcInstance> snapshot = new ArrayList<>(_spawned);
-        for (int i = 0; i < snapshot.size(); i++) {
-            L1NpcInstance npc = snapshot.get(i);
-            if (npc == null) continue;
+        for (L1NpcInstance npc : _spawned) {
             try {
-                // DB에 상점 정보 정리(character_shop) 후 NPC 소멸
                 DynamicShopStorage.deleteProcess(npc);
+            } catch (RuntimeException failure) {
+                _log.log(Level.WARNING, "[NpcShop] NPC 시장 정보 정리 실패", failure);
+            }
+            try {
                 npc.deleteMe();
-            } catch (Exception e) {
-                _log.log(Level.WARNING, "[NpcShop] NPC 제거 실패", e);
+            } catch (RuntimeException failure) {
+                _log.log(Level.WARNING, "[NpcShop] NPC 제거 실패", failure);
             }
         }
         _spawned.clear();
@@ -241,8 +236,10 @@ public class NpcShopManager {
     }
 
     private void spawnOne(L1NpcShop shop) {
+        L1NpcInstance npc = null;
+        boolean published = false;
         try {
-            L1NpcInstance npc = CObjectDB.CreateNPC(shop.getNpcId());
+            npc = CObjectDB.CreateNPC(shop.getNpcId());
             npc.setId(IdFactory.getInstance().nextId());
             npc.setMap(shop.getMapId());
             npc.getLocation().set(shop.getX(), shop.getY(), shop.getMapId());
@@ -255,31 +252,39 @@ public class NpcShopManager {
             L1NpcShopInstance obj = (L1NpcShopInstance) npc;
             obj.setShopName(shop.getShopName());
             CWorld.getInstance().storeAndEnterWorld(npc);
+            published = true;
             npc.refreshLight();
             obj.setState(1);
             SC_NpcShopAction.broadcast(npc, npc.getId(), ActionCodes.ACTION_Shop, shop.getShopName());
             refillOne(npc);
             _spawned.add(npc);
         } catch (Exception e) {
+            if (published) {
+                try {
+                    npc.deleteMe();
+                } catch (RuntimeException cleanup) {
+                    e.addSuppressed(cleanup);
+                    _spawned.add(npc);
+                }
+            }
             _log.log(Level.WARNING, "[NpcShop] NPC 스폰 실패 (npc_id=" + shop.getNpcId() + ") — 건너뜀", e);
         }
     }
 
     // ═══════════════════ 리필 ═══════════════════
 
-    private void refillAll() {
+    private synchronized void refillAll() {
         if (!_power) return;
 
         try {
-            ArrayList<L1NpcInstance> snapshot = new ArrayList<>(_spawned);
-            for (int i = 0; i < snapshot.size(); i++) {
+            for (L1NpcInstance npc : _spawned) {
                 try {
-                    refillOne(snapshot.get(i));
+                    refillOne(npc);
                 } catch (Exception e) {
-                    _log.log(Level.WARNING, "[NpcShop] 개별 NPC 리필 실패: " + snapshot.get(i).getId(), e);
+                    _log.log(Level.WARNING, "[NpcShop] 개별 NPC 리필 실패: " + npc.getId(), e);
                 }
             }
-            DynamicShopStorage.updateProcess(snapshot);
+            DynamicShopStorage.updateProcess(_spawned);
         } catch (Exception e) {
             _log.log(Level.WARNING, "[NpcShop] 리필 주기 오류 — 다음 주기에 재시도됨", e);
         }
@@ -289,7 +294,8 @@ public class NpcShopManager {
         if (!(npcInstance instanceof L1NpcShopInstance)) return;
         L1NpcShopInstance npc = (L1NpcShopInstance) npcInstance;
 
-        List<ShopEntry> entries = _priceList.get(npc.getNpcId());
+        Catalog current = catalog;
+        List<ShopEntry> entries = current.entries().get(npc.getNpcId());
         if (entries == null) {
             npc.setSellings(new ArrayList<DynamicShopItem>(0));
             npc.setPurchasings(new ArrayList<DynamicShopItem>(0));
@@ -298,8 +304,12 @@ public class NpcShopManager {
 
         ArrayList<DynamicShopItem> sells = new ArrayList<>(entries.size());
         ArrayList<DynamicShopItem> buys = new ArrayList<>(entries.size());
+        L1Shop shop = current.shops().get(npc.getNpcId());
+        List<L1ShopItem> offers = shop.getSellingItems();
+        int saleRow = 0;
         int idx = 0;
         for (ShopEntry e : entries) {
+            L1ShopItem offer = e.purchase ? null : offers.get(saleRow++);
             DynamicShopItem item = DynamicShopItem.create(e, ++idx);
             if (item == null) {
                 if (_warnedItems.add(e.itemId)) {
@@ -308,7 +318,10 @@ public class NpcShopManager {
                 continue;
             }
             if (e.purchase) buys.add(item);
-            else sells.add(item);
+            else {
+                item.count = offer.getCount();
+                sells.add(item);
+            }
         }
         npc.setSellings(sells);
         npc.setPurchasings(buys);

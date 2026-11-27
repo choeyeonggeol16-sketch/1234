@@ -9,6 +9,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -39,9 +40,12 @@ public final class SC_AdenShop {
         final byte[][] statuses = new byte[length][];
         int count = 0;
         long capacity = 11L;
+        final L1TaxCalculator taxes = new L1TaxCalculator(shop == null ? 0 : shop.getNpcId());
         for (int i = 0; i < length; ++i) {
             final L1ShopItem shopItem = list.get(i);
-            if (shopItem == null || shopItem.getItem() == null) continue;
+            if (!shop.canOffer(shopItem, pc)) continue;
+            final int price = shop.checkoutPrice(shopItem, taxes);
+            if (price < 0) continue;
             final L1Item item = shopItem.getItem();
             final String name = shopItem.getPackCount() > 1
                     ? item.getName() + " (" + shopItem.getPackCount() + ")" : item.getName();
@@ -58,7 +62,7 @@ public final class SC_AdenShop {
             if (capacity > Integer.MAX_VALUE) return false;
             final int j = count * 3;
             values[j] = item.getGfxId();
-            values[j + 1] = shopItem.getPrice();
+            values[j + 1] = price;
             values[j + 2] = Math.max(0, item.getUseType());
             names[count] = name;
             offers[count] = shopItem;

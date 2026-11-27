@@ -28,7 +28,7 @@ public final class NpcShopView {
     private final int shopId;
     private final boolean buying;
     private final boolean dynamic;
-    private final L1Shop shop;
+    private final long catalogRevision;
     private final L1ShopItem[] offers;
     private final int[] saleIds;
     private final DogFightHistoryInfo dogFightRound;
@@ -47,7 +47,7 @@ public final class NpcShopView {
         shopId = shop == null ? (npc == null ? 0 : npc.getNpcId()) : shop.getNpcId();
         this.buying = buying;
         dynamic = npc instanceof L1NpcShopInstance;
-        this.shop = shop;
+        catalogRevision = shop == null ? 0 : shop.revision();
         this.offers = offers;
         this.saleIds = saleIds;
         if (saleIds != null) Arrays.sort(saleIds);
@@ -107,7 +107,7 @@ public final class NpcShopView {
 
     public L1Shop currentShop() {
         final L1Shop current = dynamic ? NpcShopManager.getInstance().getShop(shopId) : ShopTable.getInstance().get(shopId);
-        return shop != null && current == shop ? current : null;
+        return current != null && current.revision() == catalogRevision ? current : null;
     }
 
     public boolean isCurrentDogFightRound() {

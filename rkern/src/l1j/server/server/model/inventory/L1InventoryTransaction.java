@@ -646,7 +646,7 @@ public final class L1InventoryTransaction implements AutoCloseable, Consumer<Thr
     }
 
     boolean isDurablyCommitted() { return durableCommitted; }
-    boolean isUncertainFailure() { return uncertainFailure; }
+    public boolean isUncertainFailure() { return uncertainFailure; }
 
     public void onTerminalFailure(Runnable callback) {
         open();

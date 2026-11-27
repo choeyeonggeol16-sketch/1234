@@ -112,6 +112,7 @@ final class MerchantTransactions {
         // stock removal can change list indices before the receipt callback.
         final L1ShopItem[] auditItems = size > 1 ? new L1ShopItem[size] : null;
         final int[] auditCounts = size > 1 ? new int[size] : null;
+        final int[] auditPrices = size > 1 ? new int[size] : null;
         L1ShopItem singleItem = null;
         boolean fishing = false;
         for (int i = 0; i < size; i++) {
@@ -133,27 +134,30 @@ final class MerchantTransactions {
                 SC_SystemMessage.send(pc, "1개씩 구입할 수 있습니다.");
                 return;
             }
+            int before = orders.getTotalPriceTaxIncluded();
             orders.add(catalogIndex, count, pc);
             if (orders.BugOk() != 0) {
                 if (!dynamic) notifyOrderLimit(pc, count);
                 return;
             }
-            final L1ShopItem accepted = orders.getList().getLast().getItem();
+            final L1ShopItem accepted = orders.lastOffer();
             if (accepted != offered) return;
             if (auditItems == null) {
                 singleItem = accepted;
             } else {
                 auditItems[i] = accepted;
                 auditCounts[i] = count;
+                auditPrices[i] = orders.getTotalPriceTaxIncluded() - before;
             }
             if (!dynamic && accepted.getItemId() == 41295) fishing = true;
         }
         final boolean updateFishing = fishing;
         final L1ShopItem settledItem = singleItem;
+        final int settledPrice = orders.getTotalPriceTaxIncluded();
         shop.sellItems(pc, orders, () -> {
-            if (auditItems == null) logBuy(pc, settledItem, npcName, (int) (first >>> 32), dynamic);
+            if (auditItems == null) logBuy(pc, settledItem, npcName, (int) (first >>> 32), settledPrice, dynamic);
             else for (int i = 0; i < auditItems.length; i++)
-                logBuy(pc, auditItems[i], npcName, auditCounts[i], dynamic);
+                logBuy(pc, auditItems[i], npcName, auditCounts[i], auditPrices[i], dynamic);
             if (updateFishing) pc.setFishingShopBuyTime_1(System.currentTimeMillis());
         });
     }
@@ -185,10 +189,10 @@ final class MerchantTransactions {
         return false;
     }
 
-    private static void logBuy(L1PcInstance pc, L1ShopItem item, String npcName, int count, boolean dynamic) {
+    private static void logBuy(L1PcInstance pc, L1ShopItem item, String npcName, int count, int price, boolean dynamic) {
         String name = item.getItem().getName();
         if (dynamic) name = "+" + item.getEnchant() + " " + name;
-        LoggerInstance.getInstance().addShop(name, count, (long) item.getPrice() * count, npcName, pc.getName());
+        LoggerInstance.getInstance().addShop(name, count, price, npcName, pc.getName());
     }
 
     private static void notifyOrderLimit(L1PcInstance pc, int count) {

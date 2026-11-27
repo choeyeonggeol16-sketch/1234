@@ -14,7 +14,7 @@ public class L1ShopItem {
 	
 	private final int _enchant;
 	
-	private int _count;
+	private volatile int _count;
 	
 	private boolean timeLimit;
 
@@ -32,7 +32,6 @@ public class L1ShopItem {
 		_enchant = enchant;
 		_count = 1;
 		this.timeLimit = timeLimit;
-		timeLimit = false;
 	}
 
 	public int get_count() {

@@ -3,10 +3,8 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.model.shop.NpcShopView;
 import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
-import java.util.Date;
 import java.util.List;
 
-import l1j.server.Config;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
@@ -53,23 +51,14 @@ public final class SC_ShopSellList {
         final byte[][] statuses = new byte[max][];
         final L1ItemInstance dummy = new L1ItemInstance();
         final L1TaxCalculator calc = new L1TaxCalculator(npcId);
-        final long currentTime = System.currentTimeMillis();
-        final Date date = new Date(0);
-        date.setTime(pc.getFishingShopBuyTime_1());
-        final int itemDay = date.getDate();
-        date.setTime(currentTime);
-        final int currentDay = date.getDate();
-        final boolean hideTimed = itemDay == currentDay;
         long capacity = 11;
         int count = 0;
         for (int i = 0; i < max; ++i) {
             final L1ShopItem shopItem = shopItems.get(i);
-            if (shopItem == null || (hideTimed && shopItem.isTimeLimit()) || shopItem.getItem() == null)
-                continue;
+            if (!shop.canOffer(shopItem, pc)) continue;
+            final int price = shop.checkoutPrice(shopItem, calc);
+            if (price < 0) continue;
             final L1Item item = shopItem.getItem();
-            final int basePrice = shopItem.getPrice();
-            final int price = (npcId == 70035 || npcId == 70041 || npcId == 70042)
-                    ? basePrice : calc.layTax((int) (basePrice * Config.RATE_SHOP_SELLING_PRICE));
             int gfxId;
             try { gfxId = item.getGfxId(); } catch (Exception ignored) { gfxId = 0; }
             final String name;

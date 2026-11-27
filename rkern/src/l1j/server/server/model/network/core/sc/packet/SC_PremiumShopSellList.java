@@ -11,6 +11,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -55,9 +56,13 @@ public final class SC_PremiumShopSellList {
         int count = 0;
         final int tailSize = premiumShopTailSize(npcId);
         long capacity = CIOConfig.HEADER_SIZE + 7L;
+        final L1PcInstance pc = connection.getActiveChar();
+        final L1TaxCalculator taxes = new L1TaxCalculator(shop == null ? 0 : shop.getNpcId());
         for (int i = 0; i < limit; ++i) {
             final L1ShopItem shopItem = list.get(i);
-            if (shopItem == null || shopItem.getItem() == null) continue;
+            if (!shop.canOffer(shopItem, pc)) continue;
+            final int price = shop.checkoutPrice(shopItem, taxes);
+            if (price < 0) continue;
             final L1Item item = shopItem.getItem();
             final String name;
             if (shopItem.getPackCount() > 1) {
@@ -86,13 +91,12 @@ public final class SC_PremiumShopSellList {
             values[j] = i;
             offers[i] = shopItem;
             values[j + 1] = item.getGfxId();
-            values[j + 2] = shopItem.getPrice();
+            values[j + 2] = price;
             values[j + 3] = Math.max(0, item.getUseType());
             encodedNames[count] = encodedName;
             statuses[count++] = status;
         }
         capacity += tailSize;
-        final L1PcInstance pc = connection.getActiveChar();
         final NpcShopView view = pc != null && shop != null
                 && CWorld.getInstance().findObject(objId) instanceof L1NpcInstance npc
                 ? NpcShopView.purchase(connection, pc, npc, objId, shop, offers) : null;

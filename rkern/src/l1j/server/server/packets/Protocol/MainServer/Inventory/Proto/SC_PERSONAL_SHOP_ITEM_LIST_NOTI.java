@@ -16,6 +16,7 @@ import l1j.server.server.model.item.NpcReissuedItemPolicy;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.PlayerShopTransactions;
+import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.model.shop.PlayerShopView;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
@@ -206,27 +207,19 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
         final L1ShopItem[] offers = source.toArray(L1ShopItem[]::new);
         final boolean normal = L1Shop.is_normal_shop(npc);
         final int sellerId = npc.getId();
+        final L1TaxCalculator taxes = new L1TaxCalculator(shop.getNpcId());
         try (ProtoWriter rows = ProtoWriter.borrow()) {
             int shown = 0;
             boolean oversized = false;
             for (int i = 0; i < offers.length; i++) {
                 L1ShopItem offer = offers[i];
-                if (offer == null) continue;
                 offers[i] = null;
+                if (!shop.canOffer(offer, pc)) continue;
                 int before = rows.length();
                 try {
                     L1Item template = offer.getItem();
-                    if (template == null) {
-                        System.err.println("[SHOP INVALID ITEM] npcId=" + npc.getNpcId() + " objectId=" + sellerId + " index=" + i
-                                + " itemId=" + offer.getItemId());
-                        continue;
-                    }
-                    int price = offer.getPrice();
-                    if (price < 0) {
-                        System.err.println("[SHOP INVALID PRICE] npcId=" + npc.getNpcId()
-                                + " itemId=" + offer.getItemId() + " price=" + price);
-                        continue;
-                    }
+                    int price = shop.checkoutPrice(offer, taxes);
+                    if (price < 0) continue;
                     L1ItemInstance display = displayItem(template, offer.getEnchant(), i, true);
                     int count = normal ? (price > 100_000_000 ? 1 : 99) : offer.getCount();
                     writeRow(rows, shown, count, price, display, false);
@@ -290,7 +283,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                 int price = shop.getAssessedPrice(offer);
                 if (price < 0) continue;
                 for (L1ItemInstance item : inventory.GetUnequippedItemListByClassID(offer.getItemId())) {
-                    if (item.isEquipped() || item.getCount() <= 0 || offer.getEnchant() != item.getEnchantLevel())
+                    if (!shop.canBuyBack(item) || offer.getEnchant() != item.getEnchantLevel())
                         continue;
                     int before = rows.length();
                     try {

@@ -33,6 +33,10 @@ import com.sun.net.httpserver.HttpServer;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1NpcShopInstance;
+import l1j.server.server.model.L1TaxCalculator;
+import l1j.server.server.model.shop.L1Shop;
+import l1j.server.server.model.shop.NpcShopManager;
+import l1j.server.server.templates.L1ShopItem;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -619,17 +623,33 @@ public final class AppCenterService {
             String seller=validText(npc.getName(),32);
             if(seller.isEmpty()) continue;
             int x=npc.getX(),y=npc.getY();
-            try {
-                appendListings(result,npc.getSellings(),seller,x,y,0);
-                appendListings(result,npc.getPurchasings(),seller,x,y,1);
-            } catch (IndexOutOfBoundsException | java.util.ConcurrentModificationException changed) {
-                // A racing shop refill will be captured on a later snapshot.
-            }
+            L1Shop shop = NpcShopManager.getInstance().getShop(npc.getNpcId());
+            if (shop == null) continue;
+            appendNpcListings(result, shop, seller, x, y, false);
+            appendNpcListings(result, shop, seller, x, y, true);
             if(result.size()>=MAX_SHOP_ROWS)break;
         }
         result.sort(Comparator.comparing((Market m)->m.name).thenComparingLong(m->m.low)
             .thenComparing(m->m.seller));
         return List.copyOf(result);
+    }
+
+    private static void appendNpcListings(List<Market> out, L1Shop shop, String seller,
+                                          int x, int y, boolean buyback) {
+        List<L1ShopItem> offers = buyback ? shop.getBuyingItems() : shop.getSellingItems();
+        L1TaxCalculator taxes = buyback ? null : new L1TaxCalculator(shop.getNpcId());
+        int limit = Math.min(offers.size(), 7);
+        for (int i = 0; i < limit && out.size() < MAX_SHOP_ROWS; i++) {
+            L1ShopItem offer = offers.get(i);
+            int count = offer.getCount();
+            if (offer.getItem() == null || count <= 0) continue;
+            int price = buyback ? shop.getAssessedPrice(offer) : shop.checkoutPrice(offer, taxes);
+            if (price <= 0) continue;
+            String name = validText(offer.getItem().getName(), 80);
+            if (name.isEmpty()) continue;
+            out.add(new Market(name, seller, offer.getEnchant(), buyback ? 1 : 0,
+                    offer.getItem().getGfxId(), price, count, x, y));
+        }
     }
 
     private static void appendPlayerListings(List<Market> out, List<DynamicShopItem> listings,

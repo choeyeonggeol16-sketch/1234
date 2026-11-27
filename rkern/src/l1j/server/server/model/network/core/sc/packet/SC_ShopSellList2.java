@@ -9,6 +9,7 @@ import l1j.server.server.Opcodes;
 import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1TaxCalculator;
 import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
@@ -40,9 +41,12 @@ public final class SC_ShopSellList2 {
         final L1ItemInstance dummy = limit == 0 ? null : new L1ItemInstance();
         int count = 0;
         long wire = 11;
+        final L1TaxCalculator taxes = new L1TaxCalculator(shop == null ? 0 : shop.getNpcId());
         for (int i = 0; i < limit; ++i) {
             final L1ShopItem shopItem = list.get(i);
-            if (shopItem == null || shopItem.getItem() == null) continue;
+            if (!shop.canOffer(shopItem, gm)) continue;
+            final int price = shop.checkoutPrice(shopItem, taxes);
+            if (price < 0) continue;
             final L1Item item = shopItem.getItem();
             int gfxId;
             try { gfxId = item.getGfxId(); } catch (Exception ignored) { gfxId = 0; }
@@ -64,7 +68,7 @@ public final class SC_ShopSellList2 {
             integers[j] = i;
             offers[i] = shopItem;
             integers[j + 1] = gfxId;
-            integers[j + 2] = shopItem.getPrice();
+            integers[j + 2] = price;
             integers[j + 3] = useType;
             names[count] = itemName;
             statuses[count++] = status;
