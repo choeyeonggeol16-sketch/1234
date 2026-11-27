@@ -117,33 +117,42 @@ public final class PlayerShopViewsFixture {
     }
     record ItemInfo(int id) {
         static Runnable beforePack;
-        static ItemInfo newInstance(L1ItemInstance item) {
+        static void writeItem(ProtoWriter w, L1ItemInstance item) {
             if (beforePack != null) beforePack.run();
-            return new ItemInfo(item.id);
+            w.current.item = new ItemInfo(item.id);
         }
     }
     static class CIOBufferPool {
         static final int HEADER_BYTES = 2, MAX_WIRE_BYTES = 65535;
     }
-    static class ProtoWriter {
-        int length;
-        static ProtoWriter tl() { return new ProtoWriter(); }
-        void msg(int field) { length += 3; }
-        ProtoWriter end() { return this; }
-        int length() { return length; }
-    }
     static class TradeItemInfo {
         static int bodySize = 20;
-        int index, price, count, buyCount;
+        int index, count, price, buyCount;
         ItemInfo item;
-        static TradeItemInfo newInstance() { return new TradeItemInfo(); }
-        TradeItemInfo set_index(int value) { index = value; return this; }
-        TradeItemInfo set_price(int value) { price = value; return this; }
-        TradeItemInfo set_count(int value) { count = value; return this; }
-        TradeItemInfo set_buy_count(int value) { buyCount = value; return this; }
-        TradeItemInfo set_trade_info(int value) { return this; }
-        TradeItemInfo set_item_info(ItemInfo value) { item = value; return this; }
-        void body(ProtoWriter writer) { writer.length += bodySize; }
+    }
+    static class ProtoWriter implements AutoCloseable {
+        int length, depth;
+        TradeItemInfo current;
+        final List<TradeItemInfo> rows = new ArrayList<>();
+        static ProtoWriter borrow() { return new ProtoWriter(); }
+        ProtoWriter msg(int field) {
+            if (depth++ == 0) current = new TradeItemInfo();
+            return this;
+        }
+        ProtoWriter int32(int field, int value) {
+            if (field == 1) current.index = value;
+            if (field == 2) current.count = value;
+            if (field == 3) current.price = value;
+            if (field == 6) current.buyCount = value;
+            return this;
+        }
+        ProtoWriter end() {
+            if (--depth == 0) { rows.add(current); length += TradeItemInfo.bodySize + 3; }
+            return this;
+        }
+        int length() { return length; }
+        void rewindBody(int before) { rows.removeLast(); length = before; }
+        public void close() {}
     }
     enum ePersonalShopType { TRADE_BUY, TRADE_SELL }
     static class Writer {
@@ -151,15 +160,14 @@ public final class PlayerShopViewsFixture {
         static CUserSocket sentTo;
         static List<TradeItemInfo> last;
         static Runnable afterSend;
-        static boolean sendFields(CUserSocket client, long mask, ePersonalShopType type, int shopId, int size,
-                List<TradeItemInfo> items, int wireCapacity) {
+        static boolean sendRows(CUserSocket client, ePersonalShopType type, int shopId, int size, ProtoWriter encoded) {
+            List<TradeItemInfo> items = encoded.rows;
             check(Thread.holdsLock(client), "viewer must be held through SEND admission");
             final L1PcInstance shop = CWorld.WORLD.objects.get(shopId);
             final var listings = type == ePersonalShopType.TRADE_SELL ? shop.orders : shop.sales;
             check(listings == null || !Thread.holdsLock(listings), "must not send while holding merchant list monitor");
-            check(mask == 3L && size == items.size(), "wire header and rows disagree");
-            check(wireCapacity >= size * (TradeItemInfo.bodySize + 3) + PLAYER_SHOP_WIRE_OVERHEAD
-                    && wireCapacity <= CIOBufferPool.MAX_WIRE_BYTES, "frame capacity does not bound encoded rows");
+            check(size == items.size() && encoded.length() <= PLAYER_SHOP_ROW_BYTES,
+                    "wire header and row budget");
             sentTo = client;
             last = items;
             if (afterSend != null) afterSend.run();

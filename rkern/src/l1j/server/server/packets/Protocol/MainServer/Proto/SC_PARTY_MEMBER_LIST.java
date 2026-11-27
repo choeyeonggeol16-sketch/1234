@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -71,19 +71,32 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
 
         /** LIST(필드2) / CHANGE(필드4) 공용 직렬화 */
         public void body(ProtoWriter w) {
-            w.string(1, name)
-             .uint32(2, accountId)
-             .uint32(3, objectId)
-             .int32(4, gameClass)
-             .int32(5, gender)
-             .int32(6, hpRatio)
-             .int32(7, mpRatio)
-             .int32(8, world)
-             .int32(9, location)
-             .int64(10, partyMark)
-             .uint64(11, aliveTimeStamp)
-             .uint32(12, serverNo);
+            writeMember(w, name, accountId, objectId, gameClass, gender, hpRatio, mpRatio,
+                    world, location, partyMark, aliveTimeStamp, serverNo);
         }
+    }
+
+    private static void writeMember(ProtoWriter w, String name, int accountId, int objectId,
+            int gameClass, int gender, int hpRatio, int mpRatio, int world, int location,
+            long partyMark, long aliveTimeStamp, int serverNo) {
+        w.string(1, name)
+         .uint32(2, accountId)
+         .uint32(3, objectId)
+         .int32(4, gameClass)
+         .int32(5, gender)
+         .int32(6, hpRatio)
+         .int32(7, mpRatio)
+         .int32(8, world)
+         .int32(9, location)
+         .int64(10, partyMark)
+         .uint64(11, aliveTimeStamp)
+         .uint32(12, serverNo);
+    }
+
+    static void writeMemberFrom(ProtoWriter w, L1PcInstance pc, int mark) {
+        writeMember(w, pc.getName(), 0, pc.getId(), pc.getClassNumber(), pc.get_sex(),
+                (int) pc.getCurrentHpPercent(), (int) pc.getCurrentMpPercent(), pc.getMapId(),
+                pc.getLongLocation(), mark, System.currentTimeMillis(), 0);
     }
 
     private final String _leaderName;
@@ -97,7 +110,7 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
 
     /** UI 정리용 빈 리스트 (leader_name="" — required 채워서 isInitialized 통과) */
     public static SC_PARTY_MEMBER_LIST empty() {
-        return new SC_PARTY_MEMBER_LIST("", new ArrayList<>());
+        return new SC_PARTY_MEMBER_LIST("", List.of());
     }
 
     @Override
@@ -107,23 +120,56 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
 
     @Override
     protected void body(ProtoWriter w) {
-        w.string(1, _leaderName);         
-        for (Member m : _members) {
-            w.msg(2);
-            m.body(w);
-            w.end();
-        }
+        writeFields(w, _leaderName, _members);
     }
 
 
     /** Direct serialization with primitive presence bits; no message instance. */
     public static void writeFields(ProtoWriter w, String _leaderName, List<Member> _members) {
         w.string(1, _leaderName);
-            for (Member m : _members) {
-                w.msg(2);
-                m.body(w);
-                w.end();
-            }
+        for (Member member : _members) {
+            w.msg(2);
+            member.body(w);
+            w.end();
+        }
+    }
+
+    private static void writeMembers(ProtoWriter writer, String leader, L1PcInstance[] members,
+            Map<Integer, Integer> marks, boolean connectedOnly) {
+        writer.string(1, leader);
+        for (L1PcInstance member : members) {
+            if (connectedOnly && (member == null || member.getNetConnection() == null)) continue;
+            writer.msg(2);
+            writeMemberFrom(writer, member, marks.getOrDefault(member.getId(), 0));
+            writer.end();
+        }
+    }
+
+    /** The initial list sent directly to a new member includes the entire roster. */
+    public static boolean sendMembers(L1PcInstance recipient, String leader, L1PcInstance[] members,
+            Map<Integer, Integer> marks) {
+        long capacity = 128L + nameBytes(leader);
+        for (L1PcInstance member : members) capacity += 256L + nameBytes(member.getName());
+        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_PARTY_MEMBER_LIST, Proto.capacityBound(capacity));
+        if (writer == null) return false;
+        try {
+            writeMembers(writer, leader, members, marks, false);
+            return Proto.commit(writer);
+        } finally {
+            Proto.abort(writer);
+        }
+    }
+
+    public static byte[] encodeConnectedMembers(String leader, L1PcInstance[] members,
+            Map<Integer, Integer> marks) {
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeMembers(writer, leader, members, marks, true);
+            return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST);
+        }
+    }
+
+    public static byte[] encodeEmpty() {
+        return encodeFields("", List.of());
     }
 
     public static boolean sendFields(L1PcInstance recipient, String _leaderName, List<Member> _members) {
@@ -142,9 +188,10 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
     }
 
     public static byte[] encodeFields(String _leaderName, List<Member> _members) {
-        final ProtoWriter writer = ProtoWriter.tl();
-        writeFields(writer, _leaderName, _members);
-        return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST);
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeFields(writer, _leaderName, _members);
+            return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST);
+        }
     }
 
     private static boolean sendCtor(CUserSocket protoRecipient, String leaderName, List<Member> members) {
@@ -158,7 +205,7 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
     }
 
     public static boolean sendEmpty(CUserSocket protoRecipient) {
-        return sendCtor(protoRecipient, "", new ArrayList<>());
+        return sendFields(protoRecipient, "", List.of());
     }
 
     public static boolean sendEmpty(L1PcInstance protoRecipient) {
@@ -170,11 +217,15 @@ public final class SC_PARTY_MEMBER_LIST extends ProtoPacket {
 
 
     private static int capacityFor(String leader, List<Member> members) {
-        long bytes = 128L + (leader == null ? 0L : 2L * leader.length());
+        long bytes = 128L + nameBytes(leader);
         if (members != null) for (int i = 0, n = members.size(); i < n; i++) {
             Member member = members.get(i);
-            bytes += 256L + (member.name == null ? 0L : 2L * member.name.length());
+            bytes += 256L + nameBytes(member.name);
         }
         return Proto.capacityBound(bytes);
+    }
+
+    private static long nameBytes(String name) {
+        return name == null ? 0L : 2L * name.length();
     }
 }

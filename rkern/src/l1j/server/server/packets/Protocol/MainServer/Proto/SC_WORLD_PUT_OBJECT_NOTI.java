@@ -16,6 +16,8 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.animation.EActionCodes;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.world.instance.shared.EffectTriggerInstance;
 import l1j.server.server.utils.GameUtils;
@@ -576,12 +578,16 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         public Companion set_pvp_dmg_ratio(int v){ _pvp_dmg_ratio = v; return this; }
 
         void writeTo(ProtoWriter w){
-            w.doubleV(1, _move_delay_reduce);		// fixed64
-            w.doubleV(2, _attack_delay_reduce);		// fixed64
-            w.uint32(3, _pvp_dmg_ratio);
+            writeCompanionFields(w, _move_delay_reduce, _attack_delay_reduce, _pvp_dmg_ratio);
         }
     }
 
+
+    private static void writeCompanionFields(ProtoWriter writer, double moveDelay, double attackDelay, int pvpRatio) {
+        writer.doubleV(1, moveDelay);
+        writer.doubleV(2, attackDelay);
+        writer.uint32(3, pvpRatio);
+    }
 
     /** Direct serialization with primitive presence bits; no message instance. */
     public static void writeFields(
@@ -593,6 +599,29 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
             int _weakelemental, int _manaratio, int _botindex, int _homeserverno, int _team_id, int _dialog_radius,
             int _speed_value_flag, int _second_speed_type, int _explosion_remain_time_ms, boolean _proclamation_siege_mark,
             int _npc_class_id, Companion _companion) {
+        writeObjectFields(w, _bit, _point, _objectnumber, _objectsprite, _action, _direction,
+                _lightRadius, _objectcount, _alignment, _desc, _title, _speeddata, _emotion, _drunken,
+                _isghost, _isparalyzed, _isuser, _isinvisible, _ispoisoned, _emblemid, _pledgename,
+                _mastername, _altitude, _hitratio, _safelevel, _shoptitle, _weaponsprite, _couplestate,
+                _boundarylevelindex, _weakelemental, _manaratio, _botindex, _homeserverno, _team_id,
+                _dialog_radius, _speed_value_flag, _second_speed_type, _explosion_remain_time_ms,
+                _proclamation_siege_mark, _npc_class_id);
+        if ((_bit & 549755813888L) != 0L) {
+            w.msg(40);
+            _companion.writeTo(w);
+            w.end();
+        }
+    }
+
+    private static void writeObjectFields(
+            ProtoWriter w, long _bit, int _point, int _objectnumber, int _objectsprite, int _action, int _direction,
+            int _lightRadius, int _objectcount, int _alignment, String _desc, String _title, int _speeddata, int _emotion,
+            int _drunken, boolean _isghost, boolean _isparalyzed, boolean _isuser, boolean _isinvisible,
+            boolean _ispoisoned, int _emblemid, String _pledgename, String _mastername, int _altitude, int _hitratio,
+            int _safelevel, String _shoptitle, int _weaponsprite, int _couplestate, int _boundarylevelindex,
+            int _weakelemental, int _manaratio, int _botindex, int _homeserverno, int _team_id, int _dialog_radius,
+            int _speed_value_flag, int _second_speed_type, int _explosion_remain_time_ms, boolean _proclamation_siege_mark,
+            int _npc_class_id) {
         if (((_bit & 1L) != 0L)) w.uint32(1, _point);
             if (((_bit & 2L) != 0L)) w.uint32(2, _objectnumber);
             if (((_bit & 4L) != 0L)) w.int32(3, _objectsprite);
@@ -632,11 +661,6 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
             if (((_bit & 68719476736L) != 0L)) w.uint32(37, _explosion_remain_time_ms);
             if (((_bit & 137438953472L) != 0L)) w.bool(38, _proclamation_siege_mark);
             if (((_bit & 274877906944L) != 0L)) w.int32(39, _npc_class_id);
-            if (((_bit & 549755813888L) != 0L)) {
-                w.msg(40);
-                _companion.writeTo(w);
-                w.end();
-            }
     }
 
     public static boolean sendFields(
@@ -666,7 +690,7 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
             int _weakelemental, int _manaratio, int _botindex, int _homeserverno, int _team_id, int _dialog_radius,
             int _speed_value_flag, int _second_speed_type, int _explosion_remain_time_ms, boolean _proclamation_siege_mark,
             int _npc_class_id, Companion _companion) {
-        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_WORLD_PUT_OBJECT_NOTI, Proto.capacityBound(1024L + (_desc == null ? 0L : 2L * _desc.length()) + (_title == null ? 0L : 2L * _title.length()) + (_pledgename == null ? 0L : 2L * _pledgename.length()) + (_mastername == null ? 0L : 2L * _mastername.length()) + (_shoptitle == null ? 0L : 2L * _shoptitle.length()) + 64L));
+        final ProtoWriter writer = Proto.begin(recipient, ProtoMsg.SC_WORLD_PUT_OBJECT_NOTI, worldObjectCapacity(_desc, _title, _pledgename, _mastername, _shoptitle));
         if (writer == null) return false;
         try {
             writeFields(
@@ -680,6 +704,15 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
         } finally {
             Proto.abort(writer);
         }
+    }
+
+    private static int worldObjectCapacity(String desc, String title, String pledge, String master, String shop) {
+        return Proto.capacityBound(1088L + stringCapacity(desc) + stringCapacity(title)
+                + stringCapacity(pledge) + stringCapacity(master) + stringCapacity(shop));
+    }
+
+    private static long stringCapacity(String text) {
+        return text == null ? 0 : 2L * text.length();
     }
 
     public static byte[] encodeFields(
@@ -1028,6 +1061,18 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
     }
 
     public static boolean sendNewInstance(CUserSocket protoRecipient, L1NpcInstance npc) {
+        return writeNpcForSend(protoRecipient, npc, null);
+    }
+
+    /** Freeze the current presentation once for all viewers of a rename. */
+    public static CAsyncSendConstBuffer openNpcBroadcast(L1NpcInstance npc) {
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeNpcForSend(null, npc, writer);
+            return CSharedBroadcast.openOwnedRaw(writer.finishWithTrailer(ProtoMsg.SC_WORLD_PUT_OBJECT_NOTI));
+        }
+    }
+
+    private static boolean writeNpcForSend(CUserSocket protoRecipient, L1NpcInstance npc, ProtoWriter supplied) {
         long notiWire_bit = 0;
                 int notiWire_point = 0;
                 int notiWire_objectnumber = 0;
@@ -1068,7 +1113,9 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                 int notiWire_explosion_remain_time_ms = 0;
                 boolean notiWire_proclamation_siege_mark = false;
                 int notiWire_npc_class_id = 0;
-                Companion notiWire_companion = null;
+                double companionMoveDelay = 0;
+                double companionAttackDelay = 0;
+                int companionPvpRatio = 0;
 
 
                 boolean is_companion = npc instanceof L1CompanionInstance;
@@ -1117,26 +1164,39 @@ public final class SC_WORLD_PUT_OBJECT_NOTI extends ProtoPacket {
                     { notiWire_bit |= 68719476736L; notiWire_explosion_remain_time_ms = ((int)npc.getExplosionTime()); }
                 if(is_companion){
                     { notiWire_bit |= 274877906944L; notiWire_npc_class_id = (companion_instance.get_class_info().get_class_id()); }
-                    Companion companion = new Companion();
-                    companion.set_attack_delay_reduce(companion_instance.get_attackdelay_reduce());
-                    companion.set_move_delay_reduce(companion_instance.get_movedelay_reduce());
-                    companion.set_pvp_dmg_ratio(companion_instance.get_pvp_dmg_ratio());
-                    { notiWire_bit |= 549755813888L; notiWire_companion = companion; }
+                    companionAttackDelay = companion_instance.get_attackdelay_reduce();
+                    companionMoveDelay = companion_instance.get_movedelay_reduce();
+                    companionPvpRatio = companion_instance.get_pvp_dmg_ratio();
                 } else if (npc instanceof L1MonsterInstance && npc.getNpcTemplate().get_npc_class_id() > 0) {
                     notiWire_bit |= 274877906944L;
                     notiWire_npc_class_id = npc.getNpcTemplate().get_npc_class_id();
                 }
-                return SC_WORLD_PUT_OBJECT_NOTI.sendFields(
-                        protoRecipient, notiWire_bit, notiWire_point, notiWire_objectnumber, notiWire_objectsprite,
-                        notiWire_action, notiWire_direction, notiWire_lightRadius, notiWire_objectcount, notiWire_alignment,
-                        notiWire_desc, notiWire_title, notiWire_speeddata, notiWire_emotion, notiWire_drunken,
-                        notiWire_isghost, notiWire_isparalyzed, notiWire_isuser, notiWire_isinvisible, notiWire_ispoisoned,
-                        notiWire_emblemid, notiWire_pledgename, notiWire_mastername, notiWire_altitude, notiWire_hitratio,
-                        notiWire_safelevel, notiWire_shoptitle, notiWire_weaponsprite, notiWire_couplestate,
-                        notiWire_boundarylevelindex, notiWire_weakelemental, notiWire_manaratio, notiWire_botindex,
-                        notiWire_homeserverno, notiWire_team_id, notiWire_dialog_radius, notiWire_speed_value_flag,
-                        notiWire_second_speed_type, notiWire_explosion_remain_time_ms, notiWire_proclamation_siege_mark,
-                        notiWire_npc_class_id, notiWire_companion);
+        final boolean ownsFrame = supplied == null;
+        final ProtoWriter writer = ownsFrame ? Proto.begin(protoRecipient, ProtoMsg.SC_WORLD_PUT_OBJECT_NOTI,
+                worldObjectCapacity(notiWire_desc, notiWire_title, notiWire_pledgename,
+                        notiWire_mastername, notiWire_shoptitle)) : supplied;
+        if (writer == null) return false;
+        try {
+            writeObjectFields(
+                    writer, notiWire_bit, notiWire_point, notiWire_objectnumber, notiWire_objectsprite,
+                    notiWire_action, notiWire_direction, notiWire_lightRadius, notiWire_objectcount, notiWire_alignment,
+                    notiWire_desc, notiWire_title, notiWire_speeddata, notiWire_emotion, notiWire_drunken,
+                    notiWire_isghost, notiWire_isparalyzed, notiWire_isuser, notiWire_isinvisible, notiWire_ispoisoned,
+                    notiWire_emblemid, notiWire_pledgename, notiWire_mastername, notiWire_altitude, notiWire_hitratio,
+                    notiWire_safelevel, notiWire_shoptitle, notiWire_weaponsprite, notiWire_couplestate,
+                    notiWire_boundarylevelindex, notiWire_weakelemental, notiWire_manaratio, notiWire_botindex,
+                    notiWire_homeserverno, notiWire_team_id, notiWire_dialog_radius, notiWire_speed_value_flag,
+                    notiWire_second_speed_type, notiWire_explosion_remain_time_ms, notiWire_proclamation_siege_mark,
+                    notiWire_npc_class_id);
+            if (is_companion) {
+                writer.msg(40);
+                writeCompanionFields(writer, companionMoveDelay, companionAttackDelay, companionPvpRatio);
+                writer.end();
+            }
+            return !ownsFrame || Proto.commit(writer);
+        } finally {
+            if (ownsFrame) Proto.abort(writer);
+        }
     }
 
     public static boolean sendNewInstance(L1PcInstance protoRecipient, L1NpcInstance npc) {

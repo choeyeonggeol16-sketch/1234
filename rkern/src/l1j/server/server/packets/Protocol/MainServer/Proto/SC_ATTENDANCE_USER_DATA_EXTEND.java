@@ -305,7 +305,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
     // ────────────── 갱신 (타이머) ──────────────
 
     private void handleUpdateTime(L1PcInstance pc, int second, boolean checkDayUpdate) throws IOException {
-        final byte[] frame;
+        final byte[] snapshot;
         synchronized (this) {
             if (pc.getAttendanceData() != this || _userFlag == null || _groups == null) return;
             final long day = checkDayUpdate ? atSecond(AttendanceLoadManager.attendanceDayMillis()) : attendanceDay;
@@ -325,12 +325,11 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
             }
             if (!changed) return;
 
-            final ProtoWriter writer = ProtoWriter.newInstance();
-            body(writer);
-            queueSnapshot(pc.getAccountName(), writer.bodyBytes());
-            frame = writer.finishWithTrailer(ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND);
+            snapshot = bodyBytes();
+            queueSnapshot(pc.getAccountName(), snapshot);
         }
-        Proto.sendRaw(pc, frame);
+        // CacheD and the outgoing frame observe the same immutable revision.
+        Proto.sendBody(pc, ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND, snapshot);
     }
 
     public void onUpdateDay(L1PcInstance pc, int second) throws IOException {
@@ -431,9 +430,10 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
 
     /** DB 저장용 body만 */
     public byte[] bodyBytes() {
-        ProtoWriter w = ProtoWriter.newInstance();
-        body(w);
-        return w.bodyBytes();
+        try (ProtoWriter w = ProtoWriter.borrow()) {
+            body(w);
+            return w.bodyBytes();
+        }
     }
 
     // ────────────── 역직렬화 (DB blob) ──────────────

@@ -44,9 +44,9 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     public static final int RP_ERROR_SAME_HASH_VAL = 3;
     public static final int RP_ERROR_INVALID_HASH_VAL = 4;
 
-    private static ArrayList<byte[]> _craftCaches;
-    private static byte[] _craftSameCache;
-    private static HashMap<Integer, byte[]> _npc2craftId;
+    private static volatile ArrayList<byte[]> _craftCaches;
+    private static final byte[] SAME_HASH_REPLY = makeErrorCache(RP_ERROR_SAME_HASH_VAL);
+    private static volatile HashMap<Integer, byte[]> _npc2craftId;
 
     private SC_CRAFT_LIST_ALL_ACK() {}
 
@@ -57,15 +57,13 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     public static void buildCaches() {
         final ArrayList<byte[]> caches = new ArrayList<>();
 
-        try {
+        try (ProtoWriter w = ProtoWriter.borrow()) {
             final ArrayList<Craft> crafts = new ArrayList<>(Craft.all().values());
-            ProtoWriter w = null;
             int inChunk = 0;
             int resultType = RP_CRAFT_LOAD_START;
 
             for (Craft c : crafts) {
-                if (w == null) {
-                    w = ProtoWriter.newInstance();
+                if (inChunk == 0) {
                     w.enumV(1, resultType);
                     resultType = RP_CRAFT_LOADING;
                 }
@@ -78,24 +76,20 @@ public final class SC_CRAFT_LIST_ALL_ACK {
                 // 개수 제한 + body size 이중 제한
                 if (w.length() >= SAFE_CHUNK_BYTES || inChunk >= Config.CRAFT_FLAGMENTATION_SIZE) {
                     caches.add(w.finishWithTrailer(ProtoMsg.SC_CRAFT_LIST_ALL_ACK));
-                    w = null;
+                    w.reset();
                     inChunk = 0;
                 }
             }
 
             // 마지막 데이터 chunk
-            if (w != null) {
+            if (inChunk != 0) {
                 caches.add(w.finishWithTrailer(ProtoMsg.SC_CRAFT_LIST_ALL_ACK));
-                w = null;
+                w.reset();
             }
 
             // LOAD_FINISH
-            w = ProtoWriter.newInstance();
             w.enumV(1, RP_CRAFT_LOAD_FINISH);
             caches.add(w.finishWithTrailer(ProtoMsg.SC_CRAFT_LIST_ALL_ACK));
-
-            // SAME_HASH
-            _craftSameCache = makeErrorCache(RP_ERROR_SAME_HASH_VAL);
 
             // startup 이후 읽기 전용
             _craftCaches = caches;
@@ -106,9 +100,10 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     }
 
     private static byte[] makeErrorCache(int resultCode) {
-        final ProtoWriter w = ProtoWriter.newInstance();
-        w.enumV(1, resultCode);
-        return w.finishWithTrailer(ProtoMsg.SC_CRAFT_LIST_ALL_ACK);
+        try (ProtoWriter w = ProtoWriter.borrow()) {
+            w.enumV(1, resultCode);
+            return w.finishWithTrailer(ProtoMsg.SC_CRAFT_LIST_ALL_ACK);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -120,8 +115,9 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             return;
         }
 
-        if (_craftCaches == null || _craftSameCache == null) {
-            l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, makeErrorCache(RP_ERROR_SAME_HASH_VAL));
+        final ArrayList<byte[]> caches = _craftCaches;
+        if (caches == null) {
+            Proto.sendRaw(pc, SAME_HASH_REPLY);
             return;
         }
 
@@ -149,25 +145,23 @@ public final class SC_CRAFT_LIST_ALL_ACK {
          * 기존 연타 제한 적용.
          */
         if (pc.getQuizTime() + 10 > curSecond) {
-            l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _craftSameCache);
+            Proto.sendRaw(pc, SAME_HASH_REPLY);
             return;
         }
 
         pc.setQuizTime(curSecond);
 
         if (HexHelper.compareArrays(Config.CRAFT_VERSION_HASH, hash_val, Config.CRAFT_VERSION_HASH.length)) {
-            l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _craftSameCache);
+            Proto.sendRaw(pc, SAME_HASH_REPLY);
             return;
         }
 
         if (Config.CRAFT_TRANSMIT_SAFELINE <= CWorld.getInstance().getAllPlayersSize()) {
             pc.sendPackets("현재 클라이언트의 제작 정보가 이전 버전임으로 모든 목록이 나오지 않을 수 있습니다.");
             pc.sendPackets("접속기에서 오류패치를 하신 후 다시 접속하면 모든 목록을 받아볼 수 있습니다.");
-            l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, _craftSameCache);
+            Proto.sendRaw(pc, SAME_HASH_REPLY);
             return;
         }
-
-        final ArrayList<byte[]> caches = _craftCaches;
 
         if (caches.isEmpty()) {
             return;
@@ -317,29 +311,29 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     // ------------------------------------------------------------------
 
     private static byte[] buildNpcAckBytes(String craftListCsv, ArrangeParsee<Integer> parsee) {
-        final ProtoWriter w = ProtoWriter.newInstance();
+        try (ProtoWriter w = ProtoWriter.borrow()) {
+            w.enumV(1, 0);
+            w.int32(3, 0);
+            w.enumV(4, 0);
 
-        w.enumV(1, 0);
-        w.int32(3, 0);
-        w.enumV(4, 0);
+            try {
+                final Integer[] ids = (Integer[]) ArrangeParser.parsing(craftListCsv, ",", parsee).result();
 
-        try {
-            final Integer[] ids = (Integer[]) ArrangeParser.parsing(craftListCsv, ",", parsee).result();
+                for (Integer id : ids) {
+                    if (id == null) continue;
 
-            for (Integer id : ids) {
-                if (id == null) continue;
-
-                w.msg(2);
-                w.int32(1, id);
-                w.int32(2, 0);
-                w.int32(3, 0);
-                w.end();
+                    w.msg(2);
+                    w.int32(1, id);
+                    w.int32(2, 0);
+                    w.int32(3, 0);
+                    w.end();
+                }
+            } catch (Exception e) {
+                _log.log(Level.WARNING, "[SC_CRAFT_LIST_ALL_ACK] NPC craft id parsing failed", e);
             }
-        } catch (Exception e) {
-            _log.log(Level.WARNING, "[SC_CRAFT_LIST_ALL_ACK] NPC craft id parsing failed", e);
-        }
 
-        return w.finishWithTrailer(ProtoMsg.SC_CRAFT_ID_LIST_ACK);
+            return w.finishWithTrailer(ProtoMsg.SC_CRAFT_ID_LIST_ACK);
+        }
     }
 
     public static byte[] getCraftIdListFromNpcId(int npcId) {

@@ -981,8 +981,18 @@ public final class CSharedBroadcast {
     public static CAsyncSendConstBuffer openRaw(byte[] encoded) {
         if (encoded == null || encoded.length == 0
                 || encoded.length > CIOBufferPool.MAX_WIRE_BYTES - CIOBufferPool.HEADER_BYTES) return null;
-        final byte[] snapshot=encoded.clone(); // protobuf encoder owns input
-        final int wireLength = encoded.length + CIOBufferPool.HEADER_BYTES;
+        return fromRawSnapshot(encoded.clone());
+    }
+
+    /** Transfers an exclusively owned, finished payload. The caller must never mutate it again. */
+    public static CAsyncSendConstBuffer openOwnedRaw(byte[] encoded) {
+        if (encoded == null || encoded.length == 0
+                || encoded.length > CIOBufferPool.MAX_WIRE_BYTES - CIOBufferPool.HEADER_BYTES) return null;
+        return fromRawSnapshot(encoded);
+    }
+
+    private static CAsyncSendConstBuffer fromRawSnapshot(byte[] snapshot) {
+        final int wireLength = snapshot.length + CIOBufferPool.HEADER_BYTES;
         return new CAsyncSendConstBuffer(
                 b -> b.put(snapshot), Integer.MIN_VALUE, Integer.MAX_VALUE,
                 wireLength > CIOBufferPool.SMALL_SEND_BYTES ? wireLength : 0);
@@ -991,10 +1001,18 @@ public final class CSharedBroadcast {
     /** Array fanout without an iterable adapter, one frame for all members. */
     public static void sendRawArray(L1PcInstance[] recipients,byte[] encoded) {
         if(recipients==null || recipients.length==0)return;
-        try(var shared=openRaw(encoded)){
-            if(shared==null)return;
-            for(L1PcInstance pc:recipients)
-                sendRecipient(shared,pc);
+        sendRawArray(recipients, openRaw(encoded));
+    }
+
+    public static void sendOwnedRawArray(L1PcInstance[] recipients, byte[] encoded) {
+        if (recipients == null || recipients.length == 0) return;
+        sendRawArray(recipients, openOwnedRaw(encoded));
+    }
+
+    private static void sendRawArray(L1PcInstance[] recipients, CAsyncSendConstBuffer shared) {
+        if (shared == null) return;
+        try (shared) {
+            for (L1PcInstance pc : recipients) sendRecipient(shared, pc);
         }
     }
 

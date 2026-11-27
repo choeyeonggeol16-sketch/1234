@@ -52,9 +52,10 @@ public final class SC_PARTY_MEMBER_MARK_CHANGE_NOTI extends ProtoPacket {
     }
 
     public static byte[] encodeFields(int _memberId, int _mark) {
-        final ProtoWriter writer = ProtoWriter.tl();
-        writeFields(writer, _memberId, _mark);
-        return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_MARK_CHANGE_NOTI);
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeFields(writer, _memberId, _mark);
+            return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_MARK_CHANGE_NOTI);
+        }
     }
 
     private static boolean sendCtor(CUserSocket protoRecipient, int memberId, int mark) {

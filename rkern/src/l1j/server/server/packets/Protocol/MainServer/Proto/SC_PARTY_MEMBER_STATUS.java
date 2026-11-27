@@ -1,11 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_PARTY_MEMBER_STATUS (0x0339) — 단건 상태 갱신
@@ -42,20 +38,25 @@ public final class SC_PARTY_MEMBER_STATUS extends ProtoPacket {
 
     @Override
     protected void body(ProtoWriter w) {
-        w.string(1, _name)
-         .uint32(2, _objectId)
-         .int32(3, _hpRatio)
-         .int32(4, _mpRatio)
-         .int32(5, _status)
-         .int32(6, _world)
-         .int32(7, _location)
-         .int32(8, _mark);
+        writeFields(w, _name, _objectId, _hpRatio, _mpRatio, _status, _world, _location, _mark);
     }
 
 
     /** Direct serialization with primitive presence bits; no message instance. */
     public static void writeFields(ProtoWriter w, String _name, int _objectId, int _hpRatio, int _mpRatio, int _status, int _world, int _location, int _mark) {
         w.string(1, _name).uint32(2, _objectId).int32(3, _hpRatio).int32(4, _mpRatio).int32(5, _status).int32(6, _world).int32(7, _location).int32(8, _mark);
+    }
+
+    static void writeFrom(ProtoWriter w, L1PcInstance pc, int mark, boolean reverse) {
+        writeFields(w, pc.getName(), pc.getId(), (int) pc.getCurrentHpPercent(), (int) pc.getCurrentMpPercent(),
+                pc.isDead() ? 0 : 1, pc.getMapId(), reverse ? pc.getLongLocationReverse() : pc.getLongLocation(), mark);
+    }
+
+    public static byte[] encodeFrom(L1PcInstance pc, int mark, boolean reverse) {
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeFrom(writer, pc, mark, reverse);
+            return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_STATUS);
+        }
     }
 
     public static boolean sendFields(

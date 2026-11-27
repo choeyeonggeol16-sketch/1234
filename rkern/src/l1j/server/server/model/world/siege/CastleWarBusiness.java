@@ -37,8 +37,8 @@ public class CastleWarBusiness implements TimeListener{
     private static byte[] zoneBegin() {
         byte[] d = _zoneBegin;
         if (d == null) {
-            _zoneBegin = d = new SC_SIEGE_ZONE_UPDATE_NOT(
-                    SC_SIEGE_ZONE_UPDATE_NOT.SiegeZoneKind.BEGIN).encode();
+            _zoneBegin = d = SC_SIEGE_ZONE_UPDATE_NOT.encodeFields(
+                    SC_SIEGE_ZONE_UPDATE_NOT.SiegeZoneKind.BEGIN);
         }
         return d;
     }
@@ -46,16 +46,15 @@ public class CastleWarBusiness implements TimeListener{
     private static byte[] zoneEnd() {
         byte[] d = _zoneEnd;
         if (d == null) {
-            _zoneEnd = d = new SC_SIEGE_ZONE_UPDATE_NOT(
-                    SC_SIEGE_ZONE_UPDATE_NOT.SiegeZoneKind.END).encode();
+            _zoneEnd = d = SC_SIEGE_ZONE_UPDATE_NOT.encodeFields(
+                    SC_SIEGE_ZONE_UPDATE_NOT.SiegeZoneKind.END);
         }
         return d;
     }
     private static byte[] offInjury() {
         byte[] d = _offInjury;
         if (d == null) {
-            _offInjury = d = new SC_SIEGE_INJURY_TIME_NOIT(
-                    SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.ATTACK, 0, null).encode();
+            _offInjury = d = CastleWar.createInjury();
         }
         return d;
     }

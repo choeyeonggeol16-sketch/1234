@@ -394,12 +394,12 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
                     + clan.getClanId());
             return null;
         }
-        return new SC_SIEGE_INJURY_TIME_NOIT(kind, getSpareSeconds(), clanName).encode();
+        return SC_SIEGE_INJURY_TIME_NOIT.encodeFields(kind, getSpareSeconds(), clanName);
     }
 
     /** off 상태용 — kind=ATTACK, 0초, 혈맹명 없음*/
     public static byte[] createInjury() {
-        return new SC_SIEGE_INJURY_TIME_NOIT(SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.ATTACK, 0, null).encode();
+        return SC_SIEGE_INJURY_TIME_NOIT.encodeFields(SC_SIEGE_INJURY_TIME_NOIT.SiegeKind.ATTACK, 0, null);
     }
 
     public void onLordBuff(L1PcInstance pc) {

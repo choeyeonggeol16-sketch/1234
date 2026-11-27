@@ -73,8 +73,14 @@ public final class CS_CRAFT_ID_LIST_REQ {
 
     /** 에러 응답 — eResult만 세팅 */
     private static void sendError(L1PcInstance pc, int resultCode) {
-        ProtoWriter w = ProtoWriter.newInstance();
-        w.enumV(1, resultCode);
-        l1j.server.server.packets.Protocol.MainServer.Proto.Proto.sendRaw(pc, w.finishWithTrailer(ProtoMsg.SC_CRAFT_ID_LIST_ACK));
+        final ProtoWriter w = Proto.begin(pc, ProtoMsg.SC_CRAFT_ID_LIST_ACK,
+                8 + ProtoWriter.varintLenOf(resultCode));
+        if (w == null) return;
+        try {
+            w.enumV(1, resultCode);
+            Proto.commit(w);
+        } finally {
+            Proto.abort(w);
+        }
     }
 }

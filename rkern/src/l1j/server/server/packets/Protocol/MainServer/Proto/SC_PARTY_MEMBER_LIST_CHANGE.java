@@ -1,11 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_PARTY_MEMBER_LIST_CHANGE (0x0338)
@@ -41,14 +37,7 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
 
     @Override
     protected void body(ProtoWriter w) {
-        if (_leaderName != null)          w.string(1, _leaderName);
-        if (_outUser != null)             w.string(2, _outUser);
-        if (_gotoInterServerUser != null) w.string(3, _gotoInterServerUser);
-        if (_newUser != null) {
-            w.msg(4);
-            _newUser.body(w);
-            w.end();
-        }
+        writeFields(w, _leaderName, _outUser, _gotoInterServerUser, _newUser);
     }
 
 
@@ -84,9 +73,27 @@ public final class SC_PARTY_MEMBER_LIST_CHANGE extends ProtoPacket {
     }
 
     public static byte[] encodeFields(String _leaderName, String _outUser, String _gotoInterServerUser, SC_PARTY_MEMBER_LIST.Member _newUser) {
-        final ProtoWriter writer = ProtoWriter.tl();
-        writeFields(writer, _leaderName, _outUser, _gotoInterServerUser, _newUser);
-        return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST_CHANGE);
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeFields(writer, _leaderName, _outUser, _gotoInterServerUser, _newUser);
+            return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST_CHANGE);
+        }
+    }
+
+    public static byte[] encodeNewMember(L1PcInstance member, int mark) {
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writer.msg(4);
+            SC_PARTY_MEMBER_LIST.writeMemberFrom(writer, member, mark);
+            writer.end();
+            return writer.finishWithTrailer(ProtoMsg.SC_PARTY_MEMBER_LIST_CHANGE);
+        }
+    }
+
+    public static byte[] encodeOutUser(String name) {
+        return encodeFields(null, name, null, null);
+    }
+
+    public static byte[] encodeLeaderChange(String name) {
+        return encodeFields(name, null, null, null);
     }
 
     private static boolean sendCtor(

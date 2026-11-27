@@ -1,13 +1,10 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
-import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import java.util.List;
+import java.util.Map;
 
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoMsg;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.network.core.connection.CUserSocket;
 
 /**
  * SC_PARTY_SYNC_PERIODIC_INFO (0x033B) — 파티원 상태 주기 동기화
@@ -44,26 +41,30 @@ public final class SC_PARTY_SYNC_PERIODIC_INFO extends ProtoPacket {
 
     @Override
     protected void body(ProtoWriter w) {
-        for (MemberStatus m : _members) {
-            w.msg(1)
-             .string(1, m.name)
-             .uint32(2, m.objectId)
-             .int32(3, m.hpRatio)
-             .int32(4, m.mpRatio)
-             .int32(5, m.status)
-             .int32(6, m.world)
-             .int32(7, m.location)
-             .int32(8, m.mark)
-             .end();
-        }
+        writeFields(w, _members);
     }
 
 
     /** Direct serialization with primitive presence bits; no message instance. */
     public static void writeFields(ProtoWriter w, List<MemberStatus> _members) {
-        for (MemberStatus m : _members) {
-                w.msg(1).string(1, m.name).uint32(2, m.objectId).int32(3, m.hpRatio).int32(4, m.mpRatio).int32(5, m.status).int32(6, m.world).int32(7, m.location).int32(8, m.mark).end();
+        for (MemberStatus member : _members) {
+            w.msg(1);
+            SC_PARTY_MEMBER_STATUS.writeFields(w, member.name, member.objectId, member.hpRatio,
+                    member.mpRatio, member.status, member.world, member.location, member.mark);
+            w.end();
+        }
+    }
+
+    public static byte[] encodeConnectedMembers(L1PcInstance[] members, Map<Integer, Integer> marks) {
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            for (L1PcInstance member : members) {
+                if (member == null || member.getNetConnection() == null) continue;
+                writer.msg(1);
+                SC_PARTY_MEMBER_STATUS.writeFrom(writer, member, marks.getOrDefault(member.getId(), 0), false);
+                writer.end();
             }
+            return writer.finishWithTrailer(ProtoMsg.SC_PARTY_SYNC_PERIODIC_INFO);
+        }
     }
 
     public static boolean sendFields(L1PcInstance recipient, List<MemberStatus> _members) {

@@ -329,17 +329,19 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
         }, 800L);
     }
     
+    private static byte[] encodeDelayNotice(String message, int duration) {
+        return SC_NOTIFICATION_MESSAGE.encodeFields(SC_NOTIFICATION_MESSAGE.DisplayPosition.SCREEN_TOP.toInt(),
+                message, CombatLoadManager.COMBAT_DELAY_MESSAGE_RGB.get_bytes(), duration, 0, false);
+    }
+
     protected boolean validation_users(){
           Collection<L1PcInstance> col = visibleZonePlayers();
            if(col.size() < _team_size){
                String message = String.format("참가 인원이 부족하여 %s이(가) 종료되었습니다.", _combat_info.get_game_type().to_kr_desc());
                l1j.server.server.model.network.core.sc.packet.SC_SystemMessage.broadcast(message);
-               byte[] stream =
-                        SC_NOTIFICATION_MESSAGE.of(
-                               String.format("%s\r\n%d초 후 마을로 이동합니다.", message, CombatLoadManager.COMBAT_QUIT_DELAY_SECOND),
-                               CombatLoadManager.COMBAT_DELAY_MESSAGE_RGB, 
-                               CombatLoadManager.COMBAT_DELAY_MESSAGE_DURATION
-                               ).encode();
+               byte[] stream = encodeDelayNotice(
+                       String.format("%s\r\n%d초 후 마을로 이동합니다.", message, CombatLoadManager.COMBAT_QUIT_DELAY_SECOND),
+                       CombatLoadManager.COMBAT_DELAY_MESSAGE_DURATION);
                
                final var sharedNotice = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(stream);
                try {
@@ -355,9 +357,7 @@ public abstract class CombatObserver extends AbstractCopyMapObserver implements 
                return false;
            }
            
-           byte[] stream =
-                   SC_NOTIFICATION_MESSAGE.of(
-                           "팀 재조정 후 게임이 시작됩니다.", CombatLoadManager.COMBAT_DELAY_MESSAGE_RGB, 5).encode();
+           byte[] stream = encodeDelayNotice("팀 재조정 후 게임이 시작됩니다.", 5);
        
            int index = 0;
            int team_q_size = _team_q.size();

@@ -31,9 +31,10 @@ public abstract class ProtoPacket extends CServerPacket {
 
 	/** 캐시가 필요한 경우에만 byte[] 생성 */
 	public final byte[] encode() {
-		final ProtoWriter w = ProtoWriter.tl();
-		body(w);
-		return w.finishWithTrailer(msgId());
+		try (ProtoWriter w = ProtoWriter.borrow()) {
+			body(w);
+			return w.finishWithTrailer(msgId());
+		}
 	}
 
 }

@@ -69,6 +69,19 @@ public final class Proto {
         return (int) Math.max(7L, Math.min(65535L, bytes));
     }
 
+    /** The caller may retain the body for persistence. Copy it into the owned SEND frame once. */
+    public static boolean sendBody(L1PcInstance pc, int messageId, byte[] body) {
+        if (pc == null || body == null || body.length > 65535 - 7) return false;
+        final ProtoWriter writer = begin(pc, messageId, body.length + 7);
+        if (writer == null) return false;
+        try {
+            writer.writeBodyBytes(body);
+            return commit(writer);
+        } finally {
+            abort(writer);
+        }
+    }
+
     public static boolean sendRaw(L1PcInstance pc, byte[] encoded) {
         return pc != null && sendRaw(pc.getNetConnection(), encoded);
     }

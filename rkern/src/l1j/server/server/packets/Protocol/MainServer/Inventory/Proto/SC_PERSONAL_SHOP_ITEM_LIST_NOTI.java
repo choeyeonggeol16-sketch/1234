@@ -34,8 +34,7 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
     // Frame length, opcode/message ID, trailer, type, largest positive seller
     // ID, and row count through 255. Encryption does not grow this frame.
     private static final int PLAYER_SHOP_WIRE_OVERHEAD = CIOBufferPool.HEADER_BYTES + 3 + 2 + 2 + 6 + 3;
-    // Direct ProtoWriter reserves five bytes for each variable length before
-    // compacting it. A row, ItemInfo and its companion are at most three levels.
+    // Retain the established private-shop row cutoff so compact quotes do not change.
     private static final int PLAYER_SHOP_ROW_BYTES = CIOBufferPool.MAX_WIRE_BYTES - PLAYER_SHOP_WIRE_OVERHEAD - 12;
 
     private ePersonalShopType type;       // 1 enum
@@ -113,89 +112,74 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
                 || !PlayerShopTransactions.canReach(pc, shop)) return;
         final boolean purchase = type == ePersonalShopType.TRADE_SELL;
         final ArrayList<DynamicShopItem> listings = purchase ? shop.getPurchasings() : shop.getSellings();
-        final PlayerShopView view;
-        final List<TradeItemInfo> items;
-        final int wireCapacity;
-
-        if (listings == null) {
-            view = new PlayerShopView(pc, shop, purchase, 1);
-            items = List.of();
-            wireCapacity = PLAYER_SHOP_WIRE_OVERHEAD;
-        } else {
-            synchronized (listings) {
-                final int capacity = Math.min(PlayerShopView.MAX_ROWS, listings.size());
-                view = new PlayerShopView(pc, shop, purchase, capacity);
-                items = new ArrayList<>(capacity);
-                final long now = System.currentTimeMillis();
-                int remainingBytes = PLAYER_SHOP_ROW_BYTES;
-                if (purchase && capacity != 0) {
-                    final int[] classIds = new int[listings.size()];
-                    final boolean shopGm = shop.isGm();
-                    for (int i = 0; i < classIds.length; i++) {
-                        final DynamicShopItem listing = listings.get(i);
-                        if (listing != null && !NoTradable.blocksPlayerTransfer(shopGm, listing.itemId))
-                            classIds[i] = listing.itemId;
-                    }
-                    // Keep inventory order, then the merchant's listing order, even when
-                    // several of the customer's items match one buy order.
-                    for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassIDs(classIds)) {
+        try (ProtoWriter rows = ProtoWriter.borrow()) {
+            final PlayerShopView view;
+            if (listings == null) {
+                view = new PlayerShopView(pc, shop, purchase, 1);
+            } else {
+                synchronized (listings) {
+                    final int capacity = Math.min(PlayerShopView.MAX_ROWS, listings.size());
+                    view = new PlayerShopView(pc, shop, purchase, capacity);
+                    final long now = System.currentTimeMillis();
+                    if (purchase && capacity != 0) {
+                        final int[] classIds = new int[listings.size()];
+                        final boolean shopGm = shop.isGm();
                         for (int i = 0; i < classIds.length; i++) {
-                            if (classIds[i] != item.getItemId()) continue;
-                            remainingBytes = addPlayerShopRow(items, view, pc, listings.get(i), item,
-                                    true, now, remainingBytes);
-                            if (remainingBytes == 0 || view.size() == PlayerShopView.MAX_ROWS) break;
+                            final DynamicShopItem listing = listings.get(i);
+                            if (listing != null && !NoTradable.blocksPlayerTransfer(shopGm, listing.itemId))
+                                classIds[i] = listing.itemId;
                         }
-                        if (remainingBytes == 0 || view.size() == PlayerShopView.MAX_ROWS) break;
-                    }
-                } else {
-                    for (DynamicShopItem listing : listings) {
-                        if (listing == null) continue;
-                        final L1ItemInstance item = shop.getInventory().GetByServerID(listing.objId);
-                        remainingBytes = addPlayerShopRow(items, view, shop, listing, item,
-                                false, now, remainingBytes);
-                        if (remainingBytes == 0 || view.size() == PlayerShopView.MAX_ROWS) break;
+                        // Customer inventory order, then merchant listing order for each object.
+                        outer: for (L1ItemInstance item : pc.getInventory().GetUnequippedItemListByClassIDs(classIds)) {
+                            for (int i = 0; i < classIds.length; i++) {
+                                if (classIds[i] == item.getItemId() && !addPlayerShopRow(rows, view, pc,
+                                        listings.get(i), item, true, now)) break outer;
+                            }
+                        }
+                    } else {
+                        for (DynamicShopItem listing : listings) {
+                            if (listing == null) continue;
+                            L1ItemInstance item = shop.getInventory().GetByServerID(listing.objId);
+                            if (!addPlayerShopRow(rows, view, shop, listing, item, false, now)) break;
+                        }
                     }
                 }
-                wireCapacity = items.isEmpty() ? PLAYER_SHOP_WIRE_OVERHEAD
-                        : CIOBufferPool.MAX_WIRE_BYTES - remainingBytes;
             }
-        }
-        // Receipt replay takes session ownership before its listing monitor.
-        // Publish and send outside the listing monitor in the captured viewer session.
-        synchronized (client) {
-            if (pc.getSessionStamp() != viewerStamp || !view.currentFor(client, pc)
-                    || !view.matches(shop, purchase) || !PlayerShopTransactions.canReach(pc, shop)
-                    || listings != (purchase ? shop.getPurchasings() : shop.getSellings())) return;
-            if (sendFields(client, 3L, type, objectId, view.size(), items, wireCapacity)) {
-                if (view.size() != 0) client.publishPlayerShopView(pc, view);
-                else client.clearPlayerShopView(client.getPlayerShopView());
+            // Keep session SEND admission outside the listing monitor, as in receipt replay.
+            synchronized (client) {
+                if (pc.getSessionStamp() != viewerStamp || !view.currentFor(client, pc)
+                        || !view.matches(shop, purchase) || !PlayerShopTransactions.canReach(pc, shop)
+                        || listings != (purchase ? shop.getPurchasings() : shop.getSellings())) return;
+                if (sendRows(client, type, objectId, view.size(), rows)) {
+                    if (view.size() != 0) client.publishPlayerShopView(pc, view);
+                    else client.clearPlayerShopView(client.getPlayerShopView());
+                }
             }
         }
     }
 
-    private static int addPlayerShopRow(List<TradeItemInfo> items, PlayerShopView view, L1PcInstance seller,
-            DynamicShopItem listing, L1ItemInstance item, boolean purchase, long now, int remainingBytes) {
-        if (listing == null || item == null || listing.isPurchase != purchase || listing.price <= 0)
-            return remainingBytes;
+    private static boolean addPlayerShopRow(ProtoWriter rows, PlayerShopView view, L1PcInstance seller,
+            DynamicShopItem listing, L1ItemInstance item, boolean purchase, long now) {
+        if (listing == null || item == null || listing.isPurchase != purchase || listing.price <= 0) return true;
         final int count = Math.min(item.getCount(), listing.count);
-        if (!PlayerShopTransactions.canTransfer(seller, item, listing, count, now)) return remainingBytes;
-        final ItemInfo info = ItemInfo.newInstance(item);
-        if (info == null) return remainingBytes;
-        TradeItemInfo row = TradeItemInfo.newInstance().set_index(view.size()).set_price(listing.price)
-                .set_count(count).set_trade_info(0).set_item_info(info);
-        if (purchase) row.set_buy_count(count);
-        final int wireBytes = playerShopRowWireBytes(row);
-        if (wireBytes > remainingBytes) return 0;
-        items.add(row);
+        if (!PlayerShopTransactions.canTransfer(seller, item, listing, count, now)) return true;
+        final int before = rows.length();
+        writeRow(rows, view.size(), count, listing.price, item, purchase);
+        if (rows.length() > PLAYER_SHOP_ROW_BYTES) {
+            rows.rewindBody(before);
+            return false;
+        }
         view.add(listing.objId, purchase ? item.getId() : 0, listing.price, count);
-        return remainingBytes - wireBytes;
+        return rows.length() < PLAYER_SHOP_ROW_BYTES && view.size() < PlayerShopView.MAX_ROWS;
     }
 
-    private static int playerShopRowWireBytes(TradeItemInfo row) {
-        final ProtoWriter sizer = ProtoWriter.tl();
-        sizer.msg(4);
-        row.body(sizer);
-        return sizer.end().length();
+    private static void writeRow(ProtoWriter rows, int index, int count, int price, L1ItemInstance item,
+            boolean includeBuyCount) {
+        rows.msg(4).int32(1, index).int32(2, count).int32(3, price).msg(4);
+        ItemInfo.writeItem(rows, item);
+        rows.end().int32(5, 0);
+        if (includeBuyCount) rows.int32(6, count);
+        rows.end();
     }
 
     // ============================================================
@@ -218,122 +202,52 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
             return;
         }
 
-        final List<L1ShopItem> shopItems = new ArrayList<L1ShopItem>(source);
-        final L1ShopItem[] offers = new L1ShopItem[shopItems.size()];
-        final boolean isNormal = L1Shop.is_normal_shop(npc);
-
-        long notiWire_present = 0L;
-        ePersonalShopType notiWire_type = null;
-        int notiWire_sellerId = 0;
-        int notiWire_size = 0;
-        List<TradeItemInfo> notiWire_items = new ArrayList<TradeItemInfo>(128);
-
-
-        { notiWire_type = ePersonalShopType.TRADE_BUY; }
-        { { notiWire_sellerId = (npc.getId()); notiWire_present |= (1L << 0); } }
-
-        int realSize = 0;
-
-        for (int i = 0; i < shopItems.size(); i++) {
-            final L1ShopItem shopItem = shopItems.get(i);
-            if (shopItem == null) {
-                continue;
-            }
-
-            try {
-                final L1Item item = shopItem.getItem();
-                if (item == null) {
-                    System.err.println(
-                            "[SHOP INVALID ITEM]"
-                            + " npcId=" + npc.getNpcTemplate().get_npcId()
-                            + " objectId=" + npc.getId()
-                            + " index=" + i
-                            + " itemId=" + shopItem.getItemId());
-                    continue;
-                }
-
-                final int price = shopItem.getPrice();
-                if (price < 0) {
-                    System.err.println(
-                            "[SHOP INVALID PRICE]"
-                            + " npcId=" + npc.getNpcTemplate().get_npcId()
-                            + " itemId=" + shopItem.getItemId()
-                            + " price=" + price);
-                    continue;
-                }
-
-                final L1ItemInstance dummy = new L1ItemInstance();
-                dummy.setItem(item);
-                dummy.setEnchantLevel(shopItem.getEnchant());
-                dummy.setBless(item.getBless());
-                dummy.setId(i);
-                dummy.setIdentified(true);
-
-                final TradeItemInfo tInfo = TradeItemInfo.newInstance();
-                tInfo.set_index(realSize);
-                tInfo.set_price(price);
-
-                if (isNormal) {
-                    tInfo.set_count(price > 100000000 ? 1 : 99);
-                } else {
-                    tInfo.set_count(shopItem.getCount());
-                }
-
-                tInfo.set_trade_info(0);
-
-                final ItemInfo iInfo = ItemInfo.newInstance(dummy);
-                if (iInfo == null) {
-                    System.err.println(
-                            "[SHOP ITEMINFO NULL]"
-                            + " npcId=" + npc.getNpcTemplate().get_npcId()
-                            + " itemId=" + shopItem.getItemId());
-                    continue;
-                }
-
-                tInfo.set_item_info(iInfo);
-                {
-                TradeItemInfo proto921_arg0 = tInfo;
-
-                    if (proto921_arg0 != null) {
-                        notiWire_items.add(proto921_arg0);
+        // Holes retain their original catalog index. The compact display index is separate.
+        final L1ShopItem[] offers = source.toArray(L1ShopItem[]::new);
+        final boolean normal = L1Shop.is_normal_shop(npc);
+        final int sellerId = npc.getId();
+        try (ProtoWriter rows = ProtoWriter.borrow()) {
+            int shown = 0;
+            boolean oversized = false;
+            for (int i = 0; i < offers.length; i++) {
+                L1ShopItem offer = offers[i];
+                if (offer == null) continue;
+                offers[i] = null;
+                int before = rows.length();
+                try {
+                    L1Item template = offer.getItem();
+                    if (template == null) {
+                        System.err.println("[SHOP INVALID ITEM] npcId=" + npc.getNpcId() + " objectId=" + sellerId + " index=" + i
+                                + " itemId=" + offer.getItemId());
+                        continue;
                     }
+                    int price = offer.getPrice();
+                    if (price < 0) {
+                        System.err.println("[SHOP INVALID PRICE] npcId=" + npc.getNpcId()
+                                + " itemId=" + offer.getItemId() + " price=" + price);
+                        continue;
+                    }
+                    L1ItemInstance display = displayItem(template, offer.getEnchant(), i, true);
+                    int count = normal ? (price > 100_000_000 ? 1 : 99) : offer.getCount();
+                    writeRow(rows, shown, count, price, display, false);
+                    oversized |= rows.length() > CIOBufferPool.MAX_WIRE_BYTES;
+                    offers[i] = offer;
+                    shown++;
+                    if (oversized) rows.rewindBody(0);
+                } catch (RuntimeException failure) {
+                    rows.rewindBody(before);
+                    System.err.println("[SHOP BUY BUILD ERROR] npcId=" + npc.getNpcId() + " index=" + i);
+                    failure.printStackTrace();
                 }
-                offers[i] = shopItem;
-                realSize++;
-
-            } catch (Exception e) {
-                System.err.println(
-                        "[SHOP BUY BUILD ERROR]"
-                        + " npcId=" + npc.getNpcTemplate().get_npcId()
-                        + " objectId=" + npc.getId()
-                        + " index=" + i
-                        + " itemId=" + shopItem.getItemId());
-                e.printStackTrace();
             }
-        }
-
-        { { notiWire_size = realSize; notiWire_present |= (1L << 1); } }
-
-        if (realSize >= 200) {
-            System.out.println(
-                    "[SHOP LARGE LIST]"
-                    + " type=BUY"
-                    + " npcId=" + npc.getNpcTemplate().get_npcId()
-                    + " objectId=" + npc.getId()
-                    + " items=" + realSize);
-        }
-
-        try {
-            final NpcShopView view = NpcShopView.purchase(client, pc, npc, npc.getId(), shop, offers);
-            if (sendFields(client, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items))
+            logLargeList("BUY", npc, sellerId, shown);
+            if (oversized) return;
+            final NpcShopView view = NpcShopView.purchase(client, pc, npc, sellerId, shop, offers);
+            if (sendRows(client, ePersonalShopType.TRADE_BUY, sellerId, shown, rows))
                 client.publishNpcShopView(pc, view);
-        } catch (Exception e) {
-            System.err.println(
-                    "[SHOP BUY SEND ERROR]"
-                    + " npcId=" + npc.getNpcTemplate().get_npcId()
-                    + " objectId=" + npc.getId()
-                    + " items=" + realSize);
-            e.printStackTrace();
+        } catch (RuntimeException failure) {
+            System.err.println("[SHOP BUY SEND ERROR] npcId=" + npc.getNpcId() + " objectId=" + sellerId);
+            failure.printStackTrace();
         }
     }
 
@@ -355,130 +269,87 @@ public final class SC_PERSONAL_SHOP_ITEM_LIST_NOTI extends ProtoPacket {
             return;
         }
 
-        final List<L1ShopItem> shopItems = new ArrayList<L1ShopItem>(source);
-
         final CUserInventory inventory = pc.getInventory();
-        if (inventory.getSize() == 0) {
-            return;
-        }
-
-        long notiWire_present = 0L;
-        ePersonalShopType notiWire_type = null;
-        int notiWire_sellerId = 0;
-        int notiWire_size = 0;
-        List<TradeItemInfo> notiWire_items = new ArrayList<TradeItemInfo>(128);
-
-
-        { notiWire_type = ePersonalShopType.TRADE_SELL; }
-        { { notiWire_sellerId = (npc.getId()); notiWire_present |= (1L << 0); } }
-
+        if (inventory.getSize() == 0) return;
         final CUserSocket client = pc.getNetConnection();
         if (client == null) return;
+        final int sellerId = npc.getId();
+        final L1ShopItem[] offers = source.toArray(L1ShopItem[]::new);
         final TIntArrayList saleIds = new TIntArrayList();
-        int realSize = 0;
-
-        for (int i = 0; i < shopItems.size(); i++) {
-            final L1ShopItem shopItem = shopItems.get(i);
-            if (shopItem == null || NpcReissuedItemPolicy.isProtected(shopItem.getItemId())) {
-                continue;
-            }
-
-            final L1Item template = shopItem.getItem();
-            if (template == null) {
-                System.err.println(
-                        "[SHOP INVALID BUY ITEM]"
-                        + " npcId=" + npc.getNpcTemplate().get_npcId()
-                        + " objectId=" + npc.getId()
-                        + " index=" + i
-                        + " itemId=" + shopItem.getItemId());
-                continue;
-            }
-
-            final int price = shop.getAssessedPrice(shopItem);
-            if (price < 0) {
-                continue;
-            }
-
-            for (L1ItemInstance pcItem : inventory.GetUnequippedItemListByClassID(shopItem.getItemId())) {
-                if (pcItem.isEquipped() || pcItem.getCount() <= 0) {
+        try (ProtoWriter rows = ProtoWriter.borrow()) {
+            boolean oversized = false;
+            for (int i = 0; i < offers.length; i++) {
+                L1ShopItem offer = offers[i];
+                if (offer == null || NpcReissuedItemPolicy.isProtected(offer.getItemId())) continue;
+                L1Item template = offer.getItem();
+                if (template == null) {
+                    System.err.println("[SHOP INVALID BUY ITEM] npcId=" + npc.getNpcId() + " index=" + i
+                            + " itemId=" + offer.getItemId());
                     continue;
                 }
-
-                if (shopItem.getEnchant() != pcItem.getEnchantLevel()) {
-                    continue;
-                }
-
-                try {
-                    final L1ItemInstance dummy = new L1ItemInstance();
-                    dummy.setItem(template);
-                    dummy.setEnchantLevel(shopItem.getEnchant());
-                    dummy.setId(i);
-                    dummy.setIdentified(true);
-
-                    final TradeItemInfo tInfo = TradeItemInfo.newInstance();
-                    tInfo.set_index(realSize);
-                    tInfo.set_count(shopItem.getCount());
-                    tInfo.set_buy_count(shopItem.getCount());
-                    tInfo.set_price(price);
-                    tInfo.set_trade_info(0);
-
-                    final ItemInfo iInfo = ItemInfo.newInstance(dummy);
-                    if (iInfo == null) {
+                int price = shop.getAssessedPrice(offer);
+                if (price < 0) continue;
+                for (L1ItemInstance item : inventory.GetUnequippedItemListByClassID(offer.getItemId())) {
+                    if (item.isEquipped() || item.getCount() <= 0 || offer.getEnchant() != item.getEnchantLevel())
                         continue;
+                    int before = rows.length();
+                    try {
+                        L1ItemInstance display = displayItem(template, offer.getEnchant(), i, false);
+                        writeRow(rows, saleIds.size(), offer.getCount(), price, display, true);
+                        oversized |= rows.length() > CIOBufferPool.MAX_WIRE_BYTES;
+                        saleIds.add(item.getId());
+                        if (oversized) rows.rewindBody(0);
+                    } catch (RuntimeException failure) {
+                        rows.rewindBody(before);
+                        System.err.println("[SHOP SELL BUILD ERROR] npcId=" + npc.getNpcId() + " index=" + i
+                                + " itemObjectId=" + item.getId());
+                        failure.printStackTrace();
                     }
-
-                    tInfo.set_item_info(iInfo);
-                    {
-                    TradeItemInfo proto925_arg0 = tInfo;
-
-                        if (proto925_arg0 != null) {
-                            notiWire_items.add(proto925_arg0);
-                        }
-                    }
-                    saleIds.add(pcItem.getId());
-                    realSize++;
-
-                } catch (Exception e) {
-                    System.err.println(
-                            "[SHOP SELL BUILD ERROR]"
-                            + " npcId=" + npc.getNpcTemplate().get_npcId()
-                            + " objectId=" + npc.getId()
-                            + " shopIndex=" + i
-                            + " itemObjectId=" + pcItem.getId()
-                            + " itemId=" + shopItem.getItemId());
-                    e.printStackTrace();
                 }
             }
-        }
-
-        { { notiWire_size = realSize; notiWire_present |= (1L << 1); } }
-
-        if (realSize >= 200) {
-            System.out.println(
-                    "[SHOP LARGE LIST]"
-                    + " type=SELL"
-                    + " npcId=" + npc.getNpcTemplate().get_npcId()
-                    + " objectId=" + npc.getId()
-                    + " items=" + realSize);
-        }
-
-        try {
+            logLargeList("SELL", npc, sellerId, saleIds.size());
+            if (oversized) return;
             final NpcShopView view = NpcShopView.sale(client, pc, npc, shop, saleIds.toArray());
-            if (sendFields(client, notiWire_present, notiWire_type, notiWire_sellerId, notiWire_size, notiWire_items))
+            if (sendRows(client, ePersonalShopType.TRADE_SELL, sellerId, saleIds.size(), rows))
                 client.publishNpcShopView(pc, view);
-        } catch (Exception e) {
-            System.err.println(
-                    "[SHOP SELL SEND ERROR]"
-                    + " npcId=" + npc.getNpcTemplate().get_npcId()
-                    + " objectId=" + npc.getId()
-                    + " items=" + realSize);
-            e.printStackTrace();
+        } catch (RuntimeException failure) {
+            System.err.println("[SHOP SELL SEND ERROR] npcId=" + npc.getNpcId() + " objectId=" + sellerId);
+            failure.printStackTrace();
         }
     }
 
-    // ============================================================
-    // NPC 상점 공통 진입점
-    // ============================================================
+    private static void logLargeList(String direction, L1NpcInstance npc, int objectId, int count) {
+        if (count >= 200) {
+            System.out.println("[SHOP LARGE LIST] type=" + direction + " npcId=" + npc.getNpcId()
+                    + " objectId=" + objectId + " items=" + count);
+        }
+    }
+
+    private static L1ItemInstance displayItem(L1Item template, int enchant, int index, boolean useTemplateBless) {
+        L1ItemInstance item = new L1ItemInstance();
+        item.setItem(template);
+        item.setEnchantLevel(enchant);
+        if (useTemplateBless) item.setBless(template.getBless());
+        item.setId(index);
+        item.setIdentified(true);
+        return item;
+    }
+
+    private static boolean sendRows(CUserSocket client, ePersonalShopType type, int sellerId, int count,
+            ProtoWriter rows) {
+        int sellerBytes = sellerId < 0 ? 10 : ProtoWriter.varintLenOf(sellerId);
+        long capacity = CIOBufferPool.HEADER_BYTES + 3L + 2 + 2 + 1 + sellerBytes
+                + 1 + ProtoWriter.varintLenOf(count) + rows.length();
+        if (capacity > CIOBufferPool.MAX_WIRE_BYTES) return false;
+        ProtoWriter frame = Proto.begin(client, ProtoMsg.SC_PERSONAL_SHOP_ITEM_LIST_NOTI, (int) capacity);
+        if (frame == null) return false;
+        try {
+            frame.enumV(1, type.toInt()).int32(2, sellerId).int32(3, count).appendBody(rows);
+            return Proto.commit(frame);
+        } finally {
+            Proto.abort(frame);
+        }
+    }
 
     public static void do_send_for_npc(
             L1PcInstance pc,

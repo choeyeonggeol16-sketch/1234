@@ -118,35 +118,36 @@ public class BQSCharacterData {
 
     /** 도메인 → DB body 직렬화. storeCharacterBqs가 이걸 저장 (body-only, 구와 동일 포맷) */
     public byte[] save(){
-        ProtoWriter w = ProtoWriter.newInstance();
-        if(has_object_id())
-            w.uint32(1, _object_id);
-        if(has_progresses()){
-            for(BQSCharacterCriteriaProgress p : _progresses.values()){
-                w.msg(2);
-                p.saveBody(w);
-                w.end();
+        try (ProtoWriter w = ProtoWriter.borrow()) {
+            if(has_object_id())
+                w.uint32(1, _object_id);
+            if(has_progresses()){
+                for(BQSCharacterCriteriaProgress p : _progresses.values()){
+                    w.msg(2);
+                    p.saveBody(w);
+                    w.end();
+                }
             }
-        }
-        if(has_achievements()){
-            for(CompletedAchievement a : _achievements.values()){
-                w.msg(3);
-                w.uint32(1, a.get_achievement_id())
-                 .uint64(2, a.get_completed_time())
-                 .bool(3, a.get_get_reward());
-                w.end();
+            if(has_achievements()){
+                for(CompletedAchievement a : _achievements.values()){
+                    w.msg(3);
+                    w.uint32(1, a.get_achievement_id())
+                     .uint64(2, a.get_completed_time())
+                     .bool(3, a.get_get_reward());
+                    w.end();
+                }
             }
-        }
-        if(has_decks()){
-            for(MonsterBookV2Info.DeckT d : _decks){
-                w.msg(4);
-                d.saveBody(w);
-                w.end();
+            if(has_decks()){
+                for(MonsterBookV2Info.DeckT d : _decks){
+                    w.msg(4);
+                    d.saveBody(w);
+                    w.end();
+                }
             }
+            if(has_decks_version())
+                w.int64(5, _decks_version);
+            return w.bodyBytes();
         }
-        if(has_decks_version())
-            w.int64(5, _decks_version);
-        return w.bodyBytes();
     }
 
     // ─────────────────────────────────────────────

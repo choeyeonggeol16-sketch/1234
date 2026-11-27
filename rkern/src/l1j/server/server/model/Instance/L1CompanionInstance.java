@@ -39,6 +39,8 @@ import l1j.server.server.model.character.companion.instance.CompanionInstanceCac
 import l1j.server.server.model.character.companion.instance.CompanionUpdateFlag;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_HPMeter;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
@@ -737,18 +739,16 @@ public class L1CompanionInstance extends L1NpcInstance{
     public void do_name_change(String replace_name){
         setName(replace_name);
         update_name();
-        byte[] data = SC_WORLD_PUT_OBJECT_NOTI.newInstance(this).encode();
-
-        try (var sharedRemove = new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                     SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE);
-             var sharedPut = l1j.server.server.model.network.core.broadcast.CSharedBroadcast.openRaw(data)) {
+        CAsyncSendConstBuffer sharedPut = SC_WORLD_PUT_OBJECT_NOTI.openNpcBroadcast(this);
+        try (sharedPut;
+             var sharedRemove = new CAsyncSendConstBuffer(
+                     SC_RemoveObject.nativeWriter(getId()), Integer.MIN_VALUE, Integer.MAX_VALUE)) {
             for (L1PcInstance visible : CWorld.getInstance().getRecognizePlayer(this)) {
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedRemove, visible);
-                l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipientBestEffort(sharedPut, visible);
+                CSharedBroadcast.sendRecipientBestEffort(sharedRemove, visible);
+                CSharedBroadcast.sendRecipientBestEffort(sharedPut, visible);
             }
         } catch (RuntimeException noticeFailure) {
-            java.util.logging.Logger.getLogger(L1CompanionInstance.class.getName()).log(
-                    java.util.logging.Level.WARNING, "Companion rename visual notice failed", noticeFailure);
+            COMPANION_LOG.log(Level.WARNING, "Companion rename visual notice failed", noticeFailure);
         }
         if(m_master != null)
             SC_COMPANION_STATUS_NOTI.send(m_master, this, CompanionUpdateFlag.UPDATE_NAME);

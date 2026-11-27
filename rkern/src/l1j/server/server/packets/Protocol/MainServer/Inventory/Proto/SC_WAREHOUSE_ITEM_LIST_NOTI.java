@@ -178,69 +178,64 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
         if (pc == null || items == null || items.isEmpty()
                 || !client.IsPendingWarehouseView(pc, npc_object_id, kind, generation)) return null;
 
-        int idx = 0, sent = 0;
-        final int n = items.size();
-        final int totalSize = n;
-        int cntInChunk = 0, bytesInChunk = 0;
-        final int[] listedItemIds = new int[n];
-
-        byte[][] encodedChunk = new byte[WH_CHUNK_MAX_ITEMS][];
-
-        while (idx < n){
-            L1ItemInstance item = items.get(idx++);
-            if (item == null || item.getItem() == null) continue;
-
-            final byte[] encoded;
-            try{
-                encoded = ItemInfo.encodeWarehouseBody(item);
-            }catch(Throwable t){
-                try{
-                    System.out.println("[WH] ItemInfo build fail: pc=" + pc.getName()
-                            + " objId=" + item.getId() + " itemId=" + item.getItemId()
-                            + " name=" + item.getName());
-                }catch(Throwable ignore){}
-                continue;
-            }
-            final int addBytes = 1 + ProtoWriter.varintLenOf(encoded.length) + encoded.length;
-
-            if (addBytes >= WH_CHUNK_MAX_BYTES){
-                if (cntInChunk > 0){
-                    if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return null;
-                    sent += cntInChunk;
-
-                    cntInChunk = 0; bytesInChunk = 0;
+        final int totalSize = items.size();
+        final int[] listedItemIds = new int[totalSize];
+        int listed = 0;
+        int count = 0;
+        // Stage one complete row so a chunk boundary never rereads a mutable item.
+        try (ProtoWriter chunk = ProtoWriter.borrow(); ProtoWriter row = ProtoWriter.borrow()) {
+            for (L1ItemInstance item : items) {
+                if (item == null || item.getItem() == null) continue;
+                row.rewindBody(0);
+                final int objectId = item.getId();
+                try {
+                    row.msg(6);
+                    ItemInfo.writeWarehouseBody(row, item, objectId);
+                    row.end();
+                } catch (RuntimeException failure) {
+                    System.err.println("[WH] Item display failed: pc=" + pc.getName() + " objId=" + objectId);
+                    continue;
                 }
-                encodedChunk[0] = encoded;
-                listedItemIds[sent] = item.getId();
-                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, 1, addBytes, false)) return null;
-                sent += 1;
-                continue;
+
+                if (count > 0 && (count >= WH_CHUNK_MAX_ITEMS
+                        || (long) chunk.length() + row.length() >= WH_CHUNK_MAX_BYTES)) {
+                    if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind,
+                            generation, chunk, count, false)) return null;
+                    chunk.rewindBody(0);
+                    count = 0;
+                }
+                listedItemIds[listed++] = objectId;
+                if (row.length() >= WH_CHUNK_MAX_BYTES) {
+                    if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind,
+                            generation, row, 1, false)) return null;
+                } else {
+                    chunk.appendBody(row);
+                    count++;
+                }
             }
-
-            if (cntInChunk > 0 && (cntInChunk >= WH_CHUNK_MAX_ITEMS
-                    || (bytesInChunk + addBytes) >= WH_CHUNK_MAX_BYTES)){
-                if (!sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation, encodedChunk, cntInChunk, bytesInChunk, false)) return null;
-                sent += cntInChunk;
-
-                cntInChunk = 0; bytesInChunk = 0;
-            }
-
-            encodedChunk[cntInChunk] = encoded;
-            listedItemIds[sent + cntInChunk] = item.getId();
-            cntInChunk++;
-            bytesInChunk += addBytes;
+            if (listed == 0) return null;
+            // An oversized last row is followed by the protocol's empty final chunk.
+            return sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind,
+                    generation, chunk, count, true) ? listedItemIds : null;
         }
-
-        if (sent + cntInChunk == 0) return null;
-        return sendWarehouseViewChunk(client, pc, npc_object_id, price, totalSize, type, kind, generation,
-                encodedChunk, cntInChunk, bytesInChunk, true) ? listedItemIds : null;
     }
 
     private static boolean sendWarehouseViewChunk(CUserSocket client, L1PcInstance pc, int checker,
             int price, int totalSize, eWarehouseType type, int kind, int generation,
-            byte[][] bodies, int count, int bodyBytes, boolean last) {
-        return client.IsPendingWarehouseView(pc, checker, kind, generation)
-                && sendMeasuredChunk(client, checker, price, totalSize, type, bodies, count, 128L + bodyBytes, last);
+            ProtoWriter rows, int count, boolean last) {
+        if (!client.IsPendingWarehouseView(pc, checker, kind, generation)) return false;
+        ProtoWriter frame = Proto.begin(client, ProtoMsg.SC_WAREHOUSE_ITEM_LIST_NOTI, Proto.capacityBound(128L + rows.length()));
+        if (frame == null) return false;
+        try {
+            frame.int32(1, checker).int32(2, count);
+            if (type != null) frame.enumV(3, type.toInt());
+            frame.int32(4, price).int32(5, totalSize);
+            frame.appendBody(rows);
+            frame.bool(7, last);
+            return Proto.commit(frame);
+        } finally {
+            Proto.abort(frame);
+        }
     }
 
     public static boolean sendEncodedChunk(CUserSocket client, int checker, int price, int totalSize,
@@ -394,9 +389,10 @@ public final class SC_WAREHOUSE_ITEM_LIST_NOTI extends ProtoPacket {
 
         /** 전체 본문 선인코딩 — 청킹 측정/재사용용 */
         public byte[] encodeBody() {
-            ProtoWriter w = ProtoWriter.newInstance();
-            body(w);
-            return w.bodyBytes();
+            try (ProtoWriter w = ProtoWriter.borrow()) {
+                body(w);
+                return w.bodyBytes();
+            }
         }
     }
 

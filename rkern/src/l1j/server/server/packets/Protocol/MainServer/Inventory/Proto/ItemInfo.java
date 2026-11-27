@@ -232,9 +232,10 @@ public final class ItemInfo {
     
     /** 서브메시지 본문 선인코딩 (청크 전송/길이 산출용) */
     public byte[] encodeBody() {
-        ProtoWriter w = ProtoWriter.newInstance(); 
-        body(w);
-        return w.bodyBytes();
+        try (ProtoWriter w = ProtoWriter.borrow()) {
+            body(w);
+            return w.bodyBytes();
+        }
     }
 
     /** field1 태그 포함 전체 와이어 크기: tag(1) + lenVarint + body */
@@ -251,9 +252,10 @@ public final class ItemInfo {
     }
 
     public static byte[] encodeItemBody(L1ItemInstance item) {
-        ProtoWriter writer = ProtoWriter.tl();
-        writeItem(writer, item);
-        return writer.bodyBytes();
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeItem(writer, item);
+            return writer.bodyBytes();
+        }
     }
 
     public static boolean sendAddedItem(l1j.server.server.model.Instance.L1PcInstance recipient,
@@ -312,7 +314,7 @@ public final class ItemInfo {
         int itemWeight = item.getWeight();
         boolean identified = item.isIdentified();
         byte[] extra = null;
-        if (item.isIdentified()) {
+        if (includeExtra && identified) {
             extra = CItemAssembler.assembleInventoryStatus(item);
         }
         CompanionClassInfo companion = CompanionClassInfo.from_item_id(item.getItemId());
@@ -376,10 +378,15 @@ public final class ItemInfo {
 
     /** Warehouse keeps its existing field-19 omission and length-measured snapshot. */
     public static byte[] encodeWarehouseBody(L1ItemInstance item) {
-        ProtoWriter writer = ProtoWriter.tl();
-        writer.int32(1, item.getId()).msg(2);
+        try (ProtoWriter writer = ProtoWriter.borrow()) {
+            writeWarehouseBody(writer, item, item.getId());
+            return writer.bodyBytes();
+        }
+    }
+
+    static void writeWarehouseBody(ProtoWriter writer, L1ItemInstance item, int objectId) {
+        writer.int32(1, objectId).msg(2);
         writeOrSendItem(writer, null, item, false, 0, false);
         writer.end();
-        return writer.bodyBytes();
     }
 }

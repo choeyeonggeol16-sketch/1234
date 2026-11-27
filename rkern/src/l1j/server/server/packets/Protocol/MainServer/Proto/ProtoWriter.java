@@ -8,12 +8,17 @@ import l1j.server.server.model.network.buffer.Assemble;
 import l1j.server.server.model.network.core.connection.CIOBufferEx.CIOFrame;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 
-public final class ProtoWriter {
+public final class ProtoWriter implements AutoCloseable {
 
 	private static final Charset MS949 = Charset.forName("MS949");
 	private static final int INITIAL_CAPACITY = 256, INITIAL_PATCH_DEPTH = 8, MAX_RETAINED_CAPACITY = 256 * 1024;
 
 	private static final ThreadLocal<ProtoWriter> TL = ThreadLocal.withInitial(ProtoWriter::new);
+	private static final int RETAINED_SCRATCH_DEPTH = 2;
+    private static final ThreadLocal<ProtoWriter> SCRATCH = ThreadLocal.withInitial(ProtoWriter::new);
+    private ProtoWriter nestedScratch;
+    private Thread scratchOwner;
+
 	private static final ThreadLocal<ProtoWriter> DIRECT_TL = ThreadLocal.withInitial(ProtoWriter::new);
 
 	private byte[] _a;
@@ -41,9 +46,37 @@ public final class ProtoWriter {
 		return TL.get().reset();
 	}
 
+    /** Independently owned writer for callers whose work spans encoding scopes. */
 	public static ProtoWriter newInstance() {
 		return new ProtoWriter();
 	}
+
+    /**
+     * Exclusive array writer for a synchronous encode. Nested encoders cannot
+     * reset their caller. Only finished byte arrays may escape this scope.
+     */
+    public static ProtoWriter borrow() {
+        ProtoWriter writer = SCRATCH.get();
+        for (int depth = 1; writer.scratchOwner != null; depth++) {
+            if (depth >= RETAINED_SCRATCH_DEPTH) {
+                writer = new ProtoWriter();
+                break;
+            }
+            if (writer.nestedScratch == null) writer.nestedScratch = new ProtoWriter();
+            writer = writer.nestedScratch;
+        }
+        writer.scratchOwner = Thread.currentThread();
+        return writer;
+    }
+
+    @Override
+    public void close() {
+        if (scratchOwner != Thread.currentThread())
+            throw new IllegalStateException("Not this thread's borrowed ProtoWriter");
+        reset();
+        if (_patch.length > 256) _patch = new int[INITIAL_PATCH_DEPTH];
+        scratchOwner = null;
+    }
 
 	static ProtoWriter direct(Assemble out) {
 		if (out == null) throw new NullPointerException("out");
@@ -100,8 +133,8 @@ public final class ProtoWriter {
 		if (directMode()) return;
 
 		final int required = _p + n;
-		if (required <= _a.length) return;
 		if (required < 0) throw new OutOfMemoryError("ProtoWriter capacity overflow");
+		if (required <= _a.length) return;
 
 		int cap = _a.length;
 		while (cap < required) {
@@ -379,6 +412,27 @@ public final class ProtoWriter {
 		System.arraycopy(_a, 0, out, 3, _p);
 		return out;
 	}
+
+    void writeBodyBytes(byte[] body) {
+        writeArray(body, 0, body.length);
+    }
+
+    /** Copy a completed body, without a packet header or a temporary array. */
+    public void appendBody(ProtoWriter source) {
+        if (source == this) throw new IllegalArgumentException("Cannot append writer to itself");
+        source.requireArrayMode();
+        source.checkClosed();
+        writeArray(source._a, 0, source._p);
+    }
+
+    /** Discard a partial row back to a previously saved top-level body length. */
+    public void rewindBody(int length) {
+        requireArrayMode();
+        if (length < 0 || length > _p || (_patchN != 0 && length >= _patch[0]))
+            throw new IllegalArgumentException("Invalid top-level body checkpoint");
+        _p = length;
+        _patchN = 0;
+    }
 
 	public byte[] bodyBytes() {
 		requireArrayMode();

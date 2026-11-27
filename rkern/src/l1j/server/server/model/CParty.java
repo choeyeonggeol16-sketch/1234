@@ -1,6 +1,5 @@
 package l1j.server.server.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -71,53 +70,39 @@ public class CParty {
         return true;
     }
 
-    /** 특정 대상 목록에게 공유 바이트 전송 */
-    private static void sendRawTo(L1PcInstance[] targets, byte[] data) {
-        if(targets==null || targets.length==0 || data==null)return;
-        CSharedBroadcast.sendRawArray(targets,data);
-    }
-
     /** 파티 전원에게 공유 바이트 전송 */
     public void broadcastRaw(byte[] data) {
-        sendRawTo(getMembers(), data);
+        CSharedBroadcast.sendRawArray(getMembers(), data);
     }
 
-    /** exclude 제외한 멤버 배열 */
-    private L1PcInstance[] getMembersExcept(L1PcInstance exclude) {
-        ArrayList<L1PcInstance> out = new ArrayList<>();
-        for (L1PcInstance m : _membersList) {
-            if (m.getId() != exclude.getId()) out.add(m);
-        }
-        return out.toArray(new L1PcInstance[0]);
+    private void broadcastOwned(byte[] data) {
+        CSharedBroadcast.sendOwnedRawArray(getMembers(), data);
     }
 
     /**
      * 전체 LIST 전송 (쿨다운 적용, force=true면 무시)
      */
-    private void sendPartyListTo(L1PcInstance[] targets,L1PcInstance[] snapshot,boolean force) {
-        if(targets==null || targets.length==0)return;
-        ArrayList<SC_PARTY_MEMBER_LIST.Member> members=new ArrayList<>();
-        for(L1PcInstance m:snapshot){
-            if(!ok(m))continue;
-            members.add(SC_PARTY_MEMBER_LIST.Member.from(m,
-                    _membersMark.getOrDefault(m.getId(),0)));
-        }
+    private void sendPartyListTo(L1PcInstance[] targets, L1PcInstance[] snapshot, boolean force) {
+        if (targets == null || targets.length == 0) return;
         final L1PcInstance leader = getLeader();
-        byte[] data = new SC_PARTY_MEMBER_LIST(leader != null ? leader.getName() : "", members).encode();
-        try(var shared=CSharedBroadcast.openRaw(data)){
-            for(L1PcInstance t:targets){
-                if(!ok(t))continue;
-                if(!force && !canSendFullListNow(t.getId()))continue;
-                CSharedBroadcast.sendRecipient(shared,t);
+        final byte[] data = SC_PARTY_MEMBER_LIST.encodeConnectedMembers(
+                leader != null ? leader.getName() : "", snapshot, _membersMark);
+        try (var shared = CSharedBroadcast.openOwnedRaw(data)) {
+            for (L1PcInstance target : targets) {
+                if (!ok(target)) continue;
+                if (!force && !canSendFullListNow(target.getId())) continue;
+                CSharedBroadcast.sendRecipient(shared, target);
             }
         }
     }
 
     /** 탈퇴자/해산자 UI 완전 정리 — out_user + 빈 LIST (피바/HP바 잔존 방지) */
-    private void clearPartyUIForLeaver(L1PcInstance leaver) {
+    private void clearPartyUIForLeaver(L1PcInstance leaver, CAsyncSendConstBuffer outUser) {
         if (!ok(leaver)) return;
-        sendRawTo(new L1PcInstance[]{ leaver }, SC_PARTY_MEMBER_LIST_CHANGE.ofOutUser(leaver.getName()).encode());
-        sendRawTo(new L1PcInstance[]{ leaver }, SC_PARTY_MEMBER_LIST.empty().encode());
+        CSharedBroadcast.sendRecipient(outUser, leaver);
+        try (var empty = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST.encodeEmpty())) {
+            CSharedBroadcast.sendRecipient(empty, leaver);
+        }
     }
 
     // ─────────────────────────────────────────────
@@ -155,15 +140,10 @@ public class CParty {
         int beforeSize = _membersList.size() - 1;
         L1PcInstance[] after = getMembers();
 
-        ArrayList<SC_PARTY_MEMBER_LIST.Member> list = new ArrayList<>();
-        for (L1PcInstance m : after) {
-            list.add(SC_PARTY_MEMBER_LIST.Member.from(m, _membersMark.getOrDefault(m.getId(), 0)));
-        }
-
         final L1PcInstance currentLeader = getLeader();
         if (beforeSize > 0 && currentLeader != null) {
             // 신규 멤버: 전체 LIST (여기서 멘트 1번)
-            SC_PARTY_MEMBER_LIST.sendFields(pc, currentLeader.getName(), list);
+            SC_PARTY_MEMBER_LIST.sendMembers(pc, currentLeader.getName(), after, _membersMark);
         }
         if (beforeSize == 1 && after.length == 2) {
             // 2인 파티 성립: 기존 멤버에게도 LIST (CHANGE 아님)
@@ -173,9 +153,12 @@ public class CParty {
         }
         if (after.length > 1) {
             // 3인 이상 확장: 기존 멤버들에게만 new_user 알림
-            sendRawTo(getMembersExcept(pc),
-                    SC_PARTY_MEMBER_LIST_CHANGE
-                            .ofNewMember(SC_PARTY_MEMBER_LIST.Member.from(pc, 0)).encode());
+            final L1PcInstance[] recipients = getMembers();
+            try (var shared = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeNewMember(pc, 0))) {
+                for (L1PcInstance member : recipients) {
+                    if (member.getId() != pc.getId()) CSharedBroadcast.sendRecipient(shared, member);
+                }
+            }
         }
     }
 
@@ -194,15 +177,14 @@ public class CParty {
         final L1PcInstance newLeader = wasLeader && rest.length != 0 ? rest[0] : null;
         if (wasLeader) setLeader(newLeader);
 
-        // 잔여 멤버: out_user 알림
-        sendRawTo(rest,
-                SC_PARTY_MEMBER_LIST_CHANGE.ofOutUser(pc.getName()).encode());
-        // 탈퇴자 본인: out_user + 빈 LIST → UI/HP바 완전 제거
-        clearPartyUIForLeaver(pc);
+        try (var outUser = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeOutUser(pc.getName()))) {
+            // 잔여 멤버와 탈퇴자에게 같은 out_user 전송, 탈퇴자는 빈 LIST 추가.
+            for (L1PcInstance member : rest) CSharedBroadcast.sendRecipient(outUser, member);
+            clearPartyUIForLeaver(pc, outUser);
+        }
 
         if (newLeader != null) {
-            sendRawTo(rest,
-                    SC_PARTY_MEMBER_LIST_CHANGE.ofLeaderChange(newLeader.getName()).encode());
+            CSharedBroadcast.sendOwnedRawArray(rest, SC_PARTY_MEMBER_LIST_CHANGE.encodeLeaderChange(newLeader.getName()));
         }
 
         if (wasLeader && pc.isCrown()) {
@@ -283,20 +265,9 @@ public class CParty {
     }
 
     public void refreshPartyList() {
-        ArrayList<SC_PARTY_SYNC_PERIODIC_INFO.MemberStatus> list = new ArrayList<>();
-        for (L1PcInstance member : getMembers()) {
-            if (!ok(member)) continue;
-            list.add(new SC_PARTY_SYNC_PERIODIC_INFO.MemberStatus(
-                    member.getName(),
-                    member.getId(),
-                    (int) member.getCurrentHpPercent(),
-                    (int) member.getCurrentMpPercent(),
-                    member.isDead() ? 0 : 1,
-                    member.getMapId(),
-                    member.getLongLocation(),
-                    _membersMark.getOrDefault(member.getId(), 0)));
-        }
-        broadcastRaw(new SC_PARTY_SYNC_PERIODIC_INFO(list).encode());
+        final L1PcInstance[] members = getMembers();
+        if (members.length == 0) return;
+        CSharedBroadcast.sendOwnedRawArray(members, SC_PARTY_SYNC_PERIODIC_INFO.encodeConnectedMembers(members, _membersMark));
     }
 
     public void handshakePartyMemberStatus(L1PcInstance pc1, L1PcInstance pc2) {
@@ -307,10 +278,7 @@ public class CParty {
 
     public void refreshPartyMemberStatus(L1PcInstance pc) {
         if (!ok(pc)) return;
-        byte[] data = SC_PARTY_MEMBER_STATUS
-                .from(pc, _membersMark.getOrDefault(pc.getId(), 0), true)
-                .encode();
-        broadcastRaw(data);
+        broadcastOwned(SC_PARTY_MEMBER_STATUS.encodeFrom(pc, _membersMark.getOrDefault(pc.getId(), 0), true));
     }
 
     protected void breakup() {
@@ -327,9 +295,12 @@ public class CParty {
                 SC_ServerMessage.nativeWriter(418),Integer.MIN_VALUE,Integer.MAX_VALUE)){
             for(L1PcInstance m:members){
                 if (m == null || m.getParty() != null) continue;
-                try { clearPartyUIForLeaver(m); }
-                catch (RuntimeException failure) {
-                    _log.log(Level.WARNING, "Could not clear party UI for " + m.getId(), failure);
+                if (ok(m)) {
+                    try (var outUser = CSharedBroadcast.openOwnedRaw(SC_PARTY_MEMBER_LIST_CHANGE.encodeOutUser(m.getName()))) {
+                        clearPartyUIForLeaver(m, outUser);
+                    } catch (RuntimeException failure) {
+                        _log.log(Level.WARNING, "Could not clear party UI for " + m.getId(), failure);
+                    }
                 }
                 if (ok(m)) CSharedBroadcast.sendRecipientBestEffort(shared, m);
             }
@@ -339,7 +310,7 @@ public class CParty {
     public void passLeader(L1PcInstance pc) { // 리더위임
         if (pc == null || !_membersList.contains(pc)) return;
         setLeader(pc);
-        broadcastRaw(SC_PARTY_MEMBER_LIST_CHANGE.ofLeaderChange(pc.getName()).encode());
+        broadcastOwned(SC_PARTY_MEMBER_LIST_CHANGE.encodeLeaderChange(pc.getName()));
         refreshPartyList();
     }
 
@@ -527,7 +498,7 @@ public class CParty {
     public void setPartyMark(L1PcInstance target, int markId) {
         if (target == null) return;
         _membersMark.put(target.getId(), markId);
-        broadcastRaw(new SC_PARTY_MEMBER_MARK_CHANGE_NOTI(target.getId(), markId).encode());
+        broadcastOwned(SC_PARTY_MEMBER_MARK_CHANGE_NOTI.encodeFields(target.getId(), markId));
         refreshPartyMemberStatus(target);
     }
 }
