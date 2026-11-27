@@ -1,0 +1,177 @@
+name: Selector Skip7 Windows validation
+
+on:
+  push:
+    branches:
+      - rkern/selector-skip7-windows-validation-20261127
+    paths:
+      - .github/workflows/selector-skip7-validation.yml
+      - rkern/src/l1j/server/server/model/network/core/transport/selector/CSelectorTransport.java
+      - rkern/tests/network/SelectorBackpressureRegression.java
+      - rkern/tests/network/SelectorPollSkipRegression.java
+      - rkern/tests/network/selector_poll/**
+      - rkern/docs/jproring_cio_integration_20261120/*.java
+      - rkern/docs/jproring_selector_transport_20261120/*.java
+
+permissions:
+  contents: read
+
+jobs:
+  wepoll:
+    runs-on: windows-2025
+    timeout-minutes: 45
+    env:
+      BASELINE_SHA: b29bf3b34e4682c55ee2ede5e32d076d80be5201
+      SELECTOR_SOURCE: rkern/src/l1j/server/server/model/network/core/transport/selector/CSelectorTransport.java
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 16
+          sparse-checkout: |
+            rkern/src
+            rkern/tests/network
+            rkern/docs/jproring_selector_transport_20261120
+            rkern/docs/jproring_cio_integration_20261120
+      - name: Verify Windows JDK 21 provider
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $java = Join-Path $env:JAVA_HOME_21_X64 'bin/java.exe'
+          $results = Join-Path $env:RUNNER_TEMP 'skip7-windows-results'
+          New-Item -ItemType Directory -Path $results | Out-Null
+          $probe = Join-Path $env:RUNNER_TEMP 'SelectorPlatform.java'
+          @'
+          import java.nio.channels.Selector;
+          class SelectorPlatform {
+              public static void main(String[] args) throws Exception {
+                  try (Selector selector = Selector.open()) {
+                      String os = System.getProperty("os.name");
+                      String java = System.getProperty("java.specification.version");
+                      String provider = selector.getClass().getName();
+                      System.out.printf("OS=%s Java=%s Selector=%s%n", os, java, provider);
+                      if (!os.startsWith("Windows") || !java.equals("21")
+                              || !provider.equals("sun.nio.ch.WEPollSelectorImpl"))
+                          throw new AssertionError("Expected Windows Java 21 WEPoll");
+                  }
+              }
+          }
+          '@ | Set-Content -Path $probe -Encoding utf8NoBOM
+          & $java $probe | Tee-Object -FilePath (Join-Path $results 'platform.txt')
+          netsh interface ipv4 show dynamicport tcp | Set-Content -Path (Join-Path $results 'tcp-port-range.txt')
+          "SKIP7_JAVA=$java" >> $env:GITHUB_ENV
+          "SKIP7_RESULTS=$results" >> $env:GITHUB_ENV
+
+      - name: Compile candidate, baseline Selector overlay and shared tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          git merge-base --is-ancestor $env:BASELINE_SHA HEAD
+          $changed = @(git diff --name-only $env:BASELINE_SHA HEAD -- rkern/src)
+          if ($changed.Count -ne 1 -or $changed[0] -ne $env:SELECTOR_SOURCE) {
+              throw "Unexpected production changes against baseline: $($changed -join ', ')"
+          }
+          $javac = Join-Path $env:JAVA_HOME_21_X64 'bin/javac.exe'
+          $classes = Join-Path $env:RUNNER_TEMP 'skip7-candidate'
+          $baseline = Join-Path $env:RUNNER_TEMP 'skip7-baseline'
+          $fixtures = Join-Path $env:RUNNER_TEMP 'skip7-fixtures'
+          $deps = Join-Path $env:RUNNER_TEMP 'skip7-deps'
+          New-Item -ItemType Directory -Path $classes,$baseline,$fixtures,$deps | Out-Null
+          $coordinates = @(
+            'com/zaxxer/HikariCP/5.1.0/HikariCP-5.1.0.jar'
+            'org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar'
+            'org/jctools/jctools-core/4.0.5/jctools-core-4.0.5.jar'
+            'javolution/javolution/5.5.1/javolution-5.5.1.jar'
+            'net/sf/trove4j/trove4j/3.0.3/trove4j-3.0.3.jar'
+            'org/agrona/agrona/1.23.1/agrona-1.23.1.jar'
+            'it/unimi/dsi/fastutil/8.5.15/fastutil-8.5.15.jar'
+            'javax/xml/bind/jaxb-api/2.3.1/jaxb-api-2.3.1.jar'
+            'javax/activation/javax.activation-api/1.2.0/javax.activation-api-1.2.0.jar'
+            'com/github/ben-manes/caffeine/caffeine/3.1.8/caffeine-3.1.8.jar'
+          )
+          foreach ($coordinate in $coordinates) {
+              $jar = Join-Path $deps ($coordinate.Split('/')[-1])
+              Invoke-WebRequest -Uri "https://repo.maven.apache.org/maven2/$coordinate" -OutFile $jar
+          }
+          $dependencyClasspath = (Get-ChildItem $deps -Filter '*.jar' | ForEach-Object FullName) -join ';'
+          $productionArgumentFile = Join-Path $env:RUNNER_TEMP 'skip7-sources.txt'
+          Get-ChildItem rkern/src -Recurse -Filter '*.java' |
+              ForEach-Object { '"' + $_.FullName.Replace('\', '/') + '"' } |
+              Set-Content -Path $productionArgumentFile -Encoding utf8NoBOM
+          & $javac -J-Xmx2g --enable-preview --release 21 -encoding UTF-8 -cp $dependencyClasspath -d $classes "@$productionArgumentFile"
+          $baseSource = Join-Path $env:RUNNER_TEMP 'CSelectorTransport.java'
+          git show "$($env:BASELINE_SHA):$($env:SELECTOR_SOURCE)" | Set-Content -Path $baseSource -Encoding utf8NoBOM
+          $candidateClasspath = "$classes;$dependencyClasspath"
+          & $javac --enable-preview --release 21 -encoding UTF-8 -cp $candidateClasspath -d $baseline $baseSource
+          $sources = @(
+            'rkern/docs/jproring_selector_transport_20261120/SelectorTransportTest.java'
+            'rkern/docs/jproring_cio_integration_20261120/SelectorCioIntegrationTest.java'
+            'rkern/docs/jproring_cio_integration_20261120/CIOBufferPoolAffinityTest.java'
+            'rkern/tests/network/SelectorBackpressureRegression.java'
+            'rkern/tests/network/SelectorPollSkipRegression.java'
+            'rkern/tests/network/selector_poll/SelectorPollBenchmark.java'
+          )
+          & $javac --enable-preview --release 21 -encoding UTF-8 -cp $candidateClasspath -d $fixtures @sources
+          "SKIP7_CANDIDATE_CP=$fixtures;$candidateClasspath" >> $env:GITHUB_ENV
+          "SKIP7_BASELINE_CP=$fixtures;$baseline;$candidateClasspath" >> $env:GITHUB_ENV
+          @("baseline=$env:BASELINE_SHA", "candidate=$env:GITHUB_SHA") |
+              Set-Content (Join-Path $env:SKIP7_RESULTS 'revisions.txt') -Encoding utf8NoBOM
+
+      - name: Test raw I/O and production CIO on WEPoll
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $runtime = Join-Path $env:RUNNER_TEMP 'skip7-cio-test'
+          New-Item -ItemType Directory -Path $runtime | Out-Null
+          Push-Location $runtime
+          try {
+              & $env:SKIP7_JAVA --enable-preview -ea -cp $env:SKIP7_CANDIDATE_CP SelectorTransportTest 2>&1 |
+                  Tee-Object -FilePath (Join-Path $env:SKIP7_RESULTS 'selector-transport.txt')
+              & $env:SKIP7_JAVA --enable-preview -ea -cp $env:SKIP7_CANDIDATE_CP SelectorPollSkipRegression 2>&1 |
+                  Tee-Object -FilePath (Join-Path $env:SKIP7_RESULTS 'poll-fairness.txt')
+              & $env:SKIP7_JAVA --enable-preview -ea -cp $env:SKIP7_BASELINE_CP SelectorBackpressureRegression 2>&1 |
+                  Tee-Object -FilePath (Join-Path $env:SKIP7_RESULTS 'baseline-backpressure.txt')
+              & $env:SKIP7_JAVA --enable-preview -ea -cp $env:SKIP7_CANDIDATE_CP SelectorBackpressureRegression 2>&1 |
+                  Tee-Object -FilePath (Join-Path $env:SKIP7_RESULTS 'candidate-backpressure.txt')
+              & $env:SKIP7_JAVA --enable-preview -ea -cp $env:SKIP7_CANDIDATE_CP l1j.server.server.model.network.core.connection.CIOBufferPoolAffinityTest 2>&1 |
+                  Tee-Object -FilePath (Join-Path $env:SKIP7_RESULTS 'buffer-affinity.txt')
+              & $env:SKIP7_JAVA --enable-preview -ea -XX:MaxDirectMemorySize=8m '-Drkern.test.listenerRestarts=16' '-Drkern.test.resetReconnects=64' -cp $env:SKIP7_CANDIDATE_CP SelectorCioIntegrationTest 2>&1 |
+                  Tee-Object -FilePath (Join-Path $env:SKIP7_RESULTS 'cio-integration.txt')
+          } finally { Pop-Location }
+
+      - name: Compare baseline and candidate on the same host
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $runner = 'rkern/tests/network/selector_poll/run.py'
+          $arguments = @($runner, '--java', $env:SKIP7_JAVA, '--baseline-cp', $env:SKIP7_BASELINE_CP,
+              '--candidate-cp', $env:SKIP7_CANDIDATE_CP)
+          python -u @arguments --profile smoke --output (Join-Path $env:SKIP7_RESULTS 'benchmark-smoke')
+          python -u @arguments --profile matrix --output (Join-Path $env:SKIP7_RESULTS 'benchmark-matrix')
+
+      - name: Count Selector calls with isolated test overlays
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $probe = 'rkern/tests/network/selector_poll/probe.py'
+          $runner = 'rkern/tests/network/selector_poll/run.py'
+          $javac = Join-Path $env:JAVA_HOME_21_X64 'bin/javac.exe'
+          $baseline = Join-Path $env:RUNNER_TEMP 'skip7-baseline-probe'
+          $candidate = Join-Path $env:RUNNER_TEMP 'skip7-candidate-probe'
+          python -u $probe --repo . --variant baseline --ref $env:BASELINE_SHA --out $baseline --classpath $env:SKIP7_BASELINE_CP --javac $javac
+          python -u $probe --repo . --variant candidate --ref $env:GITHUB_SHA --out $candidate --classpath $env:SKIP7_CANDIDATE_CP --javac $javac
+          $baselineClasses = Join-Path $baseline 'classes'
+          $candidateClasses = Join-Path $candidate 'classes'
+          python -u $runner --java $env:SKIP7_JAVA --baseline-cp "$baselineClasses;$env:SKIP7_BASELINE_CP" --candidate-cp "$candidateClasses;$env:SKIP7_CANDIDATE_CP" --profile probe --polls --output (Join-Path $env:SKIP7_RESULTS 'benchmark-polls')
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selector-skip7-windows-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/skip7-windows-results
+          if-no-files-found: warn

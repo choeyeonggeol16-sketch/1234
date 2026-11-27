@@ -35,11 +35,16 @@ import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.packet.CBytesPacket;
 import l1j.server.server.model.network.packet.IPacketWriter;
 import l1j.server.server.model.network.safe.CPacketFilter;
+import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
+import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.model.network.core.config.CIOConfig;
+import l1j.server.server.model.world.CWorldWork;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoPacketWriter;
+import l1j.server.server.storage.CCharacterSaveService;
 
 /** Real gameplay listener, scheduler, socket pumps and Java crypto; no database or live world. */
 public final class SelectorCioIntegrationTest {
@@ -293,10 +298,18 @@ public final class SelectorCioIntegrationTest {
             }
         } finally {
             PlaySupportWindow.stopIndependent();
+            CServerTimer.stopOwnerSignals();
+            CSessionLifecycle.stopAccepting();
+            CCharacterSaveService.stopAccepting();
+            CInstanceWork.stopAccepting();
+            CWorldWork.stopAccepting();
+            check(CSessionLifecycle.awaitDrained(5, TimeUnit.SECONDS), "session transitions drained");
+            check(CCharacterSaveService.awaitDrained(5, TimeUnit.SECONDS), "character saves drained");
+            check(CInstanceWork.awaitDrained(5, TimeUnit.SECONDS), "instance work drained");
+            check(CWorldWork.awaitDrained(5, TimeUnit.SECONDS), "world work drained");
             CIOThreadCallback owners = CIOThreadCallback.getInstance();
             owners.shutdown();
             check(owners.awaitTermination(5, TimeUnit.SECONDS), "existing game owners joined");
-            l1j.server.server.ThreadPool.getInstance().shutdown();
         }
         System.out.println("PASS RKern login entry, cipher FIFO, fragmented maximum frame, timer, MAC/account admission, large broadcast, graceful FIFO drain, "
                 + restarts + " restarts and " + reconnects + " reset/reconnect cycles with zero outstanding leases");
