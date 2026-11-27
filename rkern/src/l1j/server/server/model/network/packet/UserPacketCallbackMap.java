@@ -14,6 +14,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
+import l1j.server.server.model.shop.PlayerPrivateStore;
 import l1j.server.server.model.network.buffer.Disassemble;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.cs.packet.CS_ActionUi;
@@ -2973,7 +2974,8 @@ public final class UserPacketCallbackMap {
             }
 
             if (p1 == 0) {
-                final int maxEntries = Math.min(Math.max(0, newShopLength), Math.max(0, limit - pos));
+                final int maxEntries = Math.min(PlayerPrivateStore.MAX_ITEMS_PER_SIDE * 2,
+                        Math.min(Math.max(0, newShopLength), Math.max(0, limit - pos)));
                 final int[] entries = maxEntries == 0 ? CS_ActionUi.EMPTY_SHOP_ENTRIES : new int[maxEntries << 2];
                 int entryCount = 0;
 
@@ -2987,6 +2989,7 @@ public final class UserPacketCallbackMap {
                     if (code != 0x12 && code != 0x1A) {
                         break;
                     }
+                    if (entryCount == maxEntries) return true;
 
                     if (pos < limit) pos++;
 
@@ -3010,14 +3013,12 @@ public final class UserPacketCallbackMap {
                         }
                     }
 
-                    if (entryCount < maxEntries) {
-                        final int base = entryCount << 2;
-                        entries[base] = code;
-                        entries[base + 1] = objectId;
-                        entries[base + 2] = price;
-                        entries[base + 3] = count;
-                        entryCount++;
-                    }
+                    final int base = entryCount << 2;
+                    entries[base] = code;
+                    entries[base + 1] = objectId;
+                    entries[base + 2] = price;
+                    entries[base + 3] = count;
+                    entryCount++;
                 }
 
                 int chatLength = 0;

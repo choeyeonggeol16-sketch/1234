@@ -16,6 +16,7 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChangeHeading;
+import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 /**
@@ -69,6 +70,7 @@ public final class CCreatureController {
     private static final int EXEC_MAGIC_DAMAGE = 15;
     private static final int EXEC_UNARMED_DAMAGE = 16;
     private static final int EXEC_CAST_BUFF = 17;
+    private static final int EXEC_PRIVATE_STORE = 18;
     private static final int EXEC_CANCELLED = 0;
 
     private static final VarHandle EXEC_TAIL;
@@ -243,6 +245,23 @@ public final class CCreatureController {
                 0L, 0L, 0, task, null, pc.getSessionStamp(), epoch);
     }
 
+    public boolean StartPrivateStore(CUserSocket session, int stamp, Runnable transition) {
+        return submitPrivateStore(session, stamp, true, transition);
+    }
+
+    public boolean ClosePrivateStore(CUserSocket session, int stamp, Runnable transition) {
+        return submitPrivateStore(session, stamp, false, transition);
+    }
+
+    private boolean submitPrivateStore(CUserSocket session, int stamp, boolean opening, Runnable transition) {
+        final int epoch = actorEpoch;
+        final L1PcInstance pc = actor;
+        if (session == null || transition == null || pc == null || (epoch & 1) != 0 || actorEpoch != epoch
+                || !session.ownsReadyGameSession() || !pc.isItemTransferSession(session, stamp)) return false;
+        return executeOrPublish(EXEC_PRIVATE_STORE, 0, stamp, opening ? 1 : 0, 0, 0,
+                0L, 0L, 0, session, transition, stamp, epoch);
+    }
+
     /** Stop PSS-owned repeating combat without resetting unrelated PC actions. */
     public boolean StopPlaySupportAutoActions() {
         final L1PcInstance pc = actor;
@@ -341,7 +360,7 @@ public final class CCreatureController {
 
     private boolean executeOrPublish(int kind, int action,
             int a0, int a1, int a2, int a3,
-            long l0, long d0Bits, int flags, Object o0, String s0,
+            long l0, long d0Bits, int flags, Object o0, Object o1,
             int expectedSession, int expectedEpoch) {
         // Reentry is immediate, but never execute a stale actor or session.
         if (Thread.currentThread() == executionThread) {
@@ -349,7 +368,7 @@ public final class CCreatureController {
             if (actorEpoch != expectedEpoch || (pc == null
                     ? kind != EXEC_RESET || expectedSession != 0
                     : pc.getSessionStamp() != expectedSession)) return false;
-            executeDirect(kind, action, a0, a1, a2, a3, l0, d0Bits, flags, o0, s0);
+            executeDirect(kind, action, a0, a1, a2, a3, l0, d0Bits, flags, o0, o1);
             return true;
         }
 
@@ -414,7 +433,7 @@ public final class CCreatureController {
             // Encode flags in the otherwise unused upper 32 bits of action word.
             executionWords[offset + 1] |= (long) flags << 32;
             executionRefs[slot << 1] = o0;
-            executionRefs[(slot << 1) + 1] = s0;
+            executionRefs[(slot << 1) + 1] = o1;
         } catch (Throwable failure) {
             // A reserved ticket must always become consumable.
             executionWords[offset] = EXEC_CANCELLED;
@@ -510,7 +529,7 @@ public final class CCreatureController {
                                 executionWords[offset + 6],
                                 executionWords[offset + 7], (int) (packed >>> 32),
                                 executionRefs[slot << 1],
-                                (String) executionRefs[(slot << 1) + 1]);
+                                executionRefs[(slot << 1) + 1]);
                     }
                 } catch (Throwable failure) {
                     EXECUTION_LOG.log(Level.SEVERE, "CCreatureController executable failed", failure);
@@ -544,11 +563,11 @@ public final class CCreatureController {
 
     private void executeDirect(int kind, int action,
             int a0, int a1, int a2, int a3,
-            long l0, long d0Bits, int flags, Object o0, String s0) {
+            long l0, long d0Bits, int flags, Object o0, Object o1) {
         switch (kind) {
         case EXEC_ACTION:
             Submit((byte) action, a0, a1, a2, a3, l0,
-                    Double.longBitsToDouble(d0Bits), o0, s0, flags);
+                    Double.longBitsToDouble(d0Bits), o0, (String) o1, flags);
             break;
         case EXEC_DAMAGE:
         case EXEC_MAGIC_DAMAGE:
@@ -557,6 +576,14 @@ public final class CCreatureController {
             final L1PcInstance victim = actor;
             if (victim != null) {
                 OnDamagedMessage(victim, kind, (L1Character) o0, a0);
+            }
+            break;
+        }
+        case EXEC_PRIVATE_STORE: {
+            final L1PcInstance pc = actor;
+            if (pc != null) {
+                if (privateStoreAction == null) privateStoreAction = new CPrivateStoreAction(this);
+                privateStoreAction.execute(pc, (CUserSocket) o0, a0, a1 != 0, (Runnable) o1);
             }
             break;
         }
@@ -699,6 +726,8 @@ public final class CCreatureController {
     private final CGetItemAction getItemAction;
     
     private final CGeneralAction generalAction;
+    // Only the serializer creates and uses this action. Slots retain the request data.
+    private CPrivateStoreAction privateStoreAction;
 
     public CCreatureController(L1PcInstance actor) {
         this.actor = actor;
@@ -851,7 +880,17 @@ public final class CCreatureController {
             String s0,
             int flags) {
 
-        if (actor == null) {
+        final L1PcInstance pc = actor;
+        if (pc == null) return;
+        // An open store occupies the actor, including ground-item pickup.
+        if (pc.isPrivateShop() && switch (type) {
+            case ACTION_MOVE, ACTION_MOVE_TO_TARGET, ACTION_MOVE_TO_TARGET_WAIT,
+                    ACTION_ATTACK, ACTION_ATTACK_WAIT, ACTION_SKILL, ACTION_GET_ITEM -> true;
+            case ACTION_GENERAL -> flags == CGeneralAction.TYPE_WAND;
+            default -> false;
+        }) {
+            if (type == ACTION_MOVE && !pc.get_teleport())
+                SC_PacketBox.send(pc, SC_PacketBox.유저빽스탭, pc);
             return;
         }
 
@@ -912,6 +951,13 @@ public final class CCreatureController {
             ClearAutoResume();
         }
         SetPending(type, a0, a1, a2, a3, l0, d0, o0, s0, flags);
+    }
+
+    /** Runs only after a store start published on this character's serializer. */
+    void OnPrivateStoreOpened() {
+        ClearAutoResume();
+        ClearPending();
+        if (currentType != ACTION_NONE) EndCurrent(false, false);
     }
 
     private void ClearAutoResume() {

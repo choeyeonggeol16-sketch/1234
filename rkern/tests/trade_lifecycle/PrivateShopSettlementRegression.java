@@ -22,11 +22,18 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
+import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.NoTradable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.character.action.CCreatureController;
+import l1j.server.server.model.character.skill.L1SkillId;
+import l1j.server.server.model.gametime.L1GameTimeClock;
+import l1j.server.server.model.gametime.RealTimeClock;
 import l1j.server.server.model.map.L1V1Map;
+import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.character.animation.SpriteInformation;
+import l1j.server.server.model.character.animation.SprBoundary;
 import l1j.server.server.model.character.animation.loader.SpriteInformationLoader;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
@@ -40,6 +47,7 @@ import l1j.server.server.model.network.core.cs.packet.CS_QueryPersonalShop;
 import l1j.server.server.model.network.core.cs.packet.CS_Result;
 import l1j.server.server.model.network.core.cs.packet.User;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
+import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.safe.CPacketFilter;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.utill.CConnectionState;
@@ -47,8 +55,8 @@ import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
 
 /** Live private-shop packet handlers on ready TCP sessions and their CIO owners.
- * Run from a scratch directory with CioSyntheticPopulation, server classes, and
- * rkern/src resources on the classpath. Pass isolated JDBC URL, user, and
+ * Run from a scratch directory with CioSyntheticPopulation, SelectorTransportTest,
+ * server classes and rkern/src resources on the classpath. Pass isolated JDBC URL, user, and
  * installed template schema. Only table definitions are copied.
  */
 public final class PrivateShopSettlementRegression {
@@ -60,17 +68,35 @@ public final class PrivateShopSettlementRegression {
         "character_level_gifts", "character_teleport", "character_warehouse", "character_elf_warehouse",
         "character_special_warehouse", "character_package_warehouse", "character_supplementary_service",
         "clan_data", "clan_warehouse", "companion_instance", "companion_class", "letter", "mapids",
-        "etcitem", "weapon", "armor", "notradable"
+        "etcitem", "weapon", "armor", "notradable", "dungeon", "dungeon_random", "castle", "spr_boundary", "spawnlist_trap", "trap"
     };
-    private static final L1V1Map MARKET = new L1V1Map(800, new byte[8][8], 32, 32, false, true, true, true,
-            true, true, true, true, true, true, true, false);
+    private static final L1V1Map MARKET = createMarket();
+
+    private static L1V1Map createMarket() {
+        byte[][] cells = new byte[8][8];
+        for (byte[] row : cells) Arrays.fill(row, (byte) 3);
+        return new L1V1Map(800, cells, 32, 32, false, true, true, true,
+                true, true, true, true, true, true, true, false);
+    }
     private final HikariDataSource db;
     private final CacheD cache = CacheD.getInstance();
     private final CIOThreadCallback cio = CIOThreadCallback.getInstance();
     private final CioSyntheticPopulation actors = new CioSyntheticPopulation(3);
     private final Set<CUserSocket> accepted = new HashSet<>();
 
-    private record Peer(Socket wire, CUserSocket socket, L1PcInstance pc) implements AutoCloseable {
+    private volatile ReceiveFence receiveFence;
+
+    private record ReceiveFence(CUserSocket socket, CompletableFuture<Void> reached) { }
+
+    private record Peer(Socket wire, CUserSocket socket, L1PcInstance pc,
+                        SelectorTransportTest.ScalarClient cipher) implements AutoCloseable {
+        void send(byte[] payload) throws IOException {
+            byte[] encrypted = cipher.toServer(payload);
+            byte[] frame = ByteBuffer.allocate(encrypted.length + 2).order(ByteOrder.LITTLE_ENDIAN)
+                    .putShort((short) (encrypted.length + 2)).put(encrypted).array();
+            wire.getOutputStream().write(frame);
+        }
+
         @Override public void close() throws IOException { wire.close(); }
     }
 
@@ -121,14 +147,22 @@ public final class PrivateShopSettlementRegression {
         Config.PC_SHOP = 100;
         Config.RATE_WEIGHT_LIMIT = 1;
         Config.CACHE_MAP_FILES = true;
+        Config.WALK_POSITION_CHECK = false;
+        RealTimeClock.prepare();
+        L1GameTimeClock.prepare();
+        L1WorldMap.getInstance().addMap(MARKET);
         CPacketFilter.getInstance().load();
+        SprBoundary.do_load();
         CompanionClassInfo.do_load();
         CompanionInstanceCache.do_load();
         try (var con = db.getConnection(); var sql = con.createStatement()) {
             var sprites = new TIntObjectHashMap<SpriteInformation>();
-            try (var row = sql.executeQuery("SELECT 0 AS spr_id, 1 AS width, 1 AS height, 0 AS action_count")) {
-                require(row.next(), "fixture sprite row");
-                sprites.put(0, SpriteInformation.create(row));
+            try (var row = sql.executeQuery("SELECT 0 AS spr_id, 1 AS width, 1 AS height, 0 AS action_count "
+                    + "UNION ALL SELECT 1120, 1, 1, 0")) {
+                while (row.next()) {
+                    var sprite = SpriteInformation.create(row);
+                    sprites.put(sprite.getSpriteId(), sprite);
+                }
             }
             var catalog = SpriteInformationLoader.class.getDeclaredField("_sprInfos");
             catalog.setAccessible(true);
@@ -171,6 +205,13 @@ public final class PrivateShopSettlementRegression {
         config.packetExecutorShardCount = 2;
         config.usePreLoginTimeout = false;
         CIOConfig.NETWORK_CLIENT_PERMISSION = 8;
+        final int alive = Opcodes.C_ALIVE & 0xFF;
+        final var originalAlive = UserPacketCallbackMap.gPacketTableFromClient[alive];
+        UserPacketCallbackMap.gPacketTableFromClient[alive] = (buffer, client) -> {
+            final ReceiveFence fence = receiveFence;
+            if (fence != null && fence.socket == client) fence.reached.complete(null);
+            return true;
+        };
         final int shards = cio.bindNetworkIngress(config);
         var buffers = new CIOBufferPool(8, 16, 8, 8, shards);
         try (var server = new CIOServer(address, 8, shards, 8, buffers, cio, config)) {
@@ -180,13 +221,17 @@ public final class PrivateShopSettlementRegression {
                     verifyShop(shop, customer, other);
                 } finally {
                     for (Peer peer : new Peer[] {shop, customer, other})
-                        on(peer.socket, () -> peer.pc.getInventory().clearItems()).get(5, TimeUnit.SECONDS);
+                        on(peer.socket, () -> {
+                            CWorld.getInstance().removeVisibleObject(peer.pc);
+                            peer.pc.getInventory().clearItems();
+                        }).get(5, TimeUnit.SECONDS);
                 }
             }
             server.close();
             actors.assertDrained(server);
             for (long[] bucket : server.poolSnapshot()) require(bucket[2] == 0, "all direct buffer leases retired");
         } finally {
+            UserPacketCallbackMap.gPacketTableFromClient[alive] = originalAlive;
             CSessionLifecycle.stopAccepting();
             require(CSessionLifecycle.awaitDrained(5, TimeUnit.SECONDS), "session workers drained");
             boolean drained = cache.drainBeforeOwnerShutdown(6_000L);
@@ -203,12 +248,24 @@ public final class PrivateShopSettlementRegression {
                 .putShort((short) 1).putInt(SALE_STACK).putInt(7).putInt(10)
                 .putShort((short) 2).putInt(ORDER_STACK_A).putInt(5).putInt(6)
                 .putInt(ORDER_STACK_B).putInt(8).putInt(4).array();
-        on(shop.socket, () -> CS_PersonalShop.handle(shop.socket, 0, listing)).get(5, TimeUnit.SECONDS);
+        moveStep(shop);
+        require(shop.pc.getX() == 35, "ready TCP merchant can move before opening");
+        rejectStartDuringSkill(shop, listing);
+        receive(shop, shopPacket(0, listing));
         flush();
         require(shop.pc.isPrivateShop() && listingCount(shopId, SALE_STACK) == 10
                 && listingCount(shopId, ORDER_STACK_A) == 6 && listingCount(shopId, ORDER_STACK_B) == 4
                 && scalar("SELECT SUM(Shop_open_count) FROM accounts") == 1,
                 "classic open published both sides and persisted the account's shop counter");
+        moveStep(shop);
+        require(shop.pc.getX() == 35, "an open store ignores the next real movement request");
+        on(shop.socket, () -> {
+            var controller = shop.pc.getCreatureController();
+            controller.Skill(L1SkillId.HEAL, shopId, shop.pc.getX(), shop.pc.getY(), null);
+            controller.Attack(other.pc.getId(), other.pc.getX(), other.pc.getY());
+            require(controller.currentActionType() == CCreatureController.ACTION_NONE && !controller.HasPendingAction(),
+                    "an open store ignores incoming skill and attack");
+        }).get(5, TimeUnit.SECONDS);
         assertView(customer, shop, 0);
         var view = customer.socket.getPlayerShopView();
         require(view.size() == 1 && view.listingId(0) == SALE_STACK && view.count(0) == 10 && view.price(0) == 7,
@@ -279,6 +336,11 @@ public final class PrivateShopSettlementRegression {
                 purchase(customer, shop, 0, 4).get(5, TimeUnit.SECONDS);
                 require(shop.pc.hasReservedItemTransfer() && cache.hasPendingOwnerApply(shopId),
                         "settlement pending on real stock lock");
+                final int generation = shop.pc.getPrivateShopVersion();
+                receive(shop, shopPacket(0, singleListing(false, SALE_STACK, 15, 2)));
+                require(shop.pc.getPrivateShopVersion() == generation
+                        && scalar("SELECT SUM(Shop_open_count) FROM accounts") == 1,
+                        "start cannot relist during a pending inventory receipt");
                 CompletableFuture.allOf(purchase(other, shop, 0, 4),
                         on(shop.socket, () -> CS_PersonalShop.handle(shop.socket, 1, null))).get(5, TimeUnit.SECONDS);
                 require(shop.pc.isPrivateShop() && receipts() == 3 && listingCount(shopId, SALE_STACK) == 7,
@@ -302,7 +364,8 @@ public final class PrivateShopSettlementRegression {
         on(customer.socket, () -> CS_QueryPersonalShop.handle(customer.socket, 1, shopId)).get(5, TimeUnit.SECONDS);
         require(customer.socket.getPlayerShopView() == null && receipts() == 6,
                 "query after offline retirement releases viewer state and keeps six durable receipts");
-        System.out.println("PASS private shop: partial buy, same-stack multi-order, single sell, stale view, restrictions, "
+        System.out.println("PASS private shop START ACTION: encrypted start and movement, active skill and in-flight receipt refusal, "
+                + "partial buy, same-stack multi-order, single sell, stale view, restrictions, "
                 + "competing buyers and close, reopen, offline sale and retirement, 6 exact receipts, reload and conservation");
     }
 
@@ -321,6 +384,8 @@ public final class PrivateShopSettlementRegression {
         flush();
         assertClosed(shop);
         require(!priorView.matches(shop.pc, false), "closed shop rejects a former buyer view");
+        moveStep(shop);
+        require(shop.pc.getX() == 36, "real movement resumes after close");
 
         openSingle(shop, false, SALE_STACK, 11, 2);
         flush();
@@ -391,6 +456,7 @@ public final class PrivateShopSettlementRegression {
             require(inventory.tryBeginEquipmentChange(), "offline retirement holds the inventory gate");
             try {
                 require(Boolean.TRUE.equals(remove.invoke(null, shop.pc)), "production offline retirement accepted");
+                CWorld.getInstance().removeVisibleObject(shop.pc);
                 require(shop.pc.getSellings() == null && shop.pc.getPurchasings() == null && shop.pc.getShopChat() == null,
                         "offline retirement releases both lists and shop chat references");
                 shop.pc.logout();
@@ -414,12 +480,15 @@ public final class PrivateShopSettlementRegression {
     }
 
     private void openSingle(Peer shop, boolean purchase, int objectId, int price, int count) throws Exception {
+        receive(shop, shopPacket(0, singleListing(purchase, objectId, price, count)));
+    }
+
+    private static byte[] singleListing(boolean purchase, int objectId, int price, int count) {
         final byte[] chat = "fixture quote".getBytes(StandardCharsets.US_ASCII);
         final ByteBuffer listing = ByteBuffer.allocate(16 + chat.length).order(ByteOrder.LITTLE_ENDIAN);
         if (purchase) listing.putShort((short) 0).putShort((short) 1).putInt(objectId).putInt(price).putInt(count);
         else listing.putShort((short) 1).putInt(objectId).putInt(price).putInt(count).putShort((short) 0);
-        listing.put(chat);
-        on(shop.socket, () -> CS_PersonalShop.handle(shop.socket, 0, listing.array())).get(5, TimeUnit.SECONDS);
+        return listing.put(chat).array();
     }
 
     private void verifyReload(Peer shop, Peer customer, Peer other) throws Exception {
@@ -445,7 +514,8 @@ public final class PrivateShopSettlementRegression {
             wire.setSoTimeout(4_000);
             final var receive = new DataInputStream(wire.getInputStream());
             final int frame = receive.readUnsignedByte() | receive.readUnsignedByte() << 8;
-            require(frame > 2 && receive.readNBytes(frame - 2).length == frame - 2, "real TCP key frame");
+            require(frame == Opcodes.S_KEYBYTES.length + 2
+                    && Arrays.equals(receive.readNBytes(frame - 2), Opcodes.S_KEYBYTES), "real TCP key frame");
             final var field = CIOServer.class.getDeclaredField("sockets");
             field.setAccessible(true);
             final CUserSocket socket;
@@ -460,16 +530,60 @@ public final class PrivateShopSettlementRegression {
             on(socket, () -> {
                 var pc = actors.bind(socket, seat);
                 pc.setMap(MARKET);
-                pc.setX(34);
-                pc.setY(34);
+                pc.setX(34 + seat);
+                pc.setY(seat == 0 ? 34 : 36);
                 pc.setCurrentSprite(pc.getClassId());
+                CWorld.getInstance().addVisibleObject(pc);
                 pc.getInventory().loadItems(loaded);
                 published.complete(pc);
             }).get(5, TimeUnit.SECONDS);
-            return new Peer(wire, socket, published.get(1, TimeUnit.SECONDS));
+            return new Peer(wire, socket, published.get(1, TimeUnit.SECONDS),
+                    new SelectorTransportTest.ScalarClient(Opcodes.getSeed()));
         } catch (Exception | Error failure) {
             wire.close();
             throw failure;
+        }
+    }
+
+    private void rejectStartDuringSkill(Peer shop, byte[] listing) throws Exception {
+        final var controller = shop.pc.getCreatureController();
+        final int generation = shop.pc.getPrivateShopVersion();
+        on(shop.socket, () -> {
+            controller.Reset();
+            controller.Skill(L1SkillId.HEAL, shop.pc.getId(), shop.pc.getX(), shop.pc.getY(), null);
+            require(controller.currentActionType() == CCreatureController.ACTION_SKILL,
+                    "skill action has started on the actual controller");
+            CS_PersonalShop.handle(shop.socket, 0, listing);
+            require(controller.currentActionType() == CCreatureController.ACTION_SKILL,
+                    "rejected shop start leaves the active skill untouched");
+        }).get(5, TimeUnit.SECONDS);
+        flush();
+        require(!shop.pc.isPrivateShop() && shop.pc.getPrivateShopVersion() == generation
+                && scalar("SELECT COUNT(*) FROM character_shop") == 0
+                && scalar("SELECT SUM(Shop_open_count) FROM accounts") == 0,
+                "skill refusal causes no store or account write");
+        on(shop.socket, controller::Reset).get(5, TimeUnit.SECONDS);
+    }
+
+    private void moveStep(Peer peer) throws Exception {
+        receive(peer, ByteBuffer.allocate(6).order(ByteOrder.LITTLE_ENDIAN).put((byte) Opcodes.C_MOVE)
+                .putShort((short) peer.pc.getX()).putShort((short) peer.pc.getY()).put((byte) 2).array());
+    }
+
+    private static byte[] shopPacket(int mode, byte[] listing) {
+        return ByteBuffer.allocate(listing.length + 2).put((byte) Opcodes.C_PERSONAL_SHOP)
+                .put((byte) mode).put(listing).array();
+    }
+
+    private void receive(Peer peer, byte[] request) throws Exception {
+        final var fence = new ReceiveFence(peer.socket, new CompletableFuture<>());
+        receiveFence = fence;
+        try {
+            peer.send(request);
+            peer.send(new byte[] {(byte) Opcodes.C_ALIVE, 0, 0, 0});
+            fence.reached.get(5, TimeUnit.SECONDS);
+        } finally {
+            receiveFence = null;
         }
     }
 

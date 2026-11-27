@@ -16,6 +16,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionShop;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
+import l1j.server.server.model.shop.PlayerPrivateStore;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.item.L1ItemId;
@@ -225,7 +226,7 @@ public final class User {
 
     private static final Logger PRIVATE_STORE_LOG = Logger.getLogger(User.class.getName());
 
-    private static final int MAX_SHOP_ITEMS = 7;
+    private static final int MAX_SHOP_ITEMS = PlayerPrivateStore.MAX_ITEMS_PER_SIDE;
 
     private static final byte[] EMPTY_CHAT = new byte[0];
 
@@ -254,21 +255,31 @@ public final class User {
         final L1PcInstance pc = client.getActiveChar();
         if (pc == null) return;
         final int stamp = pc.getSessionStamp();
-        // Existing reentrant synchronous inventory gate: UI morph removal may
-        // call equipment methods, and both wire formats must exclude settlement.
-        if (!pc.isItemTransferSession(client, stamp) || !pc.getInventory().tryBeginEquipmentChange()) return;
-        try {
-            if (!pc.isItemTransferSession(client, stamp)) return;
-            if (type == 1) {
+        if (!pc.isItemTransferSession(client, stamp)) return;
+
+        // Both packet forms already own their decoded arrays. Resolve listings
+        // against live inventory under the controller's gate, in action order.
+        final var controller = pc.getCreatureController();
+        final boolean accepted;
+        if (type == 1) {
+            accepted = controller.ClosePrivateStore(client, stamp, () -> {
                 if (pc.isPrivateShop() && (!actionUi || !pc.isPrivateReady())) QuitPrivateStore(pc);
-                return;
-            }
-            if (!CanOpenPrivateStore(pc, actionUi)) return;
-            if (actionUi) SetPrivateStoreList(pc, client, stamp, payload);
-            else SetPrivateStoreList(pc, client, stamp, data);
-        } finally {
-            pc.getInventory().endEquipmentChange();
+            });
+        } else {
+            accepted = controller.StartPrivateStore(client, stamp, () -> {
+                if (!CanOpenPrivateStore(pc, actionUi)) return;
+                if (actionUi) SetPrivateStoreList(pc, client, stamp, payload);
+                else SetPrivateStoreList(pc, client, stamp, data);
+            });
         }
+        if (!accepted) sendPrivateStoreRetry(pc, client, stamp, type == 0);
+    }
+
+    private static void sendPrivateStoreRetry(L1PcInstance pc, CUserSocket session, int stamp, boolean opening) {
+        if (!pc.isItemTransferSession(session, stamp)) return;
+        SC_SystemMessage.send(pc, opening
+                ? "잠시 후 개인상점을 다시 열어 주세요."
+                : "잠시 후 개인상점을 다시 닫아 주세요.");
     }
 
     private static boolean CanOpenPrivateStore(L1PcInstance pc, boolean actionUi) {
@@ -528,7 +539,7 @@ public final class User {
             ArrayList<DynamicShopItem> sells, ArrayList<DynamicShopItem> buys,
             byte[] chat, int poly, boolean actionUi) {
         if (!pc.isItemTransferSession(session, stamp) || !CanOpenPrivateStore(pc, actionUi)) return;
-        if (!PublishPrivateStoreList(pc, sells, buys, chat)) return;
+        if (!PublishPrivateStoreList(pc, session, stamp, sells, buys, chat)) return;
         if (actionUi) {
             // Same ActionUI morph semantics as before; after accepted list and
             // under the reentrant gate, never against a rejected registration.
@@ -571,25 +582,27 @@ public final class User {
         L1PolyMorph.undoPolyPrivateShop(pc);
     }
 
-    private static boolean PublishPrivateStoreList(L1PcInstance pc, ArrayList<DynamicShopItem> sells,
-            ArrayList<DynamicShopItem> buys, byte[] chat) {
+    private static boolean PublishPrivateStoreList(L1PcInstance pc, CUserSocket session, int stamp,
+            ArrayList<DynamicShopItem> sells, ArrayList<DynamicShopItem> buys, byte[] chat) {
         try {
             pc.openPrivateStore(sells, buys, chat);
             return true;
         } catch (RejectedExecutionException rejected) {
             PRIVATE_STORE_LOG.log(Level.WARNING, "Private shop listing admission rejected", rejected);
-            SC_SystemMessage.send(pc, "잠시 후 개인상점을 다시 열어 주세요.");
+            sendPrivateStoreRetry(pc, session, stamp, true);
             return false;
         }
     }
 
     /** Caller owns the same inventory gate as store admission and settlement. */
     static boolean RemovePrivateStoreList(L1PcInstance pc) {
+        final CUserSocket session = pc.getNetConnection();
+        final int stamp = pc.getSessionStamp();
         try {
             pc.closePrivateStore();
             return true;
         } catch (RejectedExecutionException rejected) {
-            SC_SystemMessage.send(pc, "잠시 후 개인상점을 다시 닫아 주세요.");
+            sendPrivateStoreRetry(pc, session, stamp, false);
             return false;
         }
     }

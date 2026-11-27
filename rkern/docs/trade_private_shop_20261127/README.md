@@ -36,3 +36,14 @@ LU4에서는 플레이어 `User`가 판매·매입·도매 컨테이너를 멤�
 - **무인상점.** 상인 연결이 무인상점 모드로 분리돼도 월드 캐릭터와 주문은 유지된다. 손님과 진행 중인 정산이 있는 무인상점의 GM 추방은 거래가 끝난 뒤 다시 요청할 수 있다. [상점 상태](../../src/l1j/server/server/model/shop/PlayerPrivateStore.java) · [캐릭터 개점·폐점 메서드](../../src/l1j/server/server/model/Instance/L1PcInstance.java)
 
 후속 Java 21 빌드는 운영 소스 1,695개를 컴파일했다. 격리 MariaDB와 실제 TCP 연결 3개로 개점·중복 폐점·새 가격 재개점·매입 전용 재등록·무인 전환 후 매입·폐점을 확인했다. 이전 7아데나 견적은 거절됐고 새 11아데나 견적으로 한 번만 거래됐다. 이 확장 시나리오의 영수증은 6건이었다. 세 캐릭터 인벤토리를 다시 읽은 뒤에도 아데나 1,400개와 상품 10개·18개가 보존됐다. 인증은 합성 세션을 사용했으며 실제 게임 클라이언트 화면과 전체 재로그인은 이 통합 시험의 범위 밖이다. [통합 검증](../../tests/trade_lifecycle/PrivateShopSettlementRegression.java) · [개점 회차와 지연 타이머 검증](../../tests/trade_lifecycle/test_private_store_lifecycle.py) · [무인상점 정리 검증](../../tests/trade_lifecycle/test_private_store_retirement.py)
+
+## 개인상점 영업 시작 행동
+
+LU4의 `User::RequestPrivateStore()`가 여는 것은 주문 설정창이다. 주문이 확정되면 `User`가 컨트롤러에 개점을 요청한다. 컨트롤러는 현재 행동에 따라 전환 가능 여부를 판단하고, `CPrivateStoreAction::OnStart()`에서 영업 자세와 상점 종류를 설정한다. RKern에서는 이 흐름을 기존 리니지 1 클라이언트의 일반 상점 패킷과 ActionUI에 연결했다. [LU4 설정창](https://github.com/luannbr/Open_LU4_L2OFF/blob/abbb2e5f474d40cf12539a8e97fddc52474ed95e/L2Server/src/UserItem.cpp#L4156) · [LU4 행동 전환표](https://github.com/luannbr/Open_LU4_L2OFF/blob/abbb2e5f474d40cf12539a8e97fddc52474ed95e/L2Server/src/NewAction.cpp#L40) · [LU4 영업 시작](https://github.com/luannbr/Open_LU4_L2OFF/blob/abbb2e5f474d40cf12539a8e97fddc52474ed95e/L2Server/src/NewAction.cpp#L1767)
+
+- 개점과 폐점 요청은 캐릭터의 기존 행동 큐를 거친다. 컨트롤러는 최초 실행 시 만든 상점 행동 객체 하나를 재사용한다. 요청의 소켓과 콜백은 처리한 큐 슬롯에서 해제한다. 실행 시점의 접속 세션과 인벤토리를 확인하고, 스킬을 시전 중이면 영업 시작을 거절한다. 주문 저장을 CacheD가 접수한 뒤 상점 상태를 공개하고 캐릭터와 주변에 영업 자세를 보낸다. 개점에 성공하면 진행 중인 이동·공격의 타이머 세대와 대기 동작을 정리한다. [컨트롤러](../../src/l1j/server/server/model/character/action/CCreatureController.java) · [상점 행동](../../src/l1j/server/server/model/character/action/CPrivateStoreAction.java) · [상점 패킷](../../src/l1j/server/server/model/network/core/cs/packet/User.java)
+- 판매와 매입을 함께 등록할 수 있다. ActionUI의 주문 해석 버퍼는 기존 판매 7건과 매입 7건에 맞춰 최대 14행을 담는다. 15번째 상품 행이 있으면 요청 전체를 무시한다. [패킷 해석](../../src/l1j/server/server/model/network/packet/UserPacketCallbackMap.java)
+
+Java 21에서 운영 소스 1,696개를 빌드했다. 합성 로그인 세션 3개와 임시 MariaDB에서 암호화된 실제 개점·이동 패킷을 보냈다. 상인은 개점 전 한 칸 이동했고, 영업 중에는 같은 방향의 이동 요청에도 좌표를 유지했으며, 폐점 후 다시 한 칸 이동했다. 스킬 시전 중 개점은 기존 스킬과 DB 개점 횟수를 보존했다. 정산 중에 제출한 재등록도 주문이나 개점 횟수를 바꾸지 않았다. 재개점·무인상점 거래까지 영수증은 6건이었고, DB에서 다시 읽은 아데나 합계 1,400개와 상품 합계 10개·18개가 일치했다. 실제 게임 클라이언트 화면은 시험하지 않았다. [TCP·DB 통합 테스트](../../tests/trade_lifecycle/PrivateShopSettlementRegression.java)
+
+격리 회귀 테스트는 일반 패킷과 ActionUI의 개폐점, 연속 요청의 실행 순서와 객체 재사용, 판매 7건·매입 7건의 경계, 영업 중 이동·공격·스킬·줍기 제한 등 89개 검사를 통과했다. [상점 행동 회귀 테스트](../../tests/trade_lifecycle/test_private_store.py)

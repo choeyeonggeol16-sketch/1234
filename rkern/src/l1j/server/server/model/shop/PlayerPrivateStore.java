@@ -6,6 +6,8 @@ import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 
 /** One character-owned lifecycle for open and closed private stores. */
 public final class PlayerPrivateStore {
+    public static final int MAX_ITEMS_PER_SIDE = 7;
+
     public record State(boolean open, boolean displayOnly, int generation,
             ArrayList<DynamicShopItem> sellings, ArrayList<DynamicShopItem> purchasings, byte[] chat) { }
 
