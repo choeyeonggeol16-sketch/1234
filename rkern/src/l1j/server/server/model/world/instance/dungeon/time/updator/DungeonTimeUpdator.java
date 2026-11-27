@@ -5,233 +5,237 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.trove.set.hash.TIntHashSet;
 import l1j.server.Config;
-import l1j.server.server.model.world.instance.CInstanceWork;
-import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.gametime.CTimeListener;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer;
+import l1j.server.server.model.network.core.broadcast.CSharedBroadcast;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
+import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
 
-public class DungeonTimeUpdator implements CTimeListener{
-	private static final Logger LOG = Logger.getLogger(DungeonTimeUpdator.class.getName());
-	private static DungeonTimeUpdator _instance;
-	public static DungeonTimeUpdator getInstance(){
-		if(_instance == null)
-			_instance = new DungeonTimeUpdator();
-		return _instance;
-	}
+public final class DungeonTimeUpdator implements CTimeListener {
+    private static final Logger LOG = Logger.getLogger(DungeonTimeUpdator.class.getName());
+    private static final DungeonTimeUpdator INSTANCE = new DungeonTimeUpdator();
+    private static final int KST_OFFSET_SECONDS = 9 * 3600;
+    private static final int DAY_SECONDS = 24 * 3600;
 
-	public static void release(){
-		if(_instance != null){
-			_instance.dispose();
-			_instance = null;
-		}
-	}
+    private final Object progression = new Object();
+    private volatile DungeonTimeConsumer consumer;
+    private boolean running;
+    private boolean resetInProgress;
+    private long previousSecond = Long.MIN_VALUE;
+    private long lastScheduledReset = Long.MIN_VALUE;
+    private Calendar pendingScheduledReset;
 
-	public static void reload(){
-		DungeonTimeUpdator old = _instance;
-		final boolean running = old != null && old.is_running();
-		if (old != null) old.dispose();
-		_instance = new DungeonTimeUpdator();
-		if (running) _instance.run();
-	}
-	
-	public static boolean is_possible_update_character(L1PcInstance pc){
-		return pc != null && pc.getNetConnection() != null;
-	}
+    private DungeonTimeUpdator() { }
 
-	private DungeonTimeConsumer _consumer;
-	private Calendar _pendingScheduledReset;
-	private DungeonTimeUpdator() { }
+    public static DungeonTimeUpdator getInstance() { return INSTANCE; }
 
-	public synchronized void run() {
-		if (_consumer != null) return;
-		_consumer = new DungeonTimeConsumer();
-		CGameTime.addRealListener(this, Calendar.SECOND);
-	}
+    public static void release() { INSTANCE.dispose(); }
 
-	public synchronized void dispose() {
-		CGameTime.removeRealListener(this, Calendar.SECOND);
-		// In-flight work checks its consumer generation before applying a tick.
-		_consumer = null;
-	}
+    public static void reload() {
+        DungeonTimeInformationLoader.reload();
+    }
 
-	public synchronized boolean is_running(){
-		return _consumer != null;
-	}
-	
+    public synchronized void run() {
+        if (running) return;
+        // Startup storage recovery is handled by DungeonTimeLoadManager. A live
+        // subscription considers only boundaries it observes after starting.
+        previousSecond = CGameTime.getDateTime().getSeconds();
+        CGameTime.addRealListener(this, Calendar.SECOND);
+        consumer = new DungeonTimeConsumer();
+        running = true;
+    }
 
+    public synchronized void dispose() {
+        CGameTime.removeRealListener(this, Calendar.SECOND);
+        running = false;
+        consumer = null;
+    }
 
+    public synchronized boolean is_running() { return running; }
 
+    public synchronized void do_initialize(Calendar time) {
+        submitReset(time, false);
+    }
 
-	public void do_initialize(Calendar cal) {
-		do_initialize(cal, false);
-	}
+    private void submitReset(Calendar time, boolean scheduled) {
+        if (resetInProgress) return;
+        resetInProgress = true;
+        if (running) consumer = new DungeonTimeConsumer();
+        try {
+            CInstanceWork.execute(() -> {
+                synchronized (progression) { applyReset(time, scheduled); }
+            });
+        } catch (RejectedExecutionException failure) {
+            resetInProgress = false;
+            LOG.log(Level.WARNING, "Dungeon reset admission rejected", failure);
+        }
+    }
 
-	private boolean do_initialize(Calendar cal, boolean scheduled) {
-		dispose();
-		try {
-		CInstanceWork.execute(new Runnable(){
-			@Override
-			public void run(){
-				String message = "전체 던전 시간이 초기화되었습니다.";
-				String message_en = "[NOTICE] All dungeon timers have been reset."; 
-				try{
-					CWorld.getInstance()
-					.getAllPlayerStream()
-					.filter((L1PcInstance pc)->{
-						return is_possible_update_character(pc);
-					})
-					.forEach((L1PcInstance pc)->{
-						pc.initialize_dungeon_progress();
-						SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, message);
-						SC_SystemMessage.send(pc, message_en);
-					});
-				}catch(Exception e){
-					e.printStackTrace();
-				} finally {
-					try {
-						if (scheduled) teleportAfterReset();
-					} finally {
-						try { DungeonTimeLoadManager.getInstance().do_truncate(cal); }
-						finally { DungeonTimeUpdator.this.run(); }
-					}
-				}
-			}
-		});
-		return true;
-		} catch (RejectedExecutionException rejected) {
-			// Reset never started. Restore the old clock subscription.
-			run();
-			LOG.log(Level.WARNING, "Dungeon reset admission rejected", rejected);
-			return false;
-		}
-	}
-	
-	@Override
-	public void onSecondChanged(CDateTime time) {
-		/** 던전초기화 시간 **/
-		int nowDay = time.get(Calendar.DAY_OF_WEEK);
-		// [던전초기화 시각 외부화] config/altsettings.properties 의 DungeonResetHour/DungeonResetMinute
-		final Calendar pendingReset;
-		synchronized (this) { pendingReset = _pendingScheduledReset; }
-		if (pendingReset != null) {
-			// A refused daily reset must not be skipped for an entire day.
-			if (do_initialize(pendingReset, true)) {
-				synchronized (this) {
-					if (_pendingScheduledReset == pendingReset) _pendingScheduledReset = null;
-				}
-				Config.네쥬던전초기화 = pendingReset.get(Calendar.DAY_OF_WEEK);
-			}
-		} else if(time.matches(Config.DungeonResetHour, Config.DungeonResetMinute, 0)) {
-			final Calendar resetTime = time.getCalendar();
-			if (do_initialize(resetTime, true)) {
-				Config.네쥬던전초기화 = nowDay;
-			} else {
-				synchronized (this) { _pendingScheduledReset = resetTime; }
-			}
-		} else {
-			queueTick();
-		}
-	}
+    private void applyReset(Calendar time, boolean scheduled) {
+        boolean done = false;
+        try {
+            CWorld world = CWorld.getInstance();
+            for (L1PcInstance pc : world.getAllPlayers()) {
+                if (pc.getNetConnection() == null) continue;
+                try {
+                    pc.initialize_dungeon_progress();
+                    SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, "전체 던전 시간이 초기화되었습니다.");
+                    SC_SystemMessage.send(pc, "[NOTICE] All dungeon timers have been reset.");
+                } catch (RuntimeException failure) {
+                    LOG.log(Level.WARNING, "Dungeon reset notification failed for " + pc.getId(), failure);
+                }
+            }
+            try {
+                if (scheduled) teleportAfterReset(world);
+            } catch (RuntimeException failure) {
+                LOG.log(Level.WARNING, "Dungeon reset relocation failed", failure);
+            } finally {
+                DungeonTimeLoadManager.getInstance().do_truncate(time);
+            }
+            done = true;
+        } finally {
+            synchronized (this) {
+                if (done && scheduled) {
+                    lastScheduledReset = time.getTimeInMillis() / 1000L;
+                    if (pendingScheduledReset == time) pendingScheduledReset = null;
+                    Config.네쥬던전초기화 = time.get(Calendar.DAY_OF_WEEK);
+                }
+                resetInProgress = false;
+            }
+        }
+    }
 
-	private void teleportAfterReset() {
-		final String message = "던전 초기화 시간으로, 더 이용하시기 위해서는 재입장 해주십시오.";
-		try(var shared=new l1j.server.server.model.network.core.broadcast.CAsyncSendConstBuffer(
-                SC_PacketBox.nativeGreenWriter(message),
-                Integer.MIN_VALUE,Integer.MAX_VALUE)){
-            for (int i = 0; i < 2; ++i) {
-			for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
-				if (pc == null) continue;
-				if(i==0)l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
-				if (pc.getMapId() == 53 || pc.getMapId() == 54) {
-					if (i == 0) {
-						pc.start_teleport(33430, 32823, 4, pc.getHeading(), 169, true, false);
-						SC_SkillSound.send(pc, pc.getId(), 491);
-					} else {
-						pc.do_simple_teleport(33436, 32812, 4);
-						SC_SkillSound.send(pc, pc.getId(), 491);
-					}
-				}
-			}
-		}
-	    }
-}
-	
-	// A maximum of two pending seconds matches the old two-slot signal
-	// backlog. No dedicated instant worker waits for a clock notification.
-	private void queueTick() {
-		final DungeonTimeConsumer consumer;
-		synchronized (this) {
-			consumer = _consumer;
-			if (consumer == null) return;
-			if (consumer.pendingTicks < 2) consumer.pendingTicks++;
-			if (consumer.queued) return;
-			consumer.queued = true;
-		}
-		submitTick(consumer);
-	}
+    @Override
+    public synchronized void onSecondChanged(CDateTime time) {
+        if (!running) return;
+        long now = time.getSeconds();
+        int hour = Config.DungeonResetHour, minute = Config.DungeonResetMinute;
+        if (now > previousSecond && hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
+            long boundary = resetBoundary(now, hour, minute);
+            if (previousSecond < boundary && boundary > lastScheduledReset) {
+                Calendar due = time.getCalendar();
+                due.setTimeInMillis(boundary * 1000L);
+                pendingScheduledReset = due;
+            }
+        }
+        if (now > previousSecond) previousSecond = now;
+        if (pendingScheduledReset != null) submitReset(pendingScheduledReset, true);
+        else if (!resetInProgress) queueTick();
+    }
 
-	private void submitTick(DungeonTimeConsumer consumer) {
-		try {
-			CInstanceWork.execute(consumer);
-		} catch (RejectedExecutionException refused) {
-			synchronized (this) { consumer.queued = false; }
-			// Preserve the pending ticks. The next clock event retries admission.
-			LOG.log(Level.WARNING, "Dungeon time tick admission rejected", refused);
-		}
-	}
+    // With several missed days, only the most recent scheduled reset is relevant.
+    static long resetBoundary(long now, int hour, int minute) {
+        long midnight = Math.floorDiv(now + KST_OFFSET_SECONDS, DAY_SECONDS) * DAY_SECONDS - KST_OFFSET_SECONDS;
+        long boundary = midnight + hour * 3600L + minute * 60L;
+        return boundary > now ? boundary - DAY_SECONDS : boundary;
+    }
 
-	private final class DungeonTimeConsumer implements Runnable {
-		private int pendingTicks;
-		private boolean queued;
+    private void teleportAfterReset(CWorld world) {
+        final String message = "던전 초기화 시간으로, 더 이용하시기 위해서는 재입장 해주십시오.";
+        try (var shared = new CAsyncSendConstBuffer(SC_PacketBox.nativeGreenWriter(message),
+                Integer.MIN_VALUE, Integer.MAX_VALUE)) {
+            for (L1PcInstance pc : world.getAllPlayers())
+                CSharedBroadcast.sendRecipientBestEffort(shared, pc);
+        }
+        for (int pass = 0; pass < 2; pass++) {
+            for (int mapId = 53; mapId <= 54; mapId++) {
+                L1Map terrain = L1WorldMap.getInstance().findMap(mapId);
+                if (terrain == null) continue;
+                for (L1PcInstance pc : world.getVisiblePlayers(terrain)) {
+                    int stamp = pc.getSessionStamp();
+                    if (!eligible(world, pc, terrain, stamp)) continue;
+                    if (pass == 0) pc.start_teleport(33430, 32823, 4, pc.getHeading(), 169, true, false);
+                    else pc.do_simple_teleport(33436, 32812, 4);
+                    SC_SkillSound.send(pc, pc.getId(), 491);
+                }
+            }
+        }
+    }
 
-		@Override
-		public void run() {
-			final int ticks;
-			synchronized (DungeonTimeUpdator.this) {
-				if (_consumer != this) { queued = false; return; }
-				ticks = pendingTicks;
-				pendingTicks = 0;
-			}
-			try {
-				for (int i = 0; i < ticks; i++) {
-					synchronized (DungeonTimeUpdator.this) {
-						if (_consumer != this) break;
-					}
-					do_update();
-				}
-			} finally {
-				boolean resubmit = false;
-				synchronized (DungeonTimeUpdator.this) {
-					queued = false;
-					if (_consumer == this && pendingTicks > 0) {
-						queued = true;
-						resubmit = true;
-					}
-				}
-				if (resubmit) submitTick(this);
-			}
-		}
+    private static boolean eligible(CWorld world, L1PcInstance pc, L1Map terrain, int stamp) {
+        var session = pc.getNetConnection();
+        return session != null && session.isConnected() && session.getActiveChar() == pc && !pc.isLogoutStarted()
+                && pc.getSessionStamp() == stamp && pc.getMap() == terrain && pc.isPublishedIn(terrain)
+                && world.findObject(pc.getId()) == pc;
+    }
 
-		private void do_update() {
-			try {
-				DungeonTimeInformationLoader loader = DungeonTimeInformationLoader.getInstance();
-				for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
-					if (!is_possible_update_character(pc)) continue;
-					DungeonTimeInformation dtInfo = loader.from_map_id(pc.getMapId());
-					if (dtInfo != null) pc.dec_dungeon_progress(dtInfo);
-				}
-			} catch (Exception error) {
-				LOG.log(Level.WARNING, "Dungeon time update failed", error);
-			}
-		}
-	}
+    // Coalesce missed seconds. Charging all of them against today's map roster would misbill arrivals.
+    private void queueTick() {
+        DungeonTimeConsumer current = consumer;
+        current.pending = true;
+        if (current.queued) return;
+        current.queued = true;
+        submitTick(current);
+    }
+
+    private void submitTick(DungeonTimeConsumer current) {
+        try {
+            CInstanceWork.execute(current);
+        } catch (RejectedExecutionException refused) {
+            current.queued = false;
+            LOG.log(Level.WARNING, "Dungeon time tick admission rejected", refused);
+        }
+    }
+
+    private final class DungeonTimeConsumer implements Runnable {
+        private final TIntHashSet visited = new TIntHashSet();
+        private boolean pending;
+        private boolean queued;
+
+        @Override
+        public void run() {
+            synchronized (DungeonTimeUpdator.this) {
+                if (consumer != this) return;
+                pending = false;
+            }
+            try {
+                synchronized (progression) {
+                    if (consumer == this) update();
+                }
+            } finally {
+                visited.clear();
+                synchronized (DungeonTimeUpdator.this) {
+                    queued = false;
+                    if (consumer == this && pending && !resetInProgress) {
+                        queued = true;
+                        submitTick(this);
+                    }
+                }
+            }
+        }
+
+        private void update() {
+            var loader = DungeonTimeInformationLoader.getInstance();
+            var world = CWorld.getInstance();
+            for (int i = 0; i < loader.mapCount() && consumer == this; i++) {
+                int mapId = loader.mapIdAt(i);
+                var terrain = L1WorldMap.getInstance().findMap(mapId);
+                if (terrain == null) continue;
+                var info = loader.from_map_id(mapId);
+                for (L1PcInstance pc : world.getVisiblePlayers(terrain)) {
+                    if (consumer != this) return;
+                    int stamp = pc.getSessionStamp();
+                    if (eligible(world, pc, terrain, stamp) && visited.add(pc.getId())) {
+                        try {
+                            pc.dec_dungeon_progress(info);
+                        } catch (RuntimeException failure) {
+                            LOG.log(Level.WARNING, "Dungeon time update failed for " + pc.getId(), failure);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
