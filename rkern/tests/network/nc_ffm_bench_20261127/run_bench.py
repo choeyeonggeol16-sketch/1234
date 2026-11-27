@@ -1,4 +1,4 @@
-"""Run a paired RKern Selector / FFM shared-worker request/response benchmark."""
+"""Run a paired Java Selector / FFM shared-worker request/response benchmark."""
 import argparse
 import csv
 import json
@@ -106,14 +106,18 @@ def main():
     ap.add_argument("--reps", type=int, default=3)
     ap.add_argument("--warmup", type=int, default=3500)
     ap.add_argument("--measure", type=int, default=5500)
+    ap.add_argument("--shared-selector", action="store_true",
+                    help="compare the shared-worker Selector fixture with the native FFM fixture")
     a = ap.parse_args()
     windows = platform.system() == "Windows"
     native = "WinIocpCore" if windows else "NcFfmCore"
+    selector = "SharedSelectorCore" if a.shared_selector else "SelectorCore"
     a.output.mkdir(parents=True, exist_ok=False)
     details = dict(platform=platform.platform(), cpu=platform.machine(), shared_workers=2, window=8,
                    bytes=258, warmup_ms=a.warmup, measure_ms=a.measure, repetitions=a.reps,
-                   reference="Open_LU4_L2OFF abbb2e5f", selector="RKern d6edf7a6",
-                   jdk=subprocess.run([a.java,"-version"],capture_output=True,text=True).stderr.strip())
+                   reference="Open_LU4_L2OFF abbb2e5f",
+                   selector="Shared Java Selector fixture" if a.shared_selector else "RKern d6edf7a6",
+                   implementations=[selector, native], jdk=subprocess.run([a.java,"-version"],capture_output=True,text=True).stderr.strip())
     quota = Path("/sys/fs/cgroup/cpu.max")
     if quota.is_file():
         details["cpu_quota"] = quota.read_text().strip()
@@ -129,7 +133,7 @@ def main():
             for index, n in sizes:
                 for attempt in (1,2):
                     pending = []
-                    names = ["SelectorCore",native]
+                    names = [selector, native]
                     if (rep+index+attempt) % 2:
                         names.reverse()
                     for order, name in enumerate(names,1):
