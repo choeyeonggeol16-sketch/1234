@@ -1,0 +1,7 @@
+rep,attempt,order,backend,generator,clients,rate,warmup_ms,measure_ms,status,paired,requests,active_clients,completed_rps,schedule_p99_us,rtt_p99_us,sender_lag_p99_us,valid_completed,completed_in_window,dropped,peak_pending,peak_waiting,pending_at_end,unscheduled_at_end,drain_ms,drained_rps,accepted,closed,frames,error
+1,1,1,SharedSelectorCore,BatchedPacedDriver,5000,80000,2500,5000,ok,1,400000,5000,79998.400,136.001,133.900,4.201,400000,399992,0,304,8,8,0,0.154,79997.541,5000,5000,600000,
+1,1,2,WinIocpCore,BatchedPacedDriver,5000,80000,2500,5000,ok,1,400000,5000,79998.400,199.800,187.400,23.300,400000,399992,0,48,8,8,0,0.121,79998.059,5000,5000,600000,
+2,1,1,WinIocpCore,BatchedPacedDriver,5000,80000,2500,5000,ok,1,400000,5000,79998.400,225.400,189.700,35.000,400000,399992,0,320,8,8,0,0.155,79997.515,5000,5000,600000,
+2,1,2,SharedSelectorCore,BatchedPacedDriver,5000,80000,2500,5000,ok,1,400000,5000,79998.400,265.500,220.900,40.900,400000,399992,0,312,8,8,0,0.126,79997.984,5000,5000,600000,
+3,1,1,SharedSelectorCore,BatchedPacedDriver,5000,80000,2500,5000,ok,1,400000,5000,79998.400,256.900,197.700,32.600,400000,399992,0,328,8,0,0,0.124,79998.019,5000,5000,600000,
+3,1,2,WinIocpCore,BatchedPacedDriver,5000,80000,2500,5000,ok,1,400000,5000,79998.400,255.000,195.000,68.300,400000,399992,0,280,8,8,0,0.275,79995.607,5000,5000,600000,
