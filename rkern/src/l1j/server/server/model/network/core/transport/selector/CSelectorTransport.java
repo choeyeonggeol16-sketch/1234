@@ -26,6 +26,8 @@ import java.util.function.LongConsumer;
 
 /** Bounded, standard-Java TCP transport. Each connection has one Selector owner for its entire lifetime. */
 public final class CSelectorTransport implements AutoCloseable {
+    public static final boolean SHARED_SEND_WORKERS = Boolean.getBoolean("rkern.network.sharedSendWorkers");
+
     public record Config(int owners, int connectionsPerOwner, int acceptBacklog, int mailboxCapacity,
             int largeReceivesPerOwner, int smallSendsPerOwner, int largeSendsPerOwner,
             int sendBytesPerConnection, int sendFramesPerConnection, int socketSendBytes,
@@ -79,7 +81,11 @@ public final class CSelectorTransport implements AutoCloseable {
     public record OwnerStats(int remainingConnections, int remainingCommands) { }
 
     public record OwnerDiagnostics(int index, int admitted, int queuedCommands,
-            int deadlines, int stalledWrites) { }
+            int deadlines, int stalledWrites, long sharedWorkRuns) {
+        public OwnerDiagnostics(int index, int admitted, int queuedCommands, int deadlines, int stalledWrites) {
+            this(index, admitted, queuedCommands, deadlines, stalledWrites, 0L);
+        }
+    }
 
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
@@ -87,6 +93,10 @@ public final class CSelectorTransport implements AutoCloseable {
     private static final long OWNER_PHASE_NANOS = 500_000;
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
     private static final System.Logger LOG = System.getLogger(CSelectorTransport.class.getName());
+    private enum SharedSlot implements Runnable {
+        IDLE, STOPPED;
+        @Override public void run() { throw new IllegalStateException("Idle slot has no task"); }
+    }
 
     private final Config config;
     private final RawHandler handler;
@@ -256,6 +266,24 @@ public final class CSelectorTransport implements AutoCloseable {
         public int ownerIndex() { return owner.index; }
         public boolean isOwnerThread() { return Thread.currentThread() == owner.thread; }
         public boolean isOpen() { return !closed; }
+
+        /**
+         * Transfer one bounded task to a peer about to wait for Selector work.
+         * The caller retains the task on refusal. Acceptance always invokes it
+         * on the peer, including during shutdown. Socket I/O remains owner-only.
+         */
+        public boolean tryShareWork(Runnable task) {
+            if (!SHARED_SEND_WORKERS || closed || owner.stopping || owners.length < 2) return false;
+            Objects.requireNonNull(task);
+            Thread caller = Thread.currentThread();
+            int index = owner.index;
+            for (int i = 1; i < owners.length; i++) {
+                if (++index == owners.length) index = 0;
+                Owner peer = owners[index];
+                if (peer.thread != caller && peer.tryAcceptSharedWork(task)) return true;
+            }
+            return false;
+        }
 
         /** Control-plane close cannot be refused by a full regular mailbox. */
         public void requestClose(boolean drain) {
@@ -655,6 +683,11 @@ public final class CSelectorTransport implements AutoCloseable {
         private volatile Thread thread;
         private final Selector selector;
         private final AtomicInteger admitted = new AtomicInteger();
+        private volatile long sharedWorkRuns; // This owner is the only writer.
+        // null = active, IDLE = accepting one idle handoff, STOPPED = closed.
+        // A real task in the slot belongs exclusively to this owner until invoked.
+        private final AtomicReference<Runnable> sharedWork = SHARED_SEND_WORKERS && owners.length > 1
+                ? new AtomicReference<>() : null;
         // Targets are a Connection with a command or a SocketChannel awaiting registration.
         // Slots are published in one monitor transaction and cleared before running callbacks.
         private final Object[] mailbox = new Object[config.mailboxCapacity()];
@@ -702,7 +735,7 @@ public final class CSelectorTransport implements AutoCloseable {
 
         private OwnerDiagnostics diagnostics() {
             synchronized (mailbox) {
-                return new OwnerDiagnostics(index, admitted.get(), mailboxSize, deadlineDepth, stalledDepth);
+                return new OwnerDiagnostics(index, admitted.get(), mailboxSize, deadlineDepth, stalledDepth, sharedWorkRuns);
             }
         }
 
@@ -761,8 +794,18 @@ public final class CSelectorTransport implements AutoCloseable {
             synchronized (mailbox) { return mailboxSize; }
         }
 
+        private boolean tryAcceptSharedWork(Runnable task) {
+            if (stopping || !sharedWork.compareAndSet(SharedSlot.IDLE, task)) return false;
+            selector.wakeup();
+            return true;
+        }
+
         private void requestStop() {
             synchronized (mailbox) { stopping = true; }
+            // Withdraw idle admission without taking an already accepted task
+            // away from its owner. That owner drains the slot on every exit.
+            if (sharedWork != null)
+                sharedWork.getAndUpdate(slot -> slot == null || slot == SharedSlot.IDLE ? SharedSlot.STOPPED : slot);
             selector.wakeup();
         }
 
@@ -849,9 +892,22 @@ public final class CSelectorTransport implements AutoCloseable {
             }
         }
 
+        private void runSharedWork(Runnable task) {
+            if (task == null || task instanceof SharedSlot) return;
+            sharedWorkRuns++;
+            try { task.run(); }
+            catch (RuntimeException error) { reportCallbackFailure("shared work", error); }
+            catch (Error error) { fail(error); }
+        }
+
         private void finish() {
             if (finished) return;
-            try { cleanup(); }
+            try {
+                try {
+                    if (sharedWork != null) runSharedWork(sharedWork.getAndSet(SharedSlot.STOPPED));
+                }
+                finally { cleanup(); }
+            }
             catch (Throwable error) { failure.compareAndSet(null, error); }
             finally {
                 finished = true;
@@ -901,6 +957,22 @@ public final class CSelectorTransport implements AutoCloseable {
                 long deadlineMillis = 1 + (delay - 1) / 1_000_000;
                 if (waitMillis < 0 || deadlineMillis < waitMillis) waitMillis = deadlineMillis;
             }
+            if (sharedWork == null) {
+                selectBlocking(waitMillis);
+                return;
+            }
+            if (!sharedWork.compareAndSet(null, SharedSlot.IDLE)) return;
+            try {
+                // A task can arrive before select, while select waits, or as
+                // select returns. The slot check handles the first case and
+                // Selector.wakeup is sticky across the gap to the native wait.
+                if (!stopping && sharedWork.get() == SharedSlot.IDLE) selectBlocking(waitMillis);
+            } finally {
+                runSharedWork(sharedWork.getAndUpdate(slot -> slot == SharedSlot.STOPPED ? slot : null));
+            }
+        }
+
+        private void selectBlocking(long waitMillis) throws IOException {
             if (waitMillis < 0) selector.select(collector);
             else selector.select(collector, waitMillis);
         }

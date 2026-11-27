@@ -73,6 +73,8 @@ public final class BroadcastDeliveryRegression {
             try {
                 if (pressure) verifyPressure(server, pool, sockets, peers);
                 else if (oneSlot) verifyOneSlot(server, pool, sockets, peers);
+                else if (args.length > 0 && args[0].equals("fanout-load"))
+                    measureFanout(server, pool, sockets, peers);
                 else verifyFanout(server, pool, sockets, peers);
             } finally {
                 for (Peer peer : peers) peer.socket.close();
@@ -113,6 +115,66 @@ public final class BroadcastDeliveryRegression {
         for (int index = 0; index < peers.size(); index++) if (index != 250) peers.get(index).expect(RECOVERY);
         System.out.println("PASS closed middle recipient did not interrupt 499 remaining writes");
         verifyConcurrentFanout(actors.subList(0, 20), peers.subList(0, 20));
+    }
+
+    /** Closed-loop windows of eight events. Latency ends when the last of 300 clients decodes an event. */
+    private static void measureFanout(CIOServer server, CIOBufferPool pool, ConcurrentHashMap<Integer, CUserSocket> sockets,
+            List<Peer> peers) throws Exception {
+        final int recipients = 300;
+        final int window = 8;
+        final int warmup = 128;
+        final int measured = 512;
+        final int events = warmup + measured;
+        var actors = new ArrayList<L1PcInstance>(recipients);
+        while (peers.size() < recipients) actors.add(connect(server, pool, sockets, peers));
+        byte[][] messages = new byte[events][];
+        long[] sent = new long[events];
+        long[][] delivered = new long[recipients][events];
+        CountDownLatch[] windows = new CountDownLatch[events / window];
+        for (int index = 0; index < events; index++) messages[index] = body(0x6d, index);
+        Arrays.setAll(windows, ignored -> new CountDownLatch(recipients));
+        long sharedAtStart = 0;
+
+        try (var readers = Executors.newVirtualThreadPerTaskExecutor()) {
+            var futures = new ArrayList<Future<?>>();
+            for (int id = 0; id < recipients; id++) {
+                Peer peer = peers.get(id);
+                long[] arrival = delivered[id];
+                futures.add(readers.submit(() -> {
+                    for (int index = 0; index < events; index++) {
+                        peer.expect(messages[index]);
+                        arrival[index] = System.nanoTime();
+                        if ((index + 1) % window == 0) windows[index / window].countDown();
+                    }
+                    return null;
+                }));
+            }
+            for (int index = 0; index < events; index++) {
+                if (index == warmup) sharedAtStart = sharedWorkRuns(server);
+                final byte[] message = messages[index];
+                sent[index] = System.nanoTime();
+                CSharedBroadcast.sendWrittenRecipientsBestEffort(actors, out -> out.put(message));
+                if ((index + 1) % window == 0)
+                    check(windows[index / window].await(5, TimeUnit.SECONDS), "fanout window did not drain");
+            }
+            for (Future<?> future : futures) future.get(5, TimeUnit.SECONDS);
+        }
+        long[] latency = new long[measured];
+        long last = 0;
+        for (int index = warmup; index < events; index++) {
+            for (long[] arrival : delivered) last = Math.max(last, arrival[index]);
+            latency[index - warmup] = last - sent[index];
+        }
+        Arrays.sort(latency);
+        System.out.printf(java.util.Locale.ROOT, "FANOUT recipients=%d events=%d deliveries/s=%.0f last-client-p99-ms=%.3f handoffs=%d%n",
+                recipients, measured, recipients * (double) measured * 1e9 / (last - sent[warmup]),
+                latency[(measured * 99 + 99) / 100 - 1] / 1e6, sharedWorkRuns(server) - sharedAtStart);
+    }
+
+    private static long sharedWorkRuns(CIOServer server) {
+        long runs = 0;
+        for (var owner : server.ownerDiagnostics()) runs += owner.sharedWorkRuns();
+        return runs;
     }
 
     private static void verifyConcurrentFanout(List<L1PcInstance> actors, List<Peer> peers) throws Exception {

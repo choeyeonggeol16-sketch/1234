@@ -3,6 +3,8 @@ package l1j.server.server.model.network.core.connection;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 
+import l1j.server.server.model.network.core.transport.selector.CSelectorTransport;
+
 /** Inherited, allocation-neutral storage and execution of the socket FIFO.
  * The socket itself is the serializer state; no separate delegate, queue,
  * worker, or additional per-SEND allocation is introduced.
@@ -12,6 +14,9 @@ public abstract class CExecutionSerializerFast {
     static final int SOCKET_SLOTS = 512;
     static final int SOCKET_MASK = SOCKET_SLOTS - 1;
     static final int SOCKET_REJECT_AT = SOCKET_SLOTS - 8;
+    private static final int SOCKET_SHARE_MIN_SENDS = 16;
+    private static final int SOCKET_SHARE_SLICE = 32;
+    private static final int DRAIN_TRANSFERRED = -1;
     static final byte SOCKET_SEND_START = 1;
     static final byte SOCKET_WRITE_COMPLETE = 2;
     static final byte SOCKET_SEND_ENQUEUE = 3;
@@ -82,6 +87,11 @@ public abstract class CExecutionSerializerFast {
     abstract void acceptPackedAction(long packed);
     abstract boolean hasCommittedWriteReady();
 
+    private enum DrainMode { PINNED, LOCAL, SHARED, RETURNED }
+
+    /** Move the already-claimed token; refusal keeps it on the caller. */
+    boolean transferSocketDrain(boolean returning) { return false; }
+
     final boolean isSocketSerializerOwner() {
         return _socketOwner == Thread.currentThread() && !_socketPosting;
     }
@@ -141,10 +151,11 @@ public abstract class CExecutionSerializerFast {
         drainSocketCallbacks();
     }
 
-    /** First contender becomes the inline drainer; other callers return. */
+    /** First contender claims the drain; other callers return. */
     final void drainSocketCallbacks() {
         if (!SOCKET_DRAINING.compareAndSet(this, 0, 1)) return;
-        drainSocketCallbacksAcquired();
+        drainSocketCallbacksAcquired(CSelectorTransport.SHARED_SEND_WORKERS
+                ? DrainMode.LOCAL : DrainMode.PINNED);
     }
 
     /**
@@ -154,6 +165,10 @@ public abstract class CExecutionSerializerFast {
      * drain rather than permitting later SENDs to overtake it.
      */
     final void drainSocketCallbacksOwnedReady() {
+        drainSocketCallbacksOwnedReady(DrainMode.PINNED, 0);
+    }
+
+    private int drainSocketCallbacksOwnedReady(DrainMode mode, int untilTransfer) {
             for (;;) {
                 // Deferred owner-inline completions precede any SEND ticket
                 // reserved after their callback. Consume only after write()
@@ -191,7 +206,19 @@ public abstract class CExecutionSerializerFast {
                     } catch (Throwable failure) { close(); }
                     continue;
                 }
-                if (pending == 0 || kind == 0L) break;
+                if (pending == 0 || kind == 0L) return untilTransfer;
+                if (mode != DrainMode.PINNED) {
+                    if (untilTransfer == 0) {
+                        // Reservations include unpublished slots and packing
+                        // tombstones. A peer needs a ready prefix with real SENDs.
+                        if (!_readSocketOwnerActive && !_socketPosting && !_socketExecutingTicket
+                                && _prefixWriteCompletion == 0L
+                                && (mode == DrainMode.SHARED || hasReadySendBacklog(pending))
+                                && transferSocketDrain(mode == DrainMode.SHARED)) return DRAIN_TRANSFERRED;
+                        untilTransfer = SOCKET_SHARE_SLICE;
+                    }
+                    --untilTransfer;
+                }
                 final long argument = (long) SOCKET_ARGUMENT_SLOT.getAcquire(_socketArguments, slot);
                 final CIOBufferEx sendLease = kind == SOCKET_SEND_ENQUEUE
                         ? _socketSendArguments[slot] : null;
@@ -226,11 +253,41 @@ public abstract class CExecutionSerializerFast {
             }
     }
 
-    /** The caller already holds _socketDraining == 1. */
+    private boolean hasReadySendBacklog(int pending) {
+        if (pending < SOCKET_SHARE_MIN_SENDS) return false;
+        int sends = 0;
+        int limit = Math.min(pending, SOCKET_SHARE_SLICE);
+        int head = (int) _socketHead;
+        for (int i = 0; i < limit; i++) {
+            byte kind = (byte) SOCKET_CALLBACK_SLOT.getAcquire(_socketCallbacks, (head + i) & SOCKET_MASK);
+            if (kind == 0) return false;
+            if ((kind == SOCKET_SEND_ENQUEUE || kind == SOCKET_PACKED_ACTION)
+                    && ++sends == SOCKET_SHARE_MIN_SENDS) return true;
+        }
+        return false;
+    }
+
+    /** The caller already holds the serializer, possibly in a fused scope. */
     final void drainSocketCallbacksAcquired() {
+        drainSocketCallbacksAcquired(DrainMode.PINNED);
+    }
+
+    final void drainSharedSocketCallbacks() {
+        drainSocketCallbacksAcquired(DrainMode.SHARED);
+    }
+
+    final void resumeSharedSocketCallbacks(boolean cancelled) {
+        drainSocketCallbacksAcquired(cancelled ? DrainMode.PINNED : DrainMode.RETURNED);
+    }
+
+    private void drainSocketCallbacksAcquired(DrainMode mode) {
+        // Returned work gets a local slice before it can be shared again.
+        // Keep the remaining count if a publication races with token release.
+        int untilTransfer = mode == DrainMode.LOCAL ? 0 : SOCKET_SHARE_SLICE;
         for (;;) {
             _socketOwner = Thread.currentThread();
-            drainSocketCallbacksOwnedReady();
+            untilTransfer = drainSocketCallbacksOwnedReady(mode, untilTransfer);
+            if (untilTransfer == DRAIN_TRANSFERRED) return;
 
             // A SEND_START notification is not a payload reservation. Every
             // attached SEND was already consumed in ticket order above; any
