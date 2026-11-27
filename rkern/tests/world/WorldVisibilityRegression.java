@@ -3,6 +3,7 @@ package l1j.server.server.model;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -12,21 +13,25 @@ import java.util.concurrent.atomic.AtomicReference;
 import l1j.server.Config;
 import l1j.server.TextMapReader;
 import l1j.server.server.datatables.MapsTable;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.ai.core.WorldCollisionHash;
+import l1j.server.server.model.character.animation.NpcSpeedData;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.map.L1WorldMap;
+import l1j.server.server.templates.L1Npc;
 import sun.misc.Unsafe;
 
 public final class WorldVisibilityRegression {
     public static void main(String[] args) throws Exception {
         installMapMetadata();
         radiusScreenAndGenerations();
+        mapPlayerMembership();
         fastOrderingAndLimits();
         publishedMovementAndCleanup();
         movingAndReplacedIdsAppearOnce();
-        System.out.println("PASS world visibility geometry, unsigned/first-seen order, terrain generation, entered players, nested scopes and concurrent identities");
+        System.out.println("PASS world visibility geometry, unsigned/first-seen order, terrain generation, map player roster and rollback, entered players, nested scopes and concurrent identities");
     }
 
     private static void radiusScreenAndGenerations() {
@@ -92,6 +97,62 @@ public final class WorldVisibilityRegression {
                 world.releaseVisiblePlayerFast(outer);
             }
             check(outer.isEmpty(), "released worker snapshot no longer retains actors");
+        }
+    }
+
+    private static void mapPlayerMembership() throws Exception {
+        final var first = map(3120);
+        final var recycled = map(3120);
+        final var other = map(3121);
+        try (var fixture = new WorldFixture(first, other)) {
+            final var world = fixture.world;
+            final var high = fixture.player(first, -101, 100, 101, true);
+            final var low = fixture.player(first, 601, 103, 101, true);
+            final var staged = fixture.player(first, 602, 105, 101, false);
+            final var ghost = fixture.player(recycled, 603, 109, 101, true);
+            for (int i = 0; i < 48; ++i) fixture.object(first, 621 + i, 150, 150);
+            check(world.getVisiblePlayers(first).equals(List.of(low, high))
+                            && world.getVisiblePlayers(first.getId()).equals(List.of(low, high))
+                            && world.getVisiblePlayers(recycled).equals(List.of(ghost)),
+                    "map-wide roster is unsigned ID ordered, terrain scoped and limited to published players");
+            check(world.hasOtherMapPlayer(first, high) && !world.hasOtherMapPlayer(recycled, ghost)
+                            && !world.hasOtherMapPlayer(other, null), "other-player query respects terrain and identity");
+            check(world.relocateVisibleObject(low, 105, 106, first)
+                    && world.getVisiblePlayers(first).equals(List.of(low, high)), "same-map step keeps the roster");
+            check(world.relocateVisibleObject(low, 110, 111, other) && world.getVisiblePlayers(other).equals(List.of(low))
+                    && !world.hasOtherMapPlayer(first, high), "cross-map commit updates both rosters");
+            world.addVisibleObject(staged);
+            check(world.getVisiblePlayers(first).equals(List.of(staged, high)), "enter after registration");
+            field(NpcSpeedData.class, "m_npc_speed_data")
+                    .set(null, new HashMap<>());
+            var template = new L1Npc();
+            template.set_npcId(810001);
+            template.set_name("map roster fixture");
+            template.set_nameid("map roster fixture");
+            var npc = new L1NpcInstance(template);
+            locate(npc, first, high.getId(), 143, 144);
+            fixture.enter(npc);
+            world.removeVisibleObject(high);
+            check(world.getVisiblePlayers(first).equals(List.of(staged)), "replacement by a nonplayer and late leave");
+            final var again = fixture.player(first, high.getId(), 111, 109, true);
+            check(world.getVisiblePlayers(first).equals(List.of(staged, again)), "nonplayer replaced by player");
+            world.removeVisibleObject(staged);
+            check(!world.hasOtherMapPlayer(first, again), "leaving retires roster entry before identity removal");
+            final var ground = world.getGroundInventory(29_999, 30_000, (short) other.getId());
+            try {
+                var moving = fixture.player(first, ground.getId(), 114, 115, true);
+                check(!world.relocateVisibleObject(moving, 114, 115, other)
+                                && world.getVisiblePlayers(first).equals(List.of(moving, again))
+                                && world.getVisiblePlayers(other).equals(List.of(low)),
+                        "collision rolls back without adding or removing either map roster entry");
+                world.removeObject(moving);
+            } finally {
+                world.removeVisibleObject(ground);
+            }
+            world.removeObject(again);
+            world.removeObject(ghost);
+            check(world.getVisiblePlayers(first).isEmpty() && world.getVisiblePlayers(recycled).isEmpty(),
+                    "last leave clears player membership while other map objects remain");
         }
     }
 

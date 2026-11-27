@@ -279,13 +279,10 @@ for (L1PcInstance player : getMembersArray()) {
 
 	private void npcBroadcast(String msg) {
 		if (_guide == null) {
-			for (Object obj : CWorld.getInstance().getMapObjects(4)) {
-				if (obj instanceof L1NpcInstance) {
-					L1NpcInstance n = (L1NpcInstance) obj;
-					if (n.getNpcTemplate().get_npcId() == 80085) {
-						_guide = n;
-						break;
-					}
+			for (L1NpcInstance npc : CWorld.getInstance().getNpcsByTemplateId(80085)) {
+				if (npc.getClusterMapId() == 4) {
+					_guide = npc;
+					break;
 				}
 			}
 		}
@@ -351,28 +348,14 @@ for (L1PcInstance player : getMembersArray()) {
 	}
 
 	private void openDoor() {
-		L1DoorInstance door = null;
-		for (L1Object object : CWorld.getInstance().getObject()) {
-			if (object instanceof L1DoorInstance) {
-				door = (L1DoorInstance) object;
-				// 첫번째 문이라면 연다..
-				if (door.getMapId() == 5140 && door.getDoorId() == 3001) {
-					door.open();
-				}
-			}
+		for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+			if (npc instanceof L1DoorInstance door && door.getMapId() == 5140 && door.getDoorId() == 3001) door.open();
 		}
 	}
 
 	private void closeDoor() {
-		L1DoorInstance door = null;
-		for (L1Object object : CWorld.getInstance().getObject()) {
-			if (object instanceof L1DoorInstance) {
-				door = (L1DoorInstance) object;
-				// 첫번째 문이라면 닫는다..
-				if (door.getMapId() == 5140 && door.getDoorId() == 3001) {
-					door.close();
-				}
-			}
+		for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+			if (npc instanceof L1DoorInstance door && door.getMapId() == 5140 && door.getDoorId() == 3001) door.close();
 		}
 	}
 

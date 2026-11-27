@@ -26,7 +26,7 @@ public class L1FurnitureInstance extends L1NpcInstance {
 
 	private static final long serialVersionUID = 1L;
 
-	private int _itemObjId;
+	private volatile int _itemObjId;
 
 	public L1FurnitureInstance(L1Npc template) {
 		super(template);
@@ -65,8 +65,9 @@ public class L1FurnitureInstance extends L1NpcInstance {
 		return _itemObjId;
 	}
 
-	public void setItemObjId(int i) {
-		_itemObjId = i;
+	public void setItemObjId(int itemId) {
+		_itemObjId = itemId;
+		CWorld.furnitureItemChanged(this);
 	}
 
 }

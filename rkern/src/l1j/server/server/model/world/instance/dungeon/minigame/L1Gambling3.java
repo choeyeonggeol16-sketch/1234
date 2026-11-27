@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import l1j.server.server.model.world.instance.CInstanceWork;
 import l1j.server.server.Opcodes;
 import l1j.server.server.model.world.effect.L1EffectSpawn;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -114,12 +113,7 @@ public class L1Gambling3 {
 	}
 
 	private L1NpcInstance findDealer() {
-		for (L1Object o : CWorld.getInstance().getObject()) {
-			if (o instanceof L1NpcInstance && ((L1NpcInstance) o).getNpcTemplate().get_npcId() == DEALER) {
-				return (L1NpcInstance) o;
-			}
-		}
-		return null;
+		return CWorld.getInstance().findNpcByNpcId(DEALER);
 	}
 
 	private void say(L1PcInstance pc, L1NpcInstance dealer, String msg) {

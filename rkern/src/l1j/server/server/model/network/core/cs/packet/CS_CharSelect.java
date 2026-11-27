@@ -174,14 +174,10 @@ public final class CS_CharSelect {
                 || pc.is무인상점() || pc.GetTrade() != null
                 || l1j.server.server.model.inventory.CTrade.HasPendingTradeBlocker(pc)
                 || l1j.server.server.storage.CacheD.getInstance().hasPendingOwnerApply(pc.getId())) return;
-        for (L1PcInstance target : CWorld.getInstance().getAllPlayers3()) {
-            if (target.getId() != pc.getId()
-                    && target.getAccountName().equalsIgnoreCase(pc.getAccountName())
-                    && target.isPrivateShop()) {
-                pc.sendPackets("\\f3이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
-                pc.sendPackets("\\f3상점을 종료하시길 바랍니다.");
-                return;
-            }
+        if (CWorld.getInstance().hasOtherPrivateShop(pc)) {
+            pc.sendPackets("\\f3이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
+            pc.sendPackets("\\f3상점을 종료하시길 바랍니다.");
+            return;
         }
         // A rejected attendance write must not detach the only owner of that snapshot.
         try {

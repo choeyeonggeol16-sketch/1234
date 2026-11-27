@@ -16,7 +16,6 @@ import l1j.server.Config;
 import l1j.server.server.model.item.teleport.NeigeTower;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.SeasonRewardHandler;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -225,12 +224,8 @@ public class ActionControlHandler {
     }
 
     private void openBoardUI(L1PcInstance pc, int npcId) {
-        for (L1Object obj : CWorld.getInstance().getObject()) {
-            if (obj instanceof L1NpcInstance && ((L1NpcInstance) obj).getNpcId() == npcId) {
-                SC_Board.send(pc, (L1NpcInstance) obj);
-                break;
-            }
-        }
+        L1NpcInstance board = CWorld.getInstance().findNpcByNpcId(npcId);
+        if (board != null) SC_Board.send(pc, board);
     }
 
     private void soundAndBroadcast(L1PcInstance pc, int soundId) {

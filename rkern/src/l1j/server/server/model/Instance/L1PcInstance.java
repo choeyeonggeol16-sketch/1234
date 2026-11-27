@@ -713,7 +713,7 @@ public class L1PcInstance extends L1Character {
 	public L1ItemInstance _fishingRod = null;
 	private L1ClassFeature _classFeature = null;
 	private final CUserEquipment _equipment;
-	private String _accountName;
+	private volatile String _accountName;
 	private int _classId;
 	private int _type;
 	private int _exp;
@@ -4290,8 +4290,15 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 		return _accountName;
 	}
 
+	@Override
+	public void setName(String name) {
+		super.setName(name);
+		CWorld.playerKeysChanged(this);
+	}
+
 	public void setAccountName(String s) {
 		_accountName = s;
+		CWorld.playerKeysChanged(this);
 	}
 
 	public void setBaseMagicDmg(int i) {

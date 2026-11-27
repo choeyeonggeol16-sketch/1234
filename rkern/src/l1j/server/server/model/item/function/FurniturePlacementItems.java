@@ -12,7 +12,6 @@ import l1j.server.Config;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.model.world.residence.L1HouseLocation;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -73,19 +72,9 @@ public final class FurniturePlacementItems {
 			return;
 		}
 
-		boolean isAppear = true;
-		L1FurnitureInstance furniture = null;
-		for (L1Object l1object : CWorld.getInstance().getObject()) {
-			if (l1object instanceof L1FurnitureInstance) {
-				furniture = (L1FurnitureInstance) l1object;
-				if (furniture.getItemObjId() == itemObjectId) { // 이미 꺼내고 있는 가구
-					isAppear = false;
-					break;
-				}
-			}
-		}
-
-		if (isAppear) {
+		var placements = CWorld.getInstance().findFurnitureByItem(itemObjectId);
+		L1FurnitureInstance furniture;
+		if (placements.isEmpty()) {
 			if (pc.getHeading() != 0 && pc.getHeading() != 2) {
 				return;
 			}
@@ -179,6 +168,7 @@ public final class FurniturePlacementItems {
 			} catch (Exception exception) {
 			}
 		} else {
+			furniture = placements.getFirst();
 			furniture.deleteMe();
 			FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
 		}

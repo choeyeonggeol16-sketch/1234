@@ -1,6 +1,7 @@
 package l1j.server.server.model;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.sql.Timestamp;
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 import java.util.Spliterator;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -64,9 +66,10 @@ public class L1Clan {
 	@SuppressWarnings("unused")
 	private static final Logger _log = Logger.getLogger(L1Clan.class.getName());
 
-	private int _clanId;
+	private volatile int _clanId;
 
-	private String _clanName;
+	private volatile String _clanName;
+	private WeakReference<CClanRegistry> clanRegistry;
 
 	private int _leaderId;
 
@@ -474,7 +477,7 @@ public class L1Clan {
 	}
 
 	public void setClanId(int clan_id) {
-		_clanId = clan_id;
+		CClanRegistry.changeId(this, clan_id);
 	}
 
 	public String getClanName() {
@@ -482,7 +485,23 @@ public class L1Clan {
 	}
 
 	public void setClanName(String clan_name) {
-		_clanName = clan_name;
+		CClanRegistry.rename(this, clan_name);
+	}
+
+	CClanRegistry clanRegistry() {
+		return clanRegistry == null ? null : clanRegistry.get();
+	}
+
+	void setClanRegistry(WeakReference<CClanRegistry> registry) {
+		clanRegistry = registry;
+	}
+
+	void assignClanId(int id) {
+		_clanId = id;
+	}
+
+	void assignClanName(String name) {
+		_clanName = name;
 	}
 
 	public int getLeaderId() {
@@ -812,10 +831,16 @@ public class L1Clan {
 
 	
 
-	private War _currentWar;
+	private static final AtomicReferenceFieldUpdater<L1Clan, War> CURRENT_WAR =
+			AtomicReferenceFieldUpdater.newUpdater(L1Clan.class, War.class, "_currentWar");
+	private volatile War _currentWar;
 
 	public void setCurrentWar(War war) {
 		_currentWar = war;
+	}
+
+	public void clearCurrentWar(War expected) {
+		CURRENT_WAR.compareAndSet(this, expected, null);
 	}
 
 	public War getCurrentWar() {

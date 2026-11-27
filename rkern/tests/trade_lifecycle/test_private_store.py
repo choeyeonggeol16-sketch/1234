@@ -190,7 +190,10 @@ public class PrivateStoreTest {
     }
     static class CWorld {
         static final CWorld world=new CWorld(); final List<L1PcInstance> players=new ArrayList<>();
-        static CWorld getInstance(){return world;} List<L1PcInstance> getAllPlayers3(){return players;}
+        static CWorld getInstance(){return world;} boolean hasOtherPrivateShop(L1PcInstance pc) {
+            return players.stream().anyMatch(other -> other.getId() != pc.getId() && other.isPrivateShop()
+                    && pc.getAccountName().equalsIgnoreCase(other.getAccountName()));
+        }
     }
     static class DynamicShopItem {
         int objId,itemId,count,price,iden,enchant,attr; boolean isPurchase;

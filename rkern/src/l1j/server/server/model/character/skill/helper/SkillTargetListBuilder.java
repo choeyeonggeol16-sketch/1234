@@ -131,14 +131,14 @@ public enum SkillTargetListBuilder {
         final List<L1Object> objects;
         try {
             grid = CWorld.getInstance().getClusterGrid();
-            objects = grid.borrowNearby(area == -1 ? user : target, area);
+            objects = grid.borrowNearby(area == -1 ? user : target, area, cap);
         } catch (Throwable queryFailure) {
             return;
         }
 
         try {
             // Limit the inspected positions, including entries rejected below.
-            for (int i = 0, n = Math.min(cap, objects.size()); i < n; i++) {
+            for (int i = 0, n = objects.size(); i < n; i++) {
                 final L1Object obj = objects.get(i);
                 if (!(obj instanceof L1Character)) continue;
 

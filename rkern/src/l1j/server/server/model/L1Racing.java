@@ -359,29 +359,15 @@ for(L1PcInstance pc : toArray(일반)){
 	
 	private void openDoor()
 	{
-		L1DoorInstance door = null;
-		for (L1Object object : CWorld.getInstance().getObject()) {
-			if (object instanceof L1DoorInstance) {
-				door = (L1DoorInstance) object;
-
-				if (door.getCurrentSpriteId() == 6677){
-					door.open();
-				}
-			}
+		for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+			if (npc instanceof L1DoorInstance door && door.getCurrentSpriteId() == 6677) door.open();
 		}
 	}
 	
 	private void closeDoor()
 	{
-		L1DoorInstance door = null;
-		for (L1Object object : CWorld.getInstance().getObject()) {
-			if (object instanceof L1DoorInstance) {
-				door = (L1DoorInstance) object;
-
-				if (door.equalsCurrentSprite(6677)){
-					door.close();
-				}
-			}
+		for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+			if (npc instanceof L1DoorInstance door && door.equalsCurrentSprite(6677)) door.close();
 		}
 	}
 
@@ -400,16 +386,11 @@ for(L1PcInstance pc : toArray(일반)){
 	
 	private void npcBroadcast(String msg)
 	{
-		for(L1Object obj : CWorld.getInstance().getObject2()){
-			if(obj instanceof L1NpcInstance){
-				L1NpcInstance npc = (L1NpcInstance)obj;
-				if(npc.getNpcTemplate().get_npcId() == 300000){
-					try { SC_NpcChatPacket.broadcastNpc(npc, npc, "잠시후 펫 레이싱을 진행하겠습니다.", 2); }
-                    catch (RuntimeException failure) {
-                        GAME_NOTICE_LOG.log(java.util.logging.Level.WARNING,
-                                "Racing NPC notice failed", failure);
-                    }
-				}			
+		for (L1NpcInstance npc : CWorld.getInstance().getNpcsByTemplateId(300000)) {
+			try {
+				SC_NpcChatPacket.broadcastNpc(npc, npc, "잠시후 펫 레이싱을 진행하겠습니다.", 2);
+			} catch (RuntimeException failure) {
+				GAME_NOTICE_LOG.log(java.util.logging.Level.WARNING, "Racing NPC notice failed", failure);
 			}
 		}
 	}

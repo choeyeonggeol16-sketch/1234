@@ -8,6 +8,8 @@ import java.util.concurrent.locks.LockSupport;
 import l1j.server.Config;
 import l1j.server.TextMapReader;
 import l1j.server.server.datatables.MapsTable;
+import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.templates.L1EtcItem;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -31,9 +33,10 @@ public final class WorldLifecycleRegression {
         try {
             queuedReplacements(world, home, away);
             reinstallationAtMutation(world, home);
+            nestedTimerPrecedesQueuedSibling(world, home);
             releaseDrainedPages(world, home);
             check(world.objectCount() == 0 && world.ExecutableBacklog() == 0, "world drained");
-            System.out.println("PASS queued store/move generation, same-instance remove/leave/enter/move at mutation, FIFO dependency, page/argument retirement");
+            System.out.println("PASS queued store/move generation, same-instance remove/leave/enter/move at mutation, FIFO dependency, nested owner and page/argument retirement");
         } finally {
             maps.removeMap(home.getId());
             maps.removeMap(away.getId());
@@ -66,7 +69,8 @@ public final class WorldLifecycleRegression {
                     "queued re-store cannot resurrect previous generation");
             check(world.findObject(fresh.getId()) == fresh && fresh.getClusterMapId() == home.getId()
                     && fresh.getX() == 108 && fresh.getY() == 109, "fresh FIFO registration enters and moves");
-            for (Object page : (Object[]) field(CWorld.class, "executionPages").get(world)) {
+            Object execution = field(CWorld.class, "execution").get(world);
+            for (Object page : (Object[]) field(CWorldExecutionSerializer.class, "executionPages").get(execution)) {
                 if (page != null) {
                     for (String name : new String[]{"objects", "destinations"})
                         for (Object argument : (Object[]) field(page.getClass(), name).get(page))
@@ -105,20 +109,57 @@ public final class WorldLifecycleRegression {
         }
     }
 
+    private static void nestedTimerPrecedesQueuedSibling(CWorld world, L1Map home) throws Exception {
+        final var gate = actor(410, home);
+        final int[] order = new int[4];
+        final Thread[] workers = new Thread[3];
+        final var template = new L1EtcItem();
+        template.setItemId(40017);
+        final var item = new L1ItemInstance(template) {
+            int written;
+            int callbacks;
+            @Override public void TimerExpired(int timerId, int generation) {
+                workers[callbacks++] = Thread.currentThread();
+                order[written++] = timerId;
+                if (timerId == 1) {
+                    world.AsyncItemTimer(this, 2, generation);
+                    order[written++] = -1;
+                }
+            }
+        };
+        item.setId(411);
+        world.storeObject(item);
+        world.storeAndEnterWorld(gate);
+        try {
+            Thread drain;
+            synchronized (gate) {
+                drain = blockedIn("removeVisibleObject", () -> world.AsyncLeaveWorld(gate));
+                check(world.AsyncItemTimer(item, 1, 17) && world.AsyncItemTimer(item, 3, 17), "queue sibling timers");
+            }
+            joined(drain);
+            check(Arrays.equals(order, new int[]{1, 2, -1, 3}), "nested timer finishes before queued sibling");
+            for (Thread worker : workers) check(worker == drain, "all timers run on the first submitting thread");
+        } finally {
+            world.removeObject(item);
+            world.removeObject(gate);
+        }
+    }
+
     private static void releaseDrainedPages(CWorld world, L1Map home) throws Exception {
         var gate = actor(210, home);
         var detached = actor(211, home);
         world.storeAndEnterWorld(gate);
-        Field count = field(CWorld.class, "executionAllocatedPages");
+        Object execution = field(CWorld.class, "execution").get(world);
+        Field count = field(CWorldExecutionSerializer.class, "executionAllocatedPages");
         for (int i = 0; i < 66_000; i++) check(world.AsyncLeaveWorld(detached), "initial page rotation");
         Thread drain;
         synchronized (gate) {
             drain = blockedIn("removeVisibleObject", () -> world.AsyncLeaveWorld(gate));
             for (int i = 0; i < 264_000; i++) check(world.AsyncLeaveWorld(detached), "queued burst");
-            check(count.getInt(world) >= 256, "large burst populated at least 256 real FIFO pages");
+            check(count.getInt(execution) >= 256, "large burst populated at least 256 real FIFO pages");
         }
         joined(drain);
-        check(count.getInt(world) == 0, "drain frees second large burst while first trim still on cooldown");
+        check(count.getInt(execution) == 0, "drain frees second large burst while first trim still on cooldown");
         check(world.AsyncRemoveObject(gate) && world.findObject(gate.getId()) == null, "admission after trim");
     }
 

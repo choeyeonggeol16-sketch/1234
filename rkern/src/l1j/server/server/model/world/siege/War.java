@@ -84,16 +84,16 @@ public class War {
 				broadcastWinner(nextDefense, _defense);
 				for(L1Clan clan : _offenses.values()){
 					broadcastEndWar(_defense, clan);
-					clan.setCurrentWar(null);
+					clan.clearCurrentWar(this);
 				}
 			}else{
 				notifyWinner(nextDefense, _defense);
 				for(L1Clan clan : _offenses.values()){
 					notifyEndWar(_defense, clan);
-					clan.setCurrentWar(null);
+					clan.clearCurrentWar(this);
 				}
 			}
-			_defense.setCurrentWar(null);
+			_defense.clearCurrentWar(this);
 			_offenses.clear();
 			setDefenseClan(nextDefense);
 		}finally{
@@ -115,12 +115,12 @@ public class War {
 			_warLock.lock();
 			CWorld.getInstance().removeWar(this);
 			if(_defense != null){
-				_defense.setCurrentWar(null);
+				_defense.clearCurrentWar(this);
 				_defense = null;
 			}
 			if(_offenses != null){
 				for(L1Clan c : _offenses.values())
-					c.setCurrentWar(null);
+					c.clearCurrentWar(this);
 				_offenses.clear();
 				_offenses = null;
 			}
@@ -244,7 +244,7 @@ public class War {
 			_warLock.lock();
 			L1Clan clan = _offenses.remove(id);
 			if(clan != null)
-				clan.setCurrentWar(null);
+				clan.clearCurrentWar(this);
 		}finally{
 			_warLock.unlock();
 		}

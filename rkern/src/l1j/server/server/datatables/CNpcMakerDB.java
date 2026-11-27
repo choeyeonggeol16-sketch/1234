@@ -9,6 +9,9 @@ import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.CNpcMaker;
+import l1j.server.server.model.CWorld;
+import l1j.server.server.model.L1Object;
+import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.templates.L1Npc;
 import l1j.server.server.utils.NumberUtil;
@@ -35,6 +38,20 @@ public class CNpcMakerDB {
 	public static void reload() {
 		SingletonHolder.INSTANCE = new CNpcMakerDB();
 	}
+
+    public static void reloadMap(int mapId) {
+        despawnForReload(CWorld.getInstance().getMapObjects(mapId), mapId);
+        getInstance().reload(mapId);
+    }
+
+    public static void despawnForReload(Iterable<L1Object> members, int mapId) {
+        for (L1Object member : members) {
+            if (member instanceof L1MonsterInstance monster && monster.getMapId() == mapId
+                    && monster.getHiddenStatus() == 0 && !monster.isDead()) {
+                monster.re();
+            }
+        }
+    }
 
 	public void reload(int mpaid) {
 		String sql = "SELECT * FROM spawnlist WHERE mapid = ?";

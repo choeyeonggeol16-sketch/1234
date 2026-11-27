@@ -82,6 +82,13 @@ public final class InstantZoneGroundReceiptRegression {
         final var receipt = new Object();
         require(pending.reserveGroundPickup(receipt), "ground pickup reservation acquired");
 
+        final var swept = drop(world, tile, terrain, 2_000_401_004);
+        require(world.deleteGroundItem(swept, terrain) && world.findObject(swept.getId()) == null
+                && tile.GetByServerID(swept.getId()) == null, "administrative sweep removes a settled ground stack");
+        require(!world.deleteGroundItem(pending, terrain) && pending.hasGroundPickupReservation(receipt)
+                && world.findObject(pending.getId()) == pending && tile.GetByServerID(pending.getId()) == pending,
+                "administrative sweep preserves an active pickup and its canonical world identity");
+
         zone.close(() -> {});
         require(world.findObject(ordinary.getId()) == ordinary && world.findObject(pending.getId()) == pending,
                 "occupied closing room keeps its existing ground items");
@@ -187,6 +194,8 @@ public final class InstantZoneGroundReceiptRegression {
         require(retired.GetByServerID(item.getId()) == item && item.hasGroundPickupReservation(token),
                 "rejected creation preserves original item and its exact receipt");
         item.releaseGroundPickup(token);
+        require(!world.deleteGroundItem(item, original) && !world.deleteGroundItem(item, current)
+                && retired.GetByServerID(item.getId()) == item, "administrative sweep cannot cross recycled terrain");
         retired.clearItems();
         require(retired.getSize() == 0 && world.findObject(item.getId()) == null, "original cleanup completes");
 

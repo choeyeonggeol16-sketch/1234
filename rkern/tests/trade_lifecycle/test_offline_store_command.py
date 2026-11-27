@@ -68,7 +68,10 @@ public final class OfflineStoreCommandTest {
     static class L1Clan {void updateClanMemberOnline(L1PcInstance p){}}
     static class CWorld {
         static final CWorld I=new CWorld();final List<L1PcInstance> players=new ArrayList<>();
-        static CWorld getInstance(){return I;}List<L1PcInstance> getAllPlayers3(){return players;}
+        static CWorld getInstance(){return I;}boolean hasOtherPrivateShop(L1PcInstance pc) {
+            return players.stream().anyMatch(other -> other.getId() != pc.getId() && other.isPrivateShop()
+                    && pc.getAccountName().equalsIgnoreCase(other.getAccountName()));
+        }
         L1Clan getClan(int id){return null;}
     }
     static class SC_Unknown2 {static int sent;static void send(CUserSocket c,int v){check(c.pc==null&&c.state==CConnectionState.AUTHENTICATED&&!c.ready,"selection publication order");sent++;}}

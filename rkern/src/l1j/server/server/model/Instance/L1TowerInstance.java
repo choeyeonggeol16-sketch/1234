@@ -22,7 +22,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.L1WarSpawn;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.action.CAttackAction;
@@ -167,24 +166,9 @@ public class L1TowerInstance extends L1NpcInstance {
 					&& !isSubTower()) {
 
 				int subTowerDeadCount = 0;
-				L1TowerInstance tower = null;
-
-				for (L1Object l1object
-						: CWorld.getInstance().getObject()) {
-
-					if (l1object instanceof L1TowerInstance) {
-
-						tower = (L1TowerInstance) l1object;
-
-						if (tower.isSubTower()
-								&& tower.isDead()) {
-
-							subTowerDeadCount++;
-
-							if (subTowerDeadCount == 4) {
-								break;
-							}
-						}
+				for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+					if (npc instanceof L1TowerInstance tower && tower.isSubTower() && tower.isDead()) {
+						if (++subTowerDeadCount == 4) break;
 					}
 				}
 

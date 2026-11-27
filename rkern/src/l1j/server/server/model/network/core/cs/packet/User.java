@@ -26,9 +26,7 @@ import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
-import l1j.server.server.model.Instance.L1FurnitureInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
 import l1j.server.server.monitor.Logger.ItemActionType;
 import l1j.server.server.monitor.LoggerInstance;
@@ -102,14 +100,10 @@ public final class User {
         }
         // Deployed furniture owns a live world object. Require retrieval first;
         // the receipt also checks the persisted placement under the SQL lock.
-        if (item.getItemId() >= 41383 && item.getItemId() <= 41400) {
-            for (L1Object object : CWorld.getInstance().getObject()) {
-                if (object instanceof L1FurnitureInstance furniture
-                        && furniture.getItemObjId() == item.getId()) {
-                    SC_SystemMessage.send(pc, "설치된 가구를 회수한 뒤 삭제해 주세요.");
-                    return false;
-                }
-            }
+        if (item.getItemId() >= 41383 && item.getItemId() <= 41400
+                && !CWorld.getInstance().findFurnitureByItem(item.getId()).isEmpty()) {
+            SC_SystemMessage.send(pc, "설치된 가구를 회수한 뒤 삭제해 주세요.");
+            return false;
         }
         return true;
     }
@@ -488,13 +482,10 @@ public final class User {
             SC_ChatPacket.sendDirect(pc, pc, "\\aG상점 설치는 1,000원이 필요합니다.");
             return;
         }
-        for (L1PcInstance other : CWorld.getInstance().getAllPlayers3()) {
-            if (other != pc && other.getId() != pc.getId() && other.isPrivateShop()
-                    && pc.getAccountName().equalsIgnoreCase(other.getAccountName())) {
-                SC_SystemMessage.send(pc, "이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
-                if (pc.isPrivateShop()) QuitPrivateStore(pc);
-                return;
-            }
+        if (CWorld.getInstance().hasOtherPrivateShop(pc)) {
+            SC_SystemMessage.send(pc, "이미 당신의 보조 캐릭터가 무인상점 상태입니다.");
+            if (pc.isPrivateShop()) QuitPrivateStore(pc);
+            return;
         }
         ArrayList<DynamicShopItem> sells = null, buys = null;
         for (int i = 0; i < payload.count; i++) {

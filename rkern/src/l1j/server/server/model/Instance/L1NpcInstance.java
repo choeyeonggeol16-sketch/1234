@@ -1713,6 +1713,13 @@ public class L1NpcInstance extends L1Character {
     private int _movementDistance = 0;
     private int _tempLawful = 0;
 
+    @Override
+    public void setName(String name) {
+        super.setName(name);
+        // CopyFrom also calls this after assigning a new prototype.
+        CWorld.npcIdentityChanged(this);
+    }
+
     public String getNameId() {
         return _nameId;
     }

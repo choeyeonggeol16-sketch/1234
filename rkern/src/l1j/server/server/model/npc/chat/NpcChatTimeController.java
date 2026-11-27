@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import l1j.server.Config;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1NpcInstance;
-import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.BaseTime;
 import l1j.server.server.model.gametime.RealTimeClock;
@@ -116,20 +115,7 @@ public final class NpcChatTimeController implements Runnable, TimeListener {
                     npcChat.getNpcId();
 
 
-            for (L1Object obj
-                    : CWorld.getInstance().getObject()) {
-
-                if (!(obj instanceof L1NpcInstance)) {
-                    continue;
-                }
-
-                final L1NpcInstance npc =
-                        (L1NpcInstance) obj;
-
-                if (npc.getNpcTemplate().get_npcId() != npcId) {
-                    continue;
-                }
-
+            for (L1NpcInstance npc : CWorld.getInstance().getNpcsByTemplateId(npcId)) {
                 npc.startChat(
                         L1NpcInstance.CHAT_TIMING_GAME_TIME);
             }

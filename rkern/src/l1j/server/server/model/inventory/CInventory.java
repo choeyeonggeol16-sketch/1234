@@ -569,16 +569,8 @@ public class CInventory extends L1Object {
                 if (!(this instanceof CUserInventory))
                     LetterTable.getInstance().deleteLetter(item.getId());
 			} else if (itemId >= 41383 && itemId <= 41400) {
-				L1FurnitureInstance furniture = null;
-				for (L1Object l1object : CWorld.getInstance().getObject()) {
-					if (l1object == null)
-						continue;
-					if (l1object instanceof L1FurnitureInstance) {
-						furniture = (L1FurnitureInstance) l1object;
-						if (furniture.getItemObjId() == item.getId()) {
-							FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
-						}
-					}
+				for (L1FurnitureInstance furniture : CWorld.getInstance().findFurnitureByItem(item.getId())) {
+					FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
 				}
 			}
 			Pop(item);

@@ -103,15 +103,10 @@ class OrimFight extends Thread {
 	}
 
 	private void getOwnNpc() {
-		L1NpcInstance npc = null;
-		for (L1Object obj : CWorld.getInstance().getObject())
-			if ((obj instanceof L1NpcInstance)) {
-				npc = (L1NpcInstance) obj;
-				if (npc.getNpcId() == 91235)
-					oldin = npc;
-				else if (npc.getNpcId() == 91222)
-					_mimikList.add(npc);
-			}
+		CWorld world = CWorld.getInstance();
+		var guides = world.getNpcsByTemplateId(91235);
+		if (!guides.isEmpty()) oldin = guides.getLast();
+		_mimikList.addAll(world.getNpcsByTemplateId(91222));
 	}
 
 	int dieMimik() {

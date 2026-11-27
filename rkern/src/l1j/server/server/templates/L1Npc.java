@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.L1Object;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
 import l1j.server.server.shared.GameRandom;
@@ -58,7 +59,7 @@ public class L1Npc extends L1Object implements Cloneable {
 		return isMovable() && isActionable();
 	}
 	
-	private int _npcid;
+	private volatile int _npcid;
 
     // Client NPC kind ID for world-object field 39; zero preserves the old wire.
     private int _npc_class_id;
@@ -75,8 +76,11 @@ public class L1Npc extends L1Object implements Cloneable {
 		return _npcid;
 	}
 
-	public void set_npcId(int i) {
-		_npcid = i;
+	public synchronized void set_npcId(int i) {
+        final int previous = _npcid;
+        if (previous == i) return;
+        _npcid = i;
+        CWorld.npcTemplateIdChanged(this, previous);
 	}
 
 	private String _name;

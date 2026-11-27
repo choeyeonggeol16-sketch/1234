@@ -1,21 +1,52 @@
 package l1j.server.server.model;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceArray;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.L1GroundInventory;
+import l1j.server.server.model.map.L1Map;
+import l1j.server.server.model.map.L1WorldMap;
 
 /** Map-wide membership. The cell index independently serves bounded spatial queries. */
 final class CWorldMapObjects {
     private static final int PAGE_BITS = 8;
     private static final int PAGE_SIZE = 1 << PAGE_BITS;
-    private final AtomicReferenceArray<AtomicReferenceArray<L1IntRegistry<L1Object>>> pages =
+    private final AtomicReferenceArray<AtomicReferenceArray<MapMembers>> pages =
             new AtomicReferenceArray<>((CWorld.MAX_MAP_ID >>> PAGE_BITS) + 1);
     // Some traps and items enter before receiving a factory registration; their IDs
     // must still retire across maps on replacement. Tile inventories are local to a map.
     private final L1IntRegistry<L1Object> mapOnly = new L1IntRegistry<>();
     private final BitSet configured = new BitSet();
+
+    private static final class MapMembers {
+        final L1IntRegistry<L1Object> objects = new L1IntRegistry<>();
+        volatile L1IntRegistry<L1PcInstance> players;
+
+        // The actor's factory ID stripe serializes changes to this identity across both
+        // registries. Never nest their shared radix write stripes.
+        void addPlayer(L1PcInstance pc) {
+            var roster = players;
+            if (roster == null) {
+                synchronized (this) {
+                    roster = players;
+                    if (roster == null) players = roster = new L1IntRegistry<>();
+                }
+            }
+            roster.put(pc.getId(), pc);
+        }
+
+        void removePlayer(L1PcInstance pc) {
+            var roster = players;
+            if (roster != null) roster.remove(pc.getId(), pc);
+        }
+
+        boolean containsPlayer(L1PcInstance pc, L1Map terrain) {
+            return LocalWorldMap.publishedTerrain(pc) == terrain && objects.get(pc.getId()) == pc;
+        }
+    }
 
     CWorldMapObjects(Iterable<Integer> configuredMaps) {
         for (int id : configuredMaps) {
@@ -27,24 +58,54 @@ final class CWorldMapObjects {
         return id >= 0 && id <= CWorld.MAX_MAP_ID;
     }
 
-    L1IntRegistry<L1Object> registry(int mapId, boolean create) {
+    private MapMembers slot(int mapId, boolean create) {
         if (!valid(mapId)) return null;
         int pageIndex = mapId >>> PAGE_BITS;
         var page = pages.get(pageIndex);
         if (page == null) {
             if (!create) return null;
-            var candidate = new AtomicReferenceArray<L1IntRegistry<L1Object>>(PAGE_SIZE);
+            var candidate = new AtomicReferenceArray<MapMembers>(PAGE_SIZE);
             page = pages.compareAndExchange(pageIndex, null, candidate);
             if (page == null) page = candidate;
         }
         int slot = mapId & (PAGE_SIZE - 1);
-        var registry = page.get(slot);
-        if (registry == null && create) {
-            var candidate = new L1IntRegistry<L1Object>();
-            registry = page.compareAndExchange(slot, null, candidate);
-            if (registry == null) registry = candidate;
+        var members = page.get(slot);
+        if (members == null && create) {
+            var candidate = new MapMembers();
+            members = page.compareAndExchange(slot, null, candidate);
+            if (members == null) members = candidate;
         }
-        return registry;
+        return members;
+    }
+
+    L1IntRegistry<L1Object> registry(int mapId, boolean create) {
+        final var members = slot(mapId, create);
+        return members == null ? null : members.objects;
+    }
+
+    List<L1PcInstance> players(int mapId, L1Map terrain) {
+        final var members = slot(mapId, false);
+        final var roster = members == null ? null : members.players;
+        if (roster == null || roster.isEmpty()) return new ArrayList<>();
+        if (terrain == null) terrain = L1WorldMap.getInstance().findMap(mapId);
+        var result = new ArrayList<L1PcInstance>(roster.size());
+        if (terrain != null) {
+            for (L1PcInstance pc : roster.values()) {
+                if (members.containsPlayer(pc, terrain)) result.add(pc);
+            }
+        }
+        return result;
+    }
+
+    boolean hasOtherPlayer(L1Map terrain, L1PcInstance except) {
+        final var members = slot(terrain.getId(), false);
+        final var roster = members == null ? null : members.players;
+        if (roster != null && !roster.isEmpty()) {
+            for (L1PcInstance pc : roster.values()) {
+                if (pc != except && members.containsPlayer(pc, terrain)) return true;
+            }
+        }
+        return false;
     }
 
     L1IntRegistry<L1Object> legacyRegistry(int mapId) {
@@ -57,8 +118,10 @@ final class CWorldMapObjects {
     }
 
     boolean remove(L1Object object, int mapId) {
-        var map = registry(mapId, false);
-        return map != null && map.remove(object.getId(), object);
+        final var members = slot(mapId, false);
+        if (members == null || !members.objects.remove(object.getId(), object)) return false;
+        if (object instanceof L1PcInstance pc) members.removePlayer(pc);
+        return true;
     }
 
     L1Object mapOnlyOwner(int id) {
@@ -83,14 +146,20 @@ final class CWorldMapObjects {
 
     private boolean publish(L1Object object, int mapId, boolean canonical) {
         int previousMap = object.getClusterMapId();
-        var map = registry(mapId, true);
-        if (map == null) return false;
+        final var members = slot(mapId, true);
+        if (members == null) return false;
+        final var map = members.objects;
         int id = object.getId();
+        final L1Object previous;
         synchronized (map.lockForKey(id)) {
-            var previous = map.get(id);
+            previous = map.get(id);
             if (previous != null && previous != object && (!canonical || previous instanceof L1GroundInventory))
                 return false;
             if (previous != object) map.put(id, object);
+        }
+        if (previous != object) {
+            if (object instanceof L1PcInstance pc) members.addPlayer(pc);
+            else if (previous instanceof L1PcInstance old) members.removePlayer(old);
         }
         if (previousMap != mapId) remove(object, previousMap);
         return true;

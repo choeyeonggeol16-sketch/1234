@@ -144,9 +144,7 @@ import l1j.server.server.templates.L1Skills;
 import l1j.server.server.datatables.NpcSpawnTable;
 import l1j.server.server.model.Instance.L1MerchantInstance;
 import l1j.server.server.utils.eKind;
-import l1j.server.server.datatables.FurnitureSpawnTable;
 import l1j.server.server.datatables.LetterTable;
-import l1j.server.server.model.Instance.L1FurnitureInstance;
 
 import java.util.HashMap;
 import l1j.server.server.model.CNpcMaker;
@@ -931,8 +929,7 @@ public final class BuilderCmdHandler {
 				StringTokenizer st = new StringTokenizer(param);
 				int mapid = Integer.parseInt(st.nextToken());
 				String locName = MapsTable.getInstance().getMapName(mapid);
-				CWorld.getInstance().getMapObject(mapid);
-				CNpcMakerDB.getInstance().reload(mapid);
+				CNpcMakerDB.reloadMap(mapid);
 				SC_PacketBox.send(gm, SC_PacketBox.GREEN_MESSAGE, "["+locName+"]의 몬스터들을 리스폰하였습니다.");
 				//gm.sendPackets("몬스폰리스트 (지정맵) 리로드 완료");
 			} catch (Exception e) {
@@ -2366,9 +2363,8 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 					SC_SystemMessage.send(gm, "이미 잠재력활성화 상태입니다.");
 					return;
 				}
-				for (Object obj : CWorld.getInstance().getObject()) {
-					if (obj instanceof L1DollInstance) {
-						L1DollInstance 인형 = (L1DollInstance) obj;
+				for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+					if (npc instanceof L1DollInstance 인형) {
 						if (인형.getMaster() != null) {
 							count++;
 							인형.deleteDoll(false);
@@ -2385,9 +2381,8 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 					SC_SystemMessage.send(gm, "이미 잠재력은 비활성화상태입니다.");
 					return;
 				}
-				for (Object obj : CWorld.getInstance().getObject()) {
-					if (obj instanceof L1DollInstance) {
-						L1DollInstance 인형 = (L1DollInstance) obj;
+				for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+					if (npc instanceof L1DollInstance 인형) {
 						if (인형.getMaster() != null) {
 							count++;
 							인형.deleteDoll(false);
@@ -2521,32 +2516,28 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 
 			int countGM = 0, nocountPlayer = 0, countPlayer = 0, countShop = 0;
 
-			for (L1Object each1 : CWorld.getInstance().getMapObjects(i)) {
-				if (each1 instanceof L1PcInstance) {
-					L1PcInstance eachpc = (L1PcInstance) each1;
-
-					if (eachpc.isGm()) {
-						gmList.append("이름 : " + eachpc.getName() + " / 레벨 : "
-								+ eachpc.getLevel() + "\n");
-						countGM++;
+			for (L1PcInstance eachpc : CWorld.getInstance().getVisiblePlayers(i)) {
+				if (eachpc.isGm()) {
+					gmList.append("이름 : " + eachpc.getName() + " / 레벨 : "
+							+ eachpc.getLevel() + "\n");
+					countGM++;
+					continue;
+				}
+				if (!eachpc.isPrivateShop()) {
+					if (eachpc.noPlayerCK) {
+						noplayList.append(eachpc.getName() + ", ");
+						nocountPlayer++;
+						continue;
+					} else {
+						playList.append("이름 : " + eachpc.getName()
+						+ " / 레벨 : " + eachpc.getLevel() + "\n");
+						countPlayer++;
 						continue;
 					}
-					if (!eachpc.isPrivateShop()) {
-						if (eachpc.noPlayerCK) {
-							noplayList.append(eachpc.getName() + ", ");
-							nocountPlayer++;
-							continue;
-						} else {
-							playList.append("이름 : " + eachpc.getName()
-							+ " / 레벨 : " + eachpc.getLevel() + "\n");
-							countPlayer++;
-							continue;
-						}
-					}
-					if (eachpc.isPrivateShop()) {
-						shopList.append(eachpc.getName() + ", ");
-						countShop++;
-					}
+				}
+				if (eachpc.isPrivateShop()) {
+					shopList.append(eachpc.getName() + ", ");
+					countShop++;
 				}
 			}
 
@@ -5169,9 +5160,8 @@ for (L1PcInstance tg : CWorld.getInstance(). getVisiblePlayer(pc)) {
  
           SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 몬스터가 재배치 되었습니다.");
         } else if (spawn.equals("삭제")) {
-          for (L1Object obj : CWorld.getInstance().getObject()) {
-        		 if ((obj != null) && ((obj instanceof L1MonsterInstance))) {
-        			 L1MonsterInstance mon = (L1MonsterInstance) obj;
+          for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+                 if (npc instanceof L1MonsterInstance mon) {
         			 mon.setRespawn(false);
         			 mon.re();   
         		 }
@@ -5186,9 +5176,8 @@ for (L1PcInstance tg : CWorld.getInstance(). getVisiblePlayer(pc)) {
 
           SC_PacketBox.broadcastGreen("[긴급공지] 월드전체 NPC가 재배치 되었습니다.");
         } else if (spawn.equals("삭제")) {
-          for (L1Object npc : CWorld.getInstance().getObject()) {
-        		  if ((npc != null) && npc instanceof L1MerchantInstance) {
-        			  L1MerchantInstance merchent = (L1MerchantInstance)npc;
+          for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
+                  if (npc instanceof L1MerchantInstance merchent) {
 	        			  merchent.setRespawn(false);
 	        			  merchent.deleteMe();
                     }
@@ -5352,80 +5341,23 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 	}
 
 	private static void BuilderCmd_delete_ground_item(L1PcInstance pc, String cmdName, String arg) {
-		L1ItemInstance l1iteminstance = null;
-	//	ArrayList<L1PcInstance> players = null;
-	try{
-		StringTokenizer st = new StringTokenizer(arg);
-		String type = st.nextToken();
-		if(type.equalsIgnoreCase("전체")){
-			CInventory groundInventory= null;
-			LetterTable lettertable = null;
-			L1FurnitureInstance furniture = null;
-			for (L1Object l1object : CWorld.getInstance().getObject()) {
-				if (l1object instanceof L1ItemInstance) {
-					l1iteminstance = (L1ItemInstance) l1object;
-					if (l1iteminstance.getX() == 0 && l1iteminstance.getY() == 0) { // 지면상의 아이템은 아니고, 누군가의 소유물
-						continue;
-					}
-					//
-				//	players = CWorld.getInstance().getVisiblePlayer(l1iteminstance, 2);
-				//	if (0 == players.size()) {
-						groundInventory = CWorld.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
-						int itemId = l1iteminstance.getItem(). getItemId();
-						if (itemId >= 49016 && itemId <= 49025) { // 편지지
-							lettertable = new LetterTable();
-							lettertable.deleteLetter(l1iteminstance.getId());
-						} else if (itemId >= 41383 && itemId <= 41400) { // 가구
-							if (l1object instanceof L1FurnitureInstance) {
-								furniture = (L1FurnitureInstance) l1object;
-								if (furniture.getItemObjId() == l1iteminstance.getId()) { // 이미 꺼내고 있는 가구
-									FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
-								}
-							}
-						}
-						groundInventory.Pop(l1iteminstance);
-						CWorld.getInstance().removeVisibleObject(l1iteminstance);
-						CWorld.getInstance().removeObject(l1iteminstance);
-					}
+		try {
+			String scope = new StringTokenizer(arg).nextToken();
+			boolean all = scope.equals("전체");
+			if (!all && !scope.equals("맵")) {
+				SC_SystemMessage.send(pc, "청소 [맵,전체]");
+				return;
 			}
-		}else if(type.equalsIgnoreCase("맵")){
-			CInventory groundInventory= null;
-			LetterTable lettertable = null;
-			L1FurnitureInstance furniture = null;
-			for (L1Object l1object : CWorld.getInstance().getObject()) {
-				if(l1object.getMapId() == pc.getMapId()){
-					if (l1object instanceof L1ItemInstance) {
-						l1iteminstance = (L1ItemInstance) l1object;
-						if (l1iteminstance.getX() == 0 && l1iteminstance.getY() == 0) { // 지면상의 아이템은 아니고, 누군가의 소유물
-							continue;
-						}
-				
-							groundInventory = CWorld.getInstance().getInventory(l1iteminstance.getX(), l1iteminstance.getY(), l1iteminstance.getMapId());
-							int itemId = l1iteminstance.getItem(). getItemId();
-							if (itemId >= 49016 && itemId <= 49025) { // 편지지
-								lettertable = new LetterTable();
-								lettertable.deleteLetter(l1iteminstance.getId());
-							} else if (itemId >= 41383 && itemId <= 41400) { // 가구
-								if (l1object instanceof L1FurnitureInstance) {
-									furniture = (L1FurnitureInstance) l1object;
-									if (furniture.getItemObjId() == l1iteminstance.getId()) { // 이미 꺼내고 있는 가구
-										FurnitureSpawnTable.getInstance().deleteFurniture(furniture);
-									}
-								}
-							}
-							groundInventory.Pop(l1iteminstance);
-							CWorld.getInstance().removeVisibleObject(l1iteminstance);
-							CWorld.getInstance().removeObject(l1iteminstance);
-						}
+			CWorld world = CWorld.getInstance();
+			var terrain = pc.getMap();
+			for (L1Object object : all ? world.values() : world.getMapObjects(terrain.getId())) {
+				if (object instanceof L1ItemInstance item) {
+					world.deleteGroundItem(item, all ? item.getMap() : terrain);
 				}
 			}
-		}else{
+		} catch (Exception e) {
 			SC_SystemMessage.send(pc, "청소 [맵,전체]");
 		}
-		//CWorld.getInstance().broadcastServerMessage("월드 맵상의 아이템이 GM에 의해 삭제되었습니다. ");
-	} catch (Exception e) {
-		SC_SystemMessage.send(pc, "청소 [맵,전체]");
-	}
 	}
 
 	private static void BuilderCmd_check_character(L1PcInstance pc, String cmdName, String arg) {

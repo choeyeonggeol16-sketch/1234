@@ -43,6 +43,7 @@ public final class LocalWorldMap {
     static final long NO_POSITION = -1L;
     private static final int CANONICAL_STRIPE_COUNT = 32;
     private static final int CANONICAL_STRIPE_MASK = CANONICAL_STRIPE_COUNT - 1;
+    private static final int UNLIMITED = Integer.MAX_VALUE;
     private static final int RETAINED_SCAN_SIZE = 512;
     private static final ThreadLocal<IdentityHashMap<L1Object, Boolean>> SCAN_SEEN =
             ThreadLocal.withInitial(IdentityHashMap::new);
@@ -79,6 +80,11 @@ public final class LocalWorldMap {
 
     /** Borrow a reentrant thread-local snapshot; release in finally. */
     public List<L1Object> borrowNearby(L1Object origin, int radius) {
+        return borrowNearby(origin, radius, UNLIMITED);
+    }
+
+    /** Borrow at most the first limit distinct nearby objects in cell order. */
+    public List<L1Object> borrowNearby(L1Object origin, int radius, int limit) {
         final NearbyFrame frame = _nearbyFrames.get();
         final int depth = frame.depth;
         if (depth == frame.slots.length)
@@ -90,7 +96,7 @@ public final class LocalWorldMap {
         }
         frame.depth = depth + 1;
         try {
-            queryNearby(origin, radius, result);
+            queryNearby(origin, radius, limit, result);
             return result;
         } catch (RuntimeException | Error failure) {
             result.clear();
@@ -870,27 +876,32 @@ public final class LocalWorldMap {
     }
 
     public void queryNearby(L1Object origin, int radius, List<L1Object> result) {
-        collectObjectsAround(origin, radius < 0 ? -1 : radius, result);
+        queryNearby(origin, radius, UNLIMITED, result);
+    }
+
+    public void queryNearby(L1Object origin, int radius, int limit, List<L1Object> result) {
+        collectObjectsAround(origin, radius < 0 ? -1 : radius, limit, result);
     }
 
     /** Legacy visible-object semantics use only -1 for screen distance. */
     public void collectVisibleObjects(L1Object origin, int radius, List<L1Object> result) {
-        collectObjectsAround(origin, radius, result);
+        collectObjectsAround(origin, radius, UNLIMITED, result);
     }
 
-    private void collectObjectsAround(L1Object origin, int radius, List<L1Object> result) {
+    private void collectObjectsAround(L1Object origin, int radius, int limit, List<L1Object> result) {
         result.clear();
-        if (origin == null || radius < -1) return;
+        if (origin == null || radius < -1 || limit <= 0) return;
         final List<L1Object> target = lockedDestination(result);
-        queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin, radius, false, target, null);
-        finishQuery(result, target);
+        queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin, radius, false, target, null, limit);
+        if (limit == UNLIMITED) finishQuery(result, target);
+        else copyQueryResult(result, target);
     }
 
     public void queryPoint(L1Location center, int radius, List<L1Object> result) {
         result.clear();
         if (center == null || radius < 0) return;
         final List<L1Object> target = lockedDestination(result);
-        queryRadius(center.getMap(), center.getX(), center.getY(), null, radius, false, target, null);
+        queryRadius(center.getMap(), center.getX(), center.getY(), null, radius, false, target, null, UNLIMITED);
         finishQuery(result, target);
     }
 
@@ -898,8 +909,72 @@ public final class LocalWorldMap {
     public void queryRectangle(L1Map map, int minX, int minY, int maxX, int maxY, List<L1Object> result) {
         result.clear();
         final List<L1Object> target = lockedDestination(result);
-        scanRectangle(map, minX, minY, maxX, maxY, null, 0, 0, false, false, target, null);
+        scanRectangle(map, minX, minY, maxX, maxY, null, 0, 0, false, false, target, null, UNLIMITED);
         finishQuery(result, target);
+    }
+
+    ArrayList<L1Object> queryLine(L1Map map, L1Object source, L1Object target) {
+        final ArrayList<L1Object> result = new ArrayList<>();
+        if (source.getMap() != map) return result;
+        final int x0 = source.getX(), y0 = source.getY(), x1 = target.getX(), y1 = target.getY();
+        if (source.getMap() != map || target.getMap() != map) return result;
+        queryRectangle(map, Math.min(x0, x1), Math.min(y0, y1),
+                Math.max(x0, x1), Math.max(y0, y1), result);
+
+        final long dx = Math.abs((long) x1 - x0), dy = Math.abs((long) y1 - y0);
+        final int sx = x1 >= x0 ? 1 : -1, sy = y1 >= y0 ? 1 : -1;
+        final boolean xMajor = dx >= dy;
+        final long major = xMajor ? dx : dy, minor = xMajor ? dy : dx;
+        int kept = 0;
+        for (int i = 0; i < result.size(); i++) {
+            final L1Object object = result.get(i);
+            if (object.getMap() != map || object.equals(source)) continue;
+            final long stepX = ((long) object.getX() - x0) * sx;
+            final long stepY = ((long) object.getY() - y0) * sy;
+            final long along = xMajor ? stepX : stepY;
+            if (along < 0L || along > major) continue;
+            // Match the direction-dependent Bresenham half-step over the full int span.
+            final long across = major == 0L ? 0L
+                    : Long.divideUnsigned(along * minor + major / 2L, major);
+            if ((xMajor ? stepY : stepX) == across) result.set(kept++, object);
+        }
+        for (int i = result.size() - 1; i >= kept; i--) result.remove(i);
+        return result;
+    }
+
+    ArrayList<L1Object> queryBox(L1Map map, L1Object origin, int heading, int width, int height) {
+        if (width < 0 || height < 0) throw new IllegalArgumentException("Negative visibility box size");
+        if (heading < 0 || heading >= 8) throw new ArrayIndexOutOfBoundsException(heading);
+
+        final int x = origin.getX(), y = origin.getY();
+        final ArrayList<L1Object> result = new ArrayList<>();
+        if (origin.getMap() != map) return result;
+        // The rotated box is additionally bounded by Chebyshev distance.
+        queryRectangle(map, Math.clamp((long) x - height, Integer.MIN_VALUE, Integer.MAX_VALUE),
+                Math.clamp((long) y - height, Integer.MIN_VALUE, Integer.MAX_VALUE),
+                Math.clamp((long) x + height, Integer.MIN_VALUE, Integer.MAX_VALUE),
+                Math.clamp((long) y + height, Integer.MIN_VALUE, Integer.MAX_VALUE), result);
+
+        final double angle = ((heading + 6) & 7) * Math.PI / 4;
+        final double cos = Math.cos(angle), sin = Math.sin(angle);
+        int kept = 0;
+        for (int i = 0; i < result.size(); i++) {
+            final L1Object object = result.get(i);
+            if (object.getMap() != map || object.equals(origin)) continue;
+            final long dx = (long) object.getX() - x;
+            final long dy = (long) object.getY() - y;
+            if (dx == 0L && dy == 0L) {
+                result.set(kept++, object);
+                continue;
+            }
+            if (Math.max(Math.abs(dx), Math.abs(dy)) > height) continue;
+            final long forward = Math.round(dx * cos + dy * sin);
+            final long lateral = Math.round(-dx * sin + dy * cos);
+            if (forward > 0L && lateral >= -width && lateral <= width)
+                result.set(kept++, object);
+        }
+        for (int i = result.size() - 1; i >= kept; i--) result.remove(i);
+        return result;
     }
 
     public List<L1PcInstance> queryNearbyPlayers(L1Object origin, int radius) {
@@ -916,7 +991,7 @@ public final class LocalWorldMap {
         result.clear();
         if (origin == null || radius < -1) return;
         final List<L1PcInstance> target = lockedDestination(result);
-        queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin, radius, true, null, target);
+        queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin, radius, true, null, target, UNLIMITED);
         finishQuery(result, target);
     }
 
@@ -930,20 +1005,20 @@ public final class LocalWorldMap {
 
     public boolean hasNearbyPlayer(L1Object origin, int radius) {
         return origin != null && queryRadius(origin.getMap(), origin.getX(), origin.getY(), origin,
-                radius < 0 ? -1 : radius, true, null, null);
+                radius < 0 ? -1 : radius, true, null, null, UNLIMITED);
     }
 
     private boolean queryRadius(L1Map map, int x, int y, L1Object origin, int radius, boolean playersOnly,
-            List<L1Object> objects, List<L1PcInstance> players) {
+            List<L1Object> objects, List<L1PcInstance> players, int limit) {
         final boolean screen = radius == -1;
         final long range = screen ? SCREEN_RADIUS : radius;
         return scanRectangle(map, x - range, y - range, x + range, y + range,
-                origin, x, y, screen, playersOnly, objects, players);
+                origin, x, y, screen, playersOnly, objects, players, limit);
     }
 
     private boolean scanRectangle(L1Map map, long minX, long minY, long maxX, long maxY,
             L1Object origin, int originX, int originY, boolean screen, boolean playersOnly,
-            List<L1Object> objects, List<L1PcInstance> players) {
+            List<L1Object> objects, List<L1PcInstance> players, int limit) {
         if (map == null) return false;
         final int mapId = map.getId();
         if (mapId < 0) return false;
@@ -970,11 +1045,18 @@ public final class LocalWorldMap {
         scan.objects = objects;
         scan.players = players;
         try {
-            return scanCells(mapId, scan);
+            if (limit != UNLIMITED) {
+                scan.limit = limit;
+                scan.ids = limit <= RETAINED_SCAN_SIZE ? scanIds(limit) : new TIntIntHashMap(16, 0.5f, 0, -1);
+            }
+            final boolean stopped = scanCells(mapId, scan);
+            scan.resolveDeferredDuplicates();
+            return stopped;
         } finally {
             scan.map = null;
             scan.objects = null;
             scan.players = null;
+            scan.clearLimit();
         }
     }
 
@@ -1042,6 +1124,10 @@ public final class LocalWorldMap {
         boolean excludesOrigin, screen, playersOnly;
         List<L1Object> objects;
         List<L1PcInstance> players;
+        int limit;
+        TIntIntHashMap ids;
+        IdentityHashMap<L1Object, Boolean> references;
+        ArrayList<L1Object> deferredDuplicates;
 
         boolean collect(CellBucket cell) {
             final L1Object[] candidates = playersOnly ? cell._players : cell._objects;
@@ -1052,11 +1138,70 @@ public final class LocalWorldMap {
                 final int x = candidate.getX(), y = candidate.getY();
                 if (!CTLMFilter.insideRectangle(x, y, minX, maxX, minY, maxY)
                         || (screen && !insideScreen(x - originX, y - originY))) continue;
-                if (objects != null) objects.add(candidate);
+                if (ids != null) {
+                    if (collectLimited(candidate)) return true;
+                } else if (objects != null) objects.add(candidate);
                 else if (players != null) players.add((L1PcInstance) candidate);
                 else return true;
             }
             return false;
+        }
+
+        private boolean collectLimited(L1Object candidate) {
+            final int size = objects.size();
+            final boolean full = size == limit;
+            final int id = candidate.getId();
+            if (id > 0) {
+                final int previous = full ? ids.get(id) : ids.putIfAbsent(id, size);
+                if (previous >= 0) {
+                    if (objects.get(previous) != candidate) {
+                        if (deferredDuplicates == null) deferredDuplicates = new ArrayList<>(2);
+                        deferredDuplicates.add(candidate);
+                        return full && allSelectedIdsPublished();
+                    }
+                    return false;
+                }
+                if (full) return false;
+            } else {
+                if (full) return false;
+                if (references == null) references = limit <= RETAINED_SCAN_SIZE
+                        ? scanReferences(limit) : new IdentityHashMap<>();
+                if (references.put(candidate, Boolean.TRUE) != null) return false;
+            }
+            objects.add(candidate);
+            return size + 1 == limit && allSelectedIdsPublished();
+        }
+
+        private boolean allSelectedIdsPublished() {
+            // A removed identity already in the prefix can be replaced by a later cell.
+            resolveDeferredDuplicates();
+            for (int i = 0; i < objects.size(); i++) {
+                final L1Object candidate = objects.get(i);
+                if (candidate.getId() > 0 && publishedPosition(candidate) == NO_POSITION) return false;
+            }
+            return true;
+        }
+
+        void resolveDeferredDuplicates() {
+            if (deferredDuplicates == null) return;
+            for (int i = 0; i < deferredDuplicates.size(); i++) {
+                final L1Object candidate = deferredDuplicates.get(i);
+                final int previous = ids.get(candidate.getId());
+                if (previous >= 0 && publishedPosition(objects.get(previous)) == NO_POSITION
+                        && publishedPosition(candidate) != NO_POSITION) objects.set(previous, candidate);
+            }
+        }
+
+        void clearLimit() {
+            if (ids != null) {
+                ids.clear();
+                ids = null;
+            }
+            if (references != null) {
+                references.clear();
+                references = null;
+            }
+            deferredDuplicates = null;
         }
     }
 
@@ -1096,6 +1241,10 @@ public final class LocalWorldMap {
                 if (seen != null) seen.clear();
             }
         }
+        copyQueryResult(result, target);
+    }
+
+    private static <T> void copyQueryResult(List<T> result, List<T> target) {
         if (target != result) {
             for (T entry : target) result.add(entry);
         }

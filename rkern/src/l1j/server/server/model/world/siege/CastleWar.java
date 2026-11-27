@@ -457,14 +457,9 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
     }
 
     private void deleteTower() {
-        L1TowerInstance tower = null;
-        for (L1Object l1object : CWorld.getInstance().getObject()) {
-            if (l1object instanceof L1TowerInstance) {
-                tower = (L1TowerInstance) l1object;
-                if (L1CastleLocation.checkInWarArea(_castleId, tower)) {
-                    tower.deleteMe();
-                }
-            }
+        for (var npc : CWorld.getInstance().getAllNpc()) {
+            if (npc instanceof L1TowerInstance tower && L1CastleLocation.checkInWarArea(_castleId, tower))
+                tower.deleteMe();
         }
     }
 
@@ -624,7 +619,7 @@ try {
                 if (defense != null) {
                     broadcastEndWar(defense, clan);
                 }
-                clan.setCurrentWar(null);
+                clan.clearCurrentWar(this);
             }
             _offenses.clear();
         } finally {
