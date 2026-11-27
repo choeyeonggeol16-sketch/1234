@@ -84,6 +84,7 @@ public final class CSelectorTransport implements AutoCloseable {
     private static final int ACCEPT_BUDGET = 32;
     private static final int COMMAND_BUDGET = 64;
     private static final int READY_BUDGET = 256;
+    private static final int MAX_CONSECUTIVE_POLL_SKIPS = 7;
     private static final long OWNER_PHASE_NANOS = 500_000;
     private static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(5);
     private static final System.Logger LOG = System.getLogger(CSelectorTransport.class.getName());
@@ -667,6 +668,7 @@ public final class CSelectorTransport implements AutoCloseable {
         private volatile boolean stopping;
         private volatile boolean finished;
         private boolean acceptReady;
+        private int consecutivePollSkips;
         private Connection first;
         private Connection last;
         private volatile int deadlineDepth;
@@ -787,7 +789,7 @@ public final class CSelectorTransport implements AutoCloseable {
             try {
                 initialize();
                 if (!stopping) {
-                    selector.selectNow(collector);
+                    if (!trySkipPoll()) pollNow();
                     work();
                 }
             } catch (Throwable unexpected) { fail(unexpected); }
@@ -807,7 +809,7 @@ public final class CSelectorTransport implements AutoCloseable {
                 // In that case this is the first active call on the owning thread.
                 if (thread == null) initialize();
                 else requireOwner();
-                select(Math.max(0, maxWaitMillis));
+                if (!trySkipPoll()) select(Math.max(0, maxWaitMillis));
             }
             catch (Throwable unexpected) { fail(unexpected); }
             if (stopping) finish();
@@ -883,9 +885,27 @@ public final class CSelectorTransport implements AutoCloseable {
             }
         }
 
+        private boolean trySkipPoll() {
+            if (first == null && !acceptReady) return false;
+            if (consecutivePollSkips >= MAX_CONSECUTIVE_POLL_SKIPS) return false;
+            ++consecutivePollSkips;
+            return true;
+        }
+
+        private void pollNow() throws IOException {
+            selector.selectNow(collector);
+            consecutivePollSkips = 0;
+        }
+
+        private void pollWait(long waitMillis) throws IOException {
+            if (waitMillis < 0) selector.select(collector);
+            else selector.select(collector, waitMillis);
+            consecutivePollSkips = 0;
+        }
+
         private void select(long maxWaitMillis) throws IOException {
             if (maxWaitMillis == 0 || first != null || acceptReady || hasMailboxWork()) {
-                selector.selectNow(collector);
+                pollNow();
                 return;
             }
             long waitMillis = maxWaitMillis;
@@ -895,14 +915,13 @@ public final class CSelectorTransport implements AutoCloseable {
                     deadline = deadlines.peek().scheduledDeadline;
                 long delay = deadline - System.nanoTime();
                 if (delay <= 0) {
-                    selector.selectNow(collector);
+                    pollNow();
                     return;
                 }
                 long deadlineMillis = 1 + (delay - 1) / 1_000_000;
                 if (waitMillis < 0 || deadlineMillis < waitMillis) waitMillis = deadlineMillis;
             }
-            if (waitMillis < 0) selector.select(collector);
-            else selector.select(collector, waitMillis);
+            pollWait(waitMillis);
         }
 
         private void collect(SelectionKey key) {
