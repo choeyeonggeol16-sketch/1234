@@ -198,14 +198,14 @@ public class BQSLoadManager implements Command{
                         try{
                             BQSCharacterData bqs = pc.getBqs();
                             if(bqs.has_progresses()){
-                                for(BQSCharacterCriteriaProgress progress : bqs.get_progresses().values()){
+                                for(BQSCharacterCriteriaProgress progress : bqs.get_progresses().valueCollection()){
                                     progress.set_current_ahcievement_level(0);
                                     progress.get_progress().set_quantity(0L);
                                     SC_CRITERIA_UPDATE_NOTI.sendOf(pc, progress.get_progress());
                                 }
                             }
-                            bqs.get_progresses().clear();
-                            bqs.get_achievements().clear();
+                            if (bqs.has_progresses()) bqs.get_progresses().clear();
+                            if (bqs.has_achievements()) bqs.get_achievements().clear();
                             BQSCharacterDataLoader.storeCharacterBqs(pc.getBqs(), false);
                             pc.sendPackets("운영자에 의해 도감 정보가 초기화되었습니다. 몬스터는 갱신되나, 보상을 위해서는 리스하시기 바랍니다.");
                             gm.sendPackets(String.format("%s의 몬스터북 정보를 초기화 하였습니다.", pc.getName()));
@@ -238,14 +238,14 @@ for(L1PcInstance pc : CWorld.getInstance().getAllPlayers()){
                                 
                                 ++amount;
                                 if(bqs.has_progresses()){
-                                    for(BQSCharacterCriteriaProgress progress : bqs.get_progresses().values()){
+                                    for(BQSCharacterCriteriaProgress progress : bqs.get_progresses().valueCollection()){
                                         progress.set_current_ahcievement_level(0);
                                         progress.get_progress().set_quantity(0L);
                                         SC_CRITERIA_UPDATE_NOTI.sendOf(pc, progress.get_progress());
                                     }
                                 }
-                                bqs.get_progresses().clear();
-                                bqs.get_achievements().clear();
+                                if (bqs.has_progresses()) bqs.get_progresses().clear();
+                                if (bqs.has_achievements()) bqs.get_achievements().clear();
                                 BQSCharacterDataLoader.storeCharacterBqs(pc.getBqs(), false);
                                 l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(shared,pc);
                             }
