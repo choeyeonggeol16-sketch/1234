@@ -96,7 +96,7 @@ import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.shared.EPcStatus;
 import l1j.server.server.shared.GameRandom;
@@ -284,7 +284,7 @@ public final class BuilderCmdHandler {
 		final String canonical = entry.getName();
 		final boolean privateArguments = "암호변경".equals(canonical) || "계정추가".equals(canonical) || "실행".equals(canonical);
 		try {
-			LoggerInstance.getInstance().addCommand(gm.getName() + ": " + canonical + " "
+			CLogD.getInstance().addCommand(gm.getName() + ": " + canonical + " "
 					+ (privateArguments ? "[REDACTED]" : param));
 			entry.execute(gm, canonical, param);
 		} catch (RuntimeException failure) {

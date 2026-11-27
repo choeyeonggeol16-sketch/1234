@@ -28,8 +28,8 @@ import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.character.companion.instance.CompanionInstanceCache;
-import l1j.server.server.monitor.Logger.ItemActionType;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD.ItemActionType;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.function.ExtendedItemActions;
@@ -144,7 +144,7 @@ public final class User {
      * L1InventoryTransaction has already applied counts/removal and inventory packets. */
     private static void DestroyItemReturn(L1PcInstance pc, L1ItemInstance[] items, int[] amounts) {
         for (int i = 0; i < items.length; i++)
-            LoggerInstance.getInstance().addItemAction(ItemActionType.Delete, pc, items[i], amounts[i]);
+            CLogD.getInstance().addItemAction(ItemActionType.Delete, pc, items[i], amounts[i]);
         pc.refreshLight();
     }
 

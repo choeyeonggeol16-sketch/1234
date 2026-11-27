@@ -154,8 +154,8 @@ import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.siege.WarFactory.WAR_TYPE;
-import l1j.server.server.monitor.Logger.ItemActionType;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD.ItemActionType;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Companion.Proto.CompanionT.eCommand;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceUserFlag;
@@ -4030,7 +4030,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
     l1j.server.server.model.network.core.broadcast.CSharedBroadcast.closeOptional(shared);
 }
 	                    /** 파일로그저장 **/ 
-	                    LoggerInstance.getInstance().addItemAction(ItemActionType.del, this, item, count);
+	                    CLogD.getInstance().addItemAction(ItemActionType.del, this, item, count);
 	                } else {
 	                    getInventory().tradeItem(item, item.isStackable() ? item.getCount() : 1,
 	                            CWorld.getInstance().getInventory(getX(), getY(), getMapId()));
@@ -4041,7 +4041,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 
 	                    l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendWrittenAllGmsBestEffort(SC_SystemMessage.nativeWriter("\\fY[GM] " + getName() + "님의 [" + item.getLogName() + "] 드랍"));
 	                    /** 파일로그저장 **/
-	                    LoggerInstance.getInstance().addItemAction(ItemActionType.del, this, item, count);
+	                    CLogD.getInstance().addItemAction(ItemActionType.del, this, item, count);
 	                }
 	            }
 	        }

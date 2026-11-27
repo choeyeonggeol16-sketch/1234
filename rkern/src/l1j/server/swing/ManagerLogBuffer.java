@@ -7,7 +7,7 @@ import java.util.Map;
 import javax.swing.JTextArea;
 import javax.swing.text.*;
 
-/** Bounded, best-effort screen log. Durable audit files are independent. */
+/** Bounded, best-effort screen log. LogD writes files independently. */
 public final class ManagerLogBuffer {
     public static final int MAX_PENDING=1024, MAX_PENDING_CHARS=256*1024;
     public static final int MAX_MESSAGE_CHARS=2048, MAX_DOCUMENT_CHARS=64*1024, MAX_LINES=300;

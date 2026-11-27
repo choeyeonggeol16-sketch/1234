@@ -22,7 +22,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_Trade;
 import l1j.server.server.model.network.core.sc.packet.SC_TradeAddItem;
 import l1j.server.server.model.network.core.sc.packet.SC_TradeStatus;
 import l1j.server.server.model.network.thread.CServerTimer;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 
 /** One active exchange owns both lists and both confirmation bits.
  * OFF CTrade lifecycle; L1's detached offer and durable CacheD settlement remain authoritative.
@@ -355,8 +355,8 @@ public final class CTrade {
         for (int i = 0, size = items.size(); i < size; i++) {
             L1ItemInstance item = items.get(i);
             try {
-                if (item.getItemId() == 400254) LoggerInstance.getInstance().수표(true, from, to, item, item.getCount());
-                else LoggerInstance.getInstance().addTrade(true, from, to, item, item.getCount());
+                if (item.getItemId() == 400254) CLogD.getInstance().addCheckTrade(true, from, to, item, item.getCount());
+                else CLogD.getInstance().addTrade(true, from, to, item, item.getCount());
             } catch (RuntimeException failure) { LOG.log(Level.WARNING, "Committed trade audit failed", failure); }
         }
     }

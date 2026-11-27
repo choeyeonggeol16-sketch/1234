@@ -129,7 +129,7 @@ import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoa
 import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ALCHEMY_DESIGN_ACK;
@@ -207,7 +207,7 @@ public class GameServer {
 		WeaponEnchantList.getInstance(); // 무기 인챈 정보 리스트
 
 		/** 로그파일저장 **/
-		LoggerInstance.getInstance();
+		CLogD.getInstance();
 
 		AuctionBoardTable.getInstance();
 
@@ -649,7 +649,6 @@ public class GameServer {
 
 	        RankUserLoader.getInstance().release();
 
-	        LoggerInstance.getInstance().flushImmediately();
 	        // Release delayed effect casts before closing their NPC owners.
 	        EffectModelLoader.release();
 	        CNPCServer npcServer = CNPCServer.getInstance();
@@ -670,7 +669,6 @@ public class GameServer {
                         + ", dbJobs=" + cache.pendingDbJobs());
                 Throwable failure = cache.lastFailure();
                 if (failure != null) failure.printStackTrace();
-                LoggerInstance.getInstance().flushImmediately();
             }
 
             ClanTable.checkpointActiveBlessings(CWorld.getInstance(), cache);
@@ -697,9 +695,8 @@ public class GameServer {
 	        fatal = t;
             if (t instanceof InterruptedException) Thread.currentThread().interrupt();
 	        t.printStackTrace();
-	        LoggerInstance.getInstance().flushImmediately();
 	    } finally {
-	        LoggerInstance.getInstance().flushImmediately();
+	        CLogD.getInstance().shutdown();
 	        if (fatal != null) {
 	            System.err.println("=== 셧다운 중 치명 오류 — 5초 후 종료 (로그 확인용) ===");
 	            try {

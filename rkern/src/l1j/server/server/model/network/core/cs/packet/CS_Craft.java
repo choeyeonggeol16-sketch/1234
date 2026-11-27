@@ -43,8 +43,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_Pledge;
 import l1j.server.server.model.network.core.sc.packet.SC_RankingClan;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.monitor.Logger.ChatType;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD.ChatType;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_CHAR_STAT;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SLOT_CHANGE;
 import l1j.server.server.storage.CacheD;
@@ -501,7 +501,7 @@ public final class CS_Craft {
 		SC_NewChat.send(whisperFrom, whisperFrom, 3, chatType, text, whisperTo.getName());
 		SC_NewChat.send(whisperTo, whisperFrom, 4, chatType, text, whisperFrom.getName());
 
-		LoggerInstance.getInstance().addWhisper(whisperFrom, whisperTo, text);
+		CLogD.getInstance().addWhisper(whisperFrom, whisperTo, text);
 	}
 
 	private static void processChatMessage(L1PcInstance pc, int chatType, String chatText) {
@@ -581,7 +581,7 @@ public final class CS_Craft {
 				}
 			}
 
-			LoggerInstance.getInstance().addChat(ChatType.Normal, pc, chatText);
+			CLogD.getInstance().addChat(ChatType.Normal, pc, chatText);
 			break;
 		}
 
@@ -604,7 +604,7 @@ public final class CS_Craft {
 				final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				if (clan != null) {
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
-					LoggerInstance.getInstance().addChat(ChatType.Clan, pc, chatText);
+					CLogD.getInstance().addChat(ChatType.Clan, pc, chatText);
 
 					final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
 					try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
@@ -624,7 +624,7 @@ public final class CS_Craft {
 			final CParty party = pc.getParty();
 			if (party != null) {
 				final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
-				LoggerInstance.getInstance().addChat(ChatType.Party, pc, chatText);
+				CLogD.getInstance().addChat(ChatType.Party, pc, chatText);
 
 				final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
 				try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
@@ -650,7 +650,7 @@ public final class CS_Craft {
 
 				if (clan != null && (rank == L1Clan.군주 || rank == L1Clan.수호)) {
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
-					LoggerInstance.getInstance().addChat(ChatType.Alliance, pc, chatText);
+					CLogD.getInstance().addChat(ChatType.Alliance, pc, chatText);
 
 					final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
 					try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
@@ -671,7 +671,7 @@ public final class CS_Craft {
 			final L1ChatParty party = pc.getChatParty();
 			if (party != null) {
 				final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
-				LoggerInstance.getInstance().addChat(ChatType.Party, pc, chatText);
+				CLogD.getInstance().addChat(ChatType.Party, pc, chatText);
 
 				final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
 				try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
@@ -691,7 +691,7 @@ public final class CS_Craft {
 				final L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
 				if (clan != null && pc.isCrown() && pc.getId() == clan.getLeaderId()) {
 					final SC_NewChat.ChatData packet = SC_NewChat.prepare(pc, 4, chatType, chatText, "");
-					LoggerInstance.getInstance().addChat(ChatType.Guardian, pc, chatText);
+					CLogD.getInstance().addChat(ChatType.Guardian, pc, chatText);
 
 					final CSharedBroadcast.NativeWireWriter chatBytes = SC_NewChat.nativeWriter(packet);
 					try (var chatShared = chatBytes == null ? null : new CAsyncSendConstBuffer(
@@ -828,7 +828,7 @@ public final class CS_Craft {
 			}
 
 			if (chatType == 3) {
-				LoggerInstance.getInstance().addChat(ChatType.Global, pc, text);
+				CLogD.getInstance().addChat(ChatType.Global, pc, text);
 			}
 
 		} catch (Exception e) {
@@ -839,7 +839,7 @@ public final class CS_Craft {
 		if (chatType == 3) {
 			SC_SystemMessage.broadcast(text);
 			SC_PacketBox.broadcastGreen("\\f= " + text);
-			LoggerInstance.getInstance().addChat(ChatType.Global, pc, text);
+			CLogD.getInstance().addChat(ChatType.Global, pc, text);
 			return;
 		}
 

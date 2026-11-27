@@ -23,8 +23,8 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.monitor.Logger.WarehouseType;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD.WarehouseType;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.templates.L1Item;
@@ -393,7 +393,7 @@ public abstract class Warehouse extends L1Object {
                 : target instanceof ElfWarehouse ? WarehouseType.Elf
                 : target instanceof SupplementaryService ? WarehouseType.Private : null;
         if (type != null) {
-            try { LoggerInstance.getInstance().addWarehouse(type, deposit, pc, source, count); }
+            try { CLogD.getInstance().addWarehouse(type, deposit, pc, source, count); }
             catch (RuntimeException loggingFailure) {
                 java.util.logging.Logger.getLogger(Warehouse.class.getName())
                         .log(java.util.logging.Level.WARNING, "Warehouse committed audit log failed", loggingFailure);

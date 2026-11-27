@@ -19,7 +19,7 @@ import l1j.server.server.model.shop.CBuySell;
 import l1j.server.server.model.shop.L1ShopBuyOrderList;
 import l1j.server.server.model.shop.L1ShopSellOrderList;
 import l1j.server.server.model.shop.NpcShopView;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.templates.L1ShopItem;
 
 final class MerchantTransactions {
@@ -192,7 +192,7 @@ final class MerchantTransactions {
     private static void logBuy(L1PcInstance pc, L1ShopItem item, String npcName, int count, int price, boolean dynamic) {
         String name = item.getItem().getName();
         if (dynamic) name = "+" + item.getEnchant() + " " + name;
-        LoggerInstance.getInstance().addShop(name, count, price, npcName, pc.getName());
+        CLogD.getInstance().addShop(name, count, price, npcName, pc.getName());
     }
 
     private static void notifyOrderLimit(L1PcInstance pc, int count) {

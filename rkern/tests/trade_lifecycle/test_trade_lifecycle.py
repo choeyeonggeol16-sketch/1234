@@ -127,7 +127,7 @@ stub("l1j.server.server.datatables","NoTradable","public class NoTradable { publ
 stub(M+".character.companion.instance","CompanionInstanceCache","public class CompanionInstanceCache { public static boolean is_companion_oblivion(int id){return true;} }")
 stub(M+".item","L1ItemId","public class L1ItemId { public static final int HIGH_CHARACTER_TRADE=999,LOW_CHARACTER_TRADE=998; }")
 stub(I+".warehouse","Warehouse","public class Warehouse { public static L1ItemInstance transferCopy(L1ItemInstance v,int id,int n,int charge){return v.copy(n);} }",f"import {M}.Instance.L1ItemInstance;")
-stub("l1j.server.server.monitor","LoggerInstance","public class LoggerInstance { public static LoggerInstance getInstance(){return new LoggerInstance();} public void addTrade(boolean b,L1PcInstance a,L1PcInstance z,L1ItemInstance v,int n){} public void 수표(boolean b,L1PcInstance a,L1PcInstance z,L1ItemInstance v,int n){} }",f"import {M}.Instance.*;")
+stub("l1j.server.server.logd","CLogD","public class CLogD { public static CLogD getInstance(){return new CLogD();} public void addTrade(boolean b,L1PcInstance a,L1PcInstance z,L1ItemInstance v,int n){} public void addCheckTrade(boolean b,L1PcInstance a,L1PcInstance z,L1ItemInstance v,int n){} }",f"import {M}.Instance.*;")
 P=M+".network.core.sc.packet"
 imports=f"import {M}.Instance.*; import {M}.network.core.connection.CUserSocket;"
 stub(P,"SC_MessageYN","public class SC_MessageYN { public static boolean send(L1PcInstance pc,int token,int type,String name){pc.socket.token=token;return !pc.socket.failAsk;} }",imports)

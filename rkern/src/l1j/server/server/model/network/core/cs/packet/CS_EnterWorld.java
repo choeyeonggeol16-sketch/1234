@@ -97,7 +97,7 @@ import l1j.server.server.model.world.instance.raid.RaidSpace;
 import l1j.server.server.model.world.siege.CastleWar;
 import l1j.server.server.model.world.siege.CastleWarBusiness;
 import l1j.server.server.model.world.siege.War;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Pledge.Proto.SC_REST_EXP_INFO_NOTI;
@@ -873,7 +873,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
         if (pc.getLevel() >= 50) {
             SC_PacketBox.send(pc, SC_PacketBox.GREEN_MESSAGE, Config.GAME_SERVER_MENT);
         }
-        LoggerInstance.getInstance().addConnection("접속 캐릭=" + client.getActiveChar().getName() + "	계정=" + client.getAccountName() + "	IP=" + client.getHostname());
+        CLogD.getInstance().addConnection("접속 캐릭=" + client.getActiveChar().getName() + "	계정=" + client.getAccountName() + "	IP=" + client.getHostname());
         
         L1CardCollection.Join(pc);
     }

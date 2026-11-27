@@ -23,7 +23,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.shop.PlayerShopView;
 import l1j.server.server.model.shop.dynamic.DynamicShopItem;
 import l1j.server.server.model.shop.dynamic.DynamicShopStorage;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 
 public final class PlayerShopTransactions {
     private static final Logger LOG = Logger.getLogger(PlayerShopTransactions.class.getName());
@@ -218,7 +218,7 @@ public final class PlayerShopTransactions {
     private static void notifySale(L1PcInstance customer, L1PcInstance shop, L1ItemInstance item, int count) {
         try {
             SC_ServerMessage.send(shop, 877, customer.getName(), item.getItem().getName() + " (" + count + ")");
-            LoggerInstance.getInstance().개인상점구매(true, customer, shop, item, count);
+            CLogD.getInstance().addPrivateShop(true, customer, shop, item, count);
         } catch (RuntimeException notificationFailure) {
             LOG.log(Level.WARNING, "Committed shop purchase notification failed", notificationFailure);
         }

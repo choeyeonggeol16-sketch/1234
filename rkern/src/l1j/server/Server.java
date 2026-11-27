@@ -16,7 +16,7 @@ import l1j.server.server.appcenter.AppCenterService;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.config.CIOConfig;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 
 /**
  * l1j-jp의 서버를 기동한다.
@@ -220,7 +220,7 @@ public class Server {
                                         "%s\r\n",
                                         s);
 
-                        LoggerInstance
+                        CLogD
                                 .getInstance()
                                 .addCmd(
                                         msg);

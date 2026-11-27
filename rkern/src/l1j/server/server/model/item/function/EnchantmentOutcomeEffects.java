@@ -13,7 +13,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 
 final class EnchantmentOutcomeEffects {
     private static final Logger LOG = Logger.getLogger(EnchantmentOutcomeEffects.class.getName());
@@ -111,7 +111,7 @@ final class EnchantmentOutcomeEffects {
     }
 
     private static void audit(L1PcInstance pc, L1ItemInstance item, boolean success) {
-        try { LoggerInstance.getInstance().addEnchant(pc, item, success); }
+        try { CLogD.getInstance().addEnchant(pc, item, success); }
         catch (RuntimeException failure) { LOG.log(Level.WARNING, "Enchant audit log failed", failure); }
     }
 

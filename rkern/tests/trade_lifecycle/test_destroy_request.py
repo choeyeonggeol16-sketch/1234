@@ -48,8 +48,8 @@ import {M}.character.companion.instance.CompanionInstanceCache;
 import {M}.network.core.connection.CUserSocket;
 import {M}.network.core.sc.packet.*;
 import l1j.server.server.datatables.*;
-import l1j.server.server.monitor.Logger.ItemActionType;
-import l1j.server.server.monitor.LoggerInstance;""")
+import l1j.server.server.logd.CLogD.ItemActionType;
+import l1j.server.server.logd.CLogD;""")
     write(M, "CInventory", "public class CInventory { public static final int MAX_AMOUNT=2000000000; }")
     write(M, "L1Object", "public class L1Object {}")
     write(M, "CWorld", """public class CWorld {
@@ -117,13 +117,11 @@ import l1j.server.server.monitor.LoggerInstance;""")
             if(!name.equals("owner")) throw new AssertionError("receiver"); deletes++;
         }
     }""")
-    write("l1j.server.server.monitor", "Logger", """public interface Logger {
-        enum ItemActionType { Delete }
-    }""")
-    write("l1j.server.server.monitor", "LoggerInstance", """public class LoggerInstance {
+    write("l1j.server.server.logd", "CLogD", """public class CLogD {
+        public enum ItemActionType { Delete }
         public static int logged,amounts;
-        public static LoggerInstance getInstance(){return new LoggerInstance();}
-        public void addItemAction(Logger.ItemActionType type,L1PcInstance pc,L1ItemInstance item,int amount){
+        public static CLogD getInstance(){return new CLogD();}
+        public void addItemAction(ItemActionType type,L1PcInstance pc,L1ItemInstance item,int amount){
             logged++;amounts+=amount;
         }
     }""", f"import {M}.Instance.*;")
@@ -206,13 +204,13 @@ import l1j.server.server.monitor.LoggerInstance;""")
             L1PcInstance pc=new L1PcInstance(); CUserSocket sock=new CUserSocket();sock.pc=pc;
             L1ItemInstance a=add(pc,1,100,10), b=add(pc,2,101,5);
             CS_DestroyItem.handle(sock,1,1,3,null);
-            check(pc.busy&&a.count==10&&LoggerInstance.logged==0,"no mutation or log before DB");
+            check(pc.busy&&a.count==10&&CLogD.logged==0,"no mutation or log before DB");
             CS_DestroyItem.handle(sock,1,1,1,null);
             L1InventoryTransaction.complete(true);
-            check(a.count==7&&LoggerInstance.logged==1&&LoggerInstance.amounts==3&&pc.lights==1,"partial success");
+            check(a.count==7&&CLogD.logged==1&&CLogD.amounts==3&&pc.lights==1,"partial success");
             CS_DestroyItem.handle(sock,1,1,0,null);
             L1InventoryTransaction.complete(false);
-            check(a.count==7&&LoggerInstance.logged==1&&pc.lights==1&&!pc.busy,"rollback no change");
+            check(a.count==7&&CLogD.logged==1&&pc.lights==1&&!pc.busy,"rollback no change");
             CS_DestroyItem.handle(sock,1,1,8,null);noSubmit(pc,"overcount");
             CS_DestroyItem.handle(sock,1,1,-1,null);noSubmit(pc,"negative");
             CS_DestroyItem.handle(sock,2,0,0,new int[]{1,1,1,1});noSubmit(pc,"duplicate id");
@@ -239,7 +237,7 @@ import l1j.server.server.monitor.LoggerInstance;""")
             CS_DestroyItem.handle(sock,2,0,0,new int[]{1,0,2,2});
             check(a.count==7&&b.count==5,"batch prepared only");
             L1InventoryTransaction.complete(true);
-            check(!pc.inv.rows.containsKey(1)&&b.count==3&&LoggerInstance.logged==3&&LoggerInstance.amounts==12,"atomic success and zero count");
+            check(!pc.inv.rows.containsKey(1)&&b.count==3&&CLogD.logged==3&&CLogD.amounts==12,"atomic success and zero count");
             add(pc,3,40314,1);add(pc,4,49016,1);
             CS_DestroyItem.handle(sock,2,0,0,new int[]{3,1,4,1});
             check(LetterTable.deletes==0,"aux before commit");
@@ -264,7 +262,7 @@ import l1j.server.server.monitor.LoggerInstance;""")
 import {M}.Instance.*;
 import {M}.network.core.connection.CUserSocket;
 import {M}.character.companion.instance.CompanionInstanceCache;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.datatables.*;""")
     classes = root / "classes"
     classes.mkdir()

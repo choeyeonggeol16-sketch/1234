@@ -43,6 +43,7 @@ import l1j.server.Config;
 import l1j.server.Server;
 import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.GameServer;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.datatables.IpTable;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
@@ -418,7 +419,8 @@ public class chocco extends JFrame {
                         if (p.getName().equals("direct")) text.append("JVM direct 전체 bytes=").append(p.getMemoryUsed()).append('\n');
                     text.append("프로세스/Native 메모리는 위 JVM 수치와 범위가 다릅니다.\n")
                         .append(Server.networkPoolReport()).append("\n화면로그 [대기건수,대기글자,생략건수,갱신예약]=")
-                        .append(java.util.Arrays.toString(ManagerLogBuffer.diagnostics()));
+                        .append(java.util.Arrays.toString(ManagerLogBuffer.diagnostics()))
+                        .append("\nLogD ").append(CLogD.getInstance().diagnostics());
                     return text.toString();
                 }
                 protected void done() {

@@ -25,8 +25,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.instance.raid.RaidObject;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
-import l1j.server.server.monitor.Logger.ItemActionType;
-import l1j.server.server.monitor.LoggerInstance;
+import l1j.server.server.logd.CLogD.ItemActionType;
+import l1j.server.server.logd.CLogD;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.utils.MessageUtil;
 
@@ -513,7 +513,7 @@ for (L1PcInstance member : party.getList()) {
         owner.refreshLight();
         if (clearGiveItem) item.setGiveItem(false);
 
-        LoggerInstance.getInstance().addItemAction(
+        CLogD.getInstance().addItemAction(
                 ItemActionType.Pickup,
                 owner,
                 item,
