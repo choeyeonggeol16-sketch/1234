@@ -47,6 +47,52 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     private transient int nextInventoryOrder;
     private transient volatile List<L1ItemInstance> snapshot;
 
+    public static final boolean AUDIT_PERSISTENCE = Boolean.getBoolean("rkern.inventory.auditDirty");
+    private transient PersistenceAudit persistenceAudit;
+
+    private static final class PersistenceAudit {
+        TIntHashSet candidates;
+        long revision;
+
+        void remove(int id) {
+            if (candidates == null) return;
+            candidates.remove(id);
+            if (candidates.isEmpty()) candidates = null;
+        }
+    }
+
+    public void enablePersistenceAudit() { persistenceAudit = new PersistenceAudit(); }
+
+    void notePersistenceObjectIdChange(L1ItemInstance item, int previousId) {
+        assert Thread.holdsLock(this);
+        if (persistenceAudit == null) return;
+        persistenceAudit.remove(previousId);
+        notePersistenceChange(item);
+    }
+
+    synchronized void notePersistenceChange(L1ItemInstance item) {
+        final PersistenceAudit audit = persistenceAudit;
+        if (audit == null || item.inventoryLinkOwner != this) return;
+        if (audit.candidates == null) audit.candidates = new TIntHashSet();
+        audit.candidates.add(item.getId());
+        audit.revision++;
+    }
+
+    public synchronized long persistenceAuditRevision() {
+        return persistenceAudit == null ? 0 : persistenceAudit.revision;
+    }
+
+    /** A clean image may retire its candidate only if no tracked write overlapped the comparison. */
+    public synchronized boolean hasMissedPersistenceChange(L1ItemInstance item, int columns, long revision) {
+        final PersistenceAudit audit = persistenceAudit;
+        if (audit == null || item.inventoryLinkOwner != this || revision != audit.revision) return false;
+        if (columns == 0) {
+            audit.remove(item.getId());
+            return false;
+        }
+        return audit.candidates == null || !audit.candidates.contains(item.getId());
+    }
+
     private static final int INDEX_MIN_SIZE = 8;
     private static final Object SMALL_LIST = new Object();
     private static final L1ItemInstance[] NO_ITEMS = new L1ItemInstance[0];
@@ -358,6 +404,7 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
                 if (index != null) index.add(item);
         distinctTemplateClasses |= ItemKey.CLASS.of(item) != ItemKey.TEMPLATE.of(item);
         if (item.isEquipped()) equippedChanged(item);
+        if (persistenceAudit != null) notePersistenceChange(item);
     }
 
     /** Reject a still-owned item before any caller changes counts or persistence. */
@@ -431,6 +478,10 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
             indexes = null;
             distinctTemplateClasses = false;
         }
+        if (persistenceAudit != null) {
+            persistenceAudit.remove(item.getId());
+            persistenceAudit.revision++;
+        }
         OWNER.setVolatile(item, null);
     }
 
@@ -463,6 +514,10 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
         distinctTemplateClasses = false;
         equipped = null;
         equippedDirty = false;
+        if (persistenceAudit != null) {
+            persistenceAudit.candidates = null;
+            persistenceAudit.revision++;
+        }
         while (item != null) {
             final L1ItemInstance next = item.inventoryNext;
             item.inventoryPrev = null;

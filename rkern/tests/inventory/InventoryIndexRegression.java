@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import l1j.server.server.datatables.MapsTable;
+import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.templates.L1EtcItem;
 import l1j.server.server.storage.mysql.MySqlCharactersItemStorage.ItemSnapshot;
@@ -23,6 +24,7 @@ public final class InventoryIndexRegression {
     public static void main(String[] args) throws ReflectiveOperationException {
         installEmptyWorldMapFixture();
         checkPendingItemSave();
+        if (CItemList.AUDIT_PERSISTENCE) dirtyAuditMutations();
 
         CInventory inventory = new CInventory();
         CInventory other = new CInventory();
@@ -84,6 +86,38 @@ public final class InventoryIndexRegression {
         same(null, inventory.GetByServerID(loaded.getId()), "cleared identity");
         verifySelection(inventory);
         System.out.println("PASS inventory index order, eligibility, rekey, transfer, reconnect and clear");
+    }
+
+    private static void dirtyAuditMutations() {
+        var list = new CItemList();
+        list.enablePersistenceAudit();
+        var row = item(3002, CANDLE, LIGHT_DESCRIPTION, 10);
+        list.Push(row);
+        List<Runnable> writes = List.of(
+                () -> row.setCount(9), () -> row.setItemId(42), () -> row.setEquipped(true),
+                () -> row.setEnchantLevel(8), () -> row.set_durability(1), () -> row.setChargeCount(2),
+                () -> row.setLastUsed(Timestamp.valueOf("2026-01-01 12:00:00")),
+                () -> row.setIdentified(true), () -> row.setRemainingTime(3), () -> row.setBless(4),
+                () -> row.setAttrEnchantLevel(5), () -> row.setSpecialEnchant(6),
+                () -> row.set_bless_level(7), () -> row.set_bless_level2(8),
+                () -> row.setEndTime(Timestamp.valueOf("2026-03-01 12:00:00")),
+                () -> row.setPackage(true), () -> row.set_item_level(9),
+                () -> row.setHotel_Town("fixture"));
+        int fields = 0;
+        for (Runnable write : writes) {
+            row.getLastStatus().updateAll();
+            check(!list.hasMissedPersistenceChange(row, 0, list.persistenceAuditRevision()), "retire clean candidate");
+            write.run();
+            int columns = row.getRecordingColumns();
+            check(Integer.bitCount(columns) == 1
+                    && !list.hasMissedPersistenceChange(row, columns, list.persistenceAuditRevision()),
+                    "mark the changed persisted column " + columns);
+            fields |= columns;
+        }
+        check(Integer.bitCount(fields) == 18, "all columns are exercised");
+        check(list.Pop(row), "unlink dirty row");
+        check(!list.hasMissedPersistenceChange(row, fields, list.persistenceAuditRevision()),
+                "ignore stale snapshot after unlink");
     }
 
     private static void checkPendingItemSave() {

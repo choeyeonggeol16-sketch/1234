@@ -260,12 +260,19 @@ public class L1ItemInstance extends L1Object {
 
 	/** 인형 착용 여부 **/
 
+	private void notePersistenceChange() {
+		if (!CItemList.AUDIT_PERSISTENCE) return;
+		final CItemList list = inventoryLinkOwner;
+		if (list != null) list.notePersistenceChange(this);
+	}
+
 	public boolean isSpecialEnchantable() {
 		return (_specialEnchant & 0xFF) == 1;
 	}
 
 	public void setSpecialEnchantable() {
 		_specialEnchant = (_specialEnchant & ~0xFF) | 1;
+		notePersistenceChange();
 	}
 
 	public int getSpecialEnchant() {
@@ -278,6 +285,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setSpecialEnchant(int enchant) {
 		_specialEnchant = enchant;
+		notePersistenceChange();
 	}
 
 	public void setSpecialEnchant(int index, int enchant) {
@@ -285,6 +293,7 @@ public class L1ItemInstance extends L1Object {
 		final int shift = index << 3;
 		final int mask = 0xFF << shift;
 		_specialEnchant = (_specialEnchant & ~mask) | ((enchant & 0xFF) << shift);
+		notePersistenceChange();
 	}
 
 	public boolean isIdentified() {
@@ -293,6 +302,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setIdentified(boolean identified) {
 		_isIdentified = identified;
+		notePersistenceChange();
 	}
 
 	public String getName() {
@@ -310,6 +320,7 @@ public class L1ItemInstance extends L1Object {
                 _count = count;
                 final CItemList linked = inventoryLinkOwner;
                 if (linked != null) linked.invalidateCarryingWeight();
+                notePersistenceChange();
                 return;
             }
             synchronized (list) {
@@ -318,6 +329,7 @@ public class L1ItemInstance extends L1Object {
                 final int before = list.weightBeforeChange(this);
                 _count = count;
                 list.weightChanged(this, before);
+                notePersistenceChange();
                 return;
             }
         }
@@ -370,6 +382,7 @@ public class L1ItemInstance extends L1Object {
                 _isEquipped = equipped;
                 final CItemList linked = inventoryLinkOwner;
                 if (linked != null) linked.invalidateEquippedAfterDetachedChange();
+                notePersistenceChange();
                 return;
             }
             synchronized (list) {
@@ -377,6 +390,7 @@ public class L1ItemInstance extends L1Object {
                 if (_isEquipped == equipped) return;
                 _isEquipped = equipped;
                 list.equippedChanged(this);
+                notePersistenceChange();
                 return;
             }
         }
@@ -395,6 +409,7 @@ public class L1ItemInstance extends L1Object {
                 _itemId = id;
                 final CItemList linked = inventoryLinkOwner;
                 if (linked != null) linked.invalidateLookupAfterDetachedChange();
+                notePersistenceChange();
                 return;
             }
             synchronized (list) {
@@ -406,6 +421,7 @@ public class L1ItemInstance extends L1Object {
                 _itemId = id;
                 list.lookupKeyChanged(this, previousId, previousTemplate);
                 list.weightChanged(this, before);
+                notePersistenceChange();
                 return;
             }
         }
@@ -422,6 +438,7 @@ public class L1ItemInstance extends L1Object {
                 _itemId = itemId;
                 final CItemList linked = inventoryLinkOwner;
                 if (linked != null) linked.invalidateLookupAfterDetachedChange();
+                notePersistenceChange();
                 return;
             }
             synchronized (list) {
@@ -429,6 +446,7 @@ public class L1ItemInstance extends L1Object {
                 final int previousId = _itemId;
                 _itemId = itemId;
                 list.lookupKeyChanged(this, previousId, _item);
+                notePersistenceChange();
                 return;
             }
         }
@@ -442,6 +460,7 @@ public class L1ItemInstance extends L1Object {
                 super.setId(id);
                 final CItemList linked = inventoryLinkOwner;
                 if (linked != null) linked.invalidateObjectIdAfterDetachedChange();
+                notePersistenceChange();
                 return;
             }
             synchronized (list) {
@@ -449,6 +468,7 @@ public class L1ItemInstance extends L1Object {
                 final int previousId = getId();
                 super.setId(id);
                 list.objectIdChanged(this, previousId);
+                if (CItemList.AUDIT_PERSISTENCE) list.notePersistenceObjectIdChange(this, previousId);
                 return;
             }
         }
@@ -468,6 +488,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setEnchantLevel(int enchantLevel) {
 		_enchantLevel = enchantLevel;
+		notePersistenceChange();
 	}
 
 	public int getAttrEnchantLevel() {
@@ -551,6 +572,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setChargeCount(int i) {
 		_chargeCount = i;
+		notePersistenceChange();
 	}
 
 	public int getRemainingTime() {
@@ -559,10 +581,12 @@ public class L1ItemInstance extends L1Object {
 
 	public void setRemainingTime(int i) {
 		_remainingTime = i;
+		notePersistenceChange();
 	}
 
 	public void setLastUsed(Timestamp t) {
 		_lastUsed = t;
+		notePersistenceChange();
 	}
 
 	public Timestamp getLastUsed() {
@@ -575,6 +599,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setBless(int i) {
 		bless = i;
+		notePersistenceChange();
 	}
 
 	public int getLastWeight() {
@@ -737,6 +762,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setEndTime(Timestamp t) {
 		_endTime = t;
+		notePersistenceChange();
 	}
 
 	/** 패키지상점 **/
@@ -746,6 +772,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setPackage(boolean _isPackage) {
 		this._isPackage = _isPackage;
+		notePersistenceChange();
 	}
 
 	private long _itemdelay3;
@@ -792,6 +819,7 @@ public class L1ItemInstance extends L1Object {
 			i = 127;
 		}
 		_durability = i;
+		notePersistenceChange();
 	}
 
 	public int getWeight() {
@@ -1123,6 +1151,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void set_bless_level(int i) {
 		this.bless_level = i;
+		notePersistenceChange();
 	}
 	
 	private int bless_level2;
@@ -1133,6 +1162,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void set_bless_level2(int i) {
 		this.bless_level2 = i;
+		notePersistenceChange();
 	}
 	
 	/** 특수 인챈트 시스템 **/
@@ -1144,6 +1174,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void set_item_level(int i) {
 		this.item_level = i;
+		notePersistenceChange();
 	}
 
 	/** 특수 인챈트 시스템 **/
@@ -1156,6 +1187,7 @@ public class L1ItemInstance extends L1Object {
 
 	public void setHotel_Town(String name) {
 		_Hotel_Town = name;
+		notePersistenceChange();
 	}
 
 	private ArrayList<CItemBookmark> _bookmarks;
@@ -1399,7 +1431,8 @@ public class L1ItemInstance extends L1Object {
 	        System.out.println("[속성인챈트] 비정상 레벨 저장 시도 차단: " + level);
 	        return;
 	    }
-	    _attrenchantLevel = level; 
+	    _attrenchantLevel = level;
+	    notePersistenceChange();
 	}
 	
 	public transient double _expBonusDeltaExp = 0.0;

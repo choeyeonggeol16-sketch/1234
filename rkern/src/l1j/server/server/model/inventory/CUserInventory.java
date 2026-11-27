@@ -6,6 +6,7 @@ import java.util.List;
 
 import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.model.Instance.L1DollInstance;
+import l1j.server.server.model.Instance.CItemList;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
@@ -102,6 +103,7 @@ public class CUserInventory extends CInventory {
 
 	public CUserInventory(L1PcInstance owner) {
 		_owner = owner;
+		if (CItemList.AUDIT_PERSISTENCE) _items.enablePersistenceAudit();
 		_arrowId = 0;
 		_stingId = 0;
 	}
@@ -714,7 +716,14 @@ public class CUserInventory extends CInventory {
 
     /** The autosave membership snapshot may contain an item which has since moved. */
     public boolean saveDirtyItemIfReady(L1ItemInstance item, long sessionEpoch) {
-        if (item == null || item.getRecordingColumns() == 0 || !HasItemInstance(item)) return true;
+        if (item == null) return true;
+        final long revision = CItemList.AUDIT_PERSISTENCE ? _items.persistenceAuditRevision() : 0;
+        final int columns = item.getRecordingColumns();
+        if (CItemList.AUDIT_PERSISTENCE && _items.hasMissedPersistenceChange(item, columns, revision)) {
+            System.getLogger(CUserInventory.class.getName()).log(System.Logger.Level.WARNING,
+                    "Dirty audit missed item {0}, columns {1}", item.getId(), columns);
+        }
+        if (columns == 0 || !HasItemInstance(item)) return true;
         // A full dirty image keeps reversions while earlier SQL is in flight.
         return CacheD.getInstance().saveItemIfReady(item, _owner.getId(), sessionEpoch, ALL_ITEM_SAVE_COLUMNS);
     }
