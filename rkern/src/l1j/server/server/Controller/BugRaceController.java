@@ -1,10 +1,7 @@
 package l1j.server.server.Controller;
 
 import l1j.server.server.datatables.CObjectDB;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -22,7 +19,6 @@ import java.util.logging.Logger;
 
 import javolution.util.FastTable;
 
-import l1j.server.DatabaseFactory;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.world.instance.CInstanceWork;
@@ -44,7 +40,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.shop.L1Shop;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.shared.PropertyReader;
-import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.sql.executors.Selector;
 import l1j.server.server.storage.sql.handler.FullSelectorHandler;
 import l1j.server.server.templates.L1Npc;
@@ -55,6 +50,7 @@ import l1j.server.server.templates.L1ShopItem;
 public class BugRaceController implements Runnable, TimeListener {
 	private static final Logger LOG = Logger.getLogger(BugRaceController.class.getName());
 	private static BugRaceController _instance;
+    private final BugRacePersistence persistence = new BugRacePersistence();
     private final AtomicBoolean tickInFlight = new AtomicBoolean();
     private volatile boolean clockRegistered;
     private volatile long nextRunAtMs;
@@ -86,6 +82,7 @@ public class BugRaceController implements Runnable, TimeListener {
         if (!clockRegistered) return;
         // Do not run movement on the clock: only re-admit an already existing
         // runner whose previous one-shot schedule was rejected.
+        persistence.trySubmit();
         final long now = System.currentTimeMillis();
         final RunBug[] runners = activeRunners;
         for (int i = 0; i < runners.length; i++) {
@@ -287,7 +284,7 @@ public class BugRaceController implements Runnable, TimeListener {
         try {
             switch (_executeStatus) {
             case EXECUTE_STATUS_NONE:
-                if (checkStartRace()) {
+                if (persistence.canStartRace() && checkStartRace()) {
                     initRaceGame();
                     _executeStatus = EXECUTE_STATUS_PREPARE;
                 }
@@ -758,69 +755,27 @@ public class BugRaceController implements Runnable, TimeListener {
 		return rations;
 	}
 
-	public void AddWinCount(int j) {
-		L1Racer racer = RaceTable.getInstance().getTemplate(_littleBugBear[j].get_num());
-		if (racer != null) {
-			racer.setWinCount(racer.getWinCount() + 1);
-			racer.setLoseCount(racer.getLoseCount());
-			saveRaceResult(_littleBugBear[j].get_num(), true);
-		}
-	}
+    private void recordRacerResult(int lane, boolean winner) {
+        final int racerId = _littleBugBear[lane].get_num();
+        final L1Racer racer = RaceTable.getInstance().getTemplate(racerId);
+        if (racer == null) return;
+        if (winner) racer.setWinCount(racer.getWinCount() + 1);
+        else racer.setLoseCount(racer.getLoseCount() + 1);
+        persistence.saveRacer(racerId, racer.getWinCount(), racer.getLoseCount());
+    }
 
-	public void AddLoseCount(int j) {
-		L1Racer racer = RaceTable.getInstance().getTemplate(_littleBugBear[j].get_num());
-		if (racer != null) {
-			racer.setWinCount(racer.getWinCount());
-			racer.setLoseCount(racer.getLoseCount() + 1);
-			saveRaceResult(_littleBugBear[j].get_num(), false);
-		}
-	}
+    public synchronized void SaveAllRacer(L1Racer racer, int num) {
+        if (racer == null) return;
+        final L1Racer loaded = RaceTable.getInstance().getTemplate(num);
+        if (loaded == null) return;
+        loaded.setWinCount(Math.max(loaded.getWinCount(), racer.getWinCount()));
+        loaded.setLoseCount(Math.max(loaded.getLoseCount(), racer.getLoseCount()));
+        persistence.saveRacer(num, loaded.getWinCount(), loaded.getLoseCount());
+    }
 
-	public void SaveAllRacer(L1Racer racer, int num) {
-		if (racer == null) return;
-		final int racerId = num;
-		final int wins = racer.getWinCount();
-		final int losses = racer.getLoseCount();
-		submitRaceDb(() -> {
-			try (Connection con = DatabaseFactory.getInstance().getConnection();
-			     PreparedStatement statement = con.prepareStatement(
-					"UPDATE util_racer SET 승리횟수=GREATEST(승리횟수, ?), 패횟수=GREATEST(패횟수, ?) WHERE 레이서번호=?")) {
-				statement.setInt(1, wins);
-				statement.setInt(2, losses);
-				statement.setInt(3, racerId);
-				statement.executeUpdate();
-			} catch (SQLException e) {
-				throw new IllegalStateException("BugRace racer save failed: " + racerId, e);
-			}
-		});
-	}
-
-	private static void saveRaceResult(int racerId, boolean winner) {
-		submitRaceDb(() -> {
-			try (Connection con = DatabaseFactory.getInstance().getConnection();
-			     PreparedStatement statement = con.prepareStatement(winner
-			             ? "UPDATE util_racer SET 승리횟수=승리횟수+1 WHERE 레이서번호=?"
-			             : "UPDATE util_racer SET 패횟수=패횟수+1 WHERE 레이서번호=?")) {
-				statement.setInt(1, racerId);
-				statement.executeUpdate();
-			} catch (SQLException e) {
-				throw new IllegalStateException("BugRace racer result save failed: " + racerId, e);
-			}
-		});
-	}
-
-	private static void submitRaceDb(Runnable job) {
-		try {
-			CacheD.getInstance().submitDbJob(job);
-		} catch (RejectedExecutionException rejected) {
-			LOG.log(Level.WARNING, "BugRace CacheD queue rejected; saving on race scheduler thread", rejected);
-			try {
-				job.run();
-			} catch (RuntimeException failure) {
-				LOG.log(Level.SEVERE, "BugRace fallback DB write failed", failure);
-			}
-		}
-	}
+    public boolean awaitPersistence(long timeoutMillis) throws InterruptedException {
+        return persistence.awaitDrained(timeoutMillis);
+    }
 
 	public void SetWinRaceTicketPrice(int id, double rate) {
 		L1ShopItem newItem = new L1ShopItem(id, (int) (500 * rate), 1);// 승리표 판매 리스트 레이스표 매입
@@ -1009,13 +964,7 @@ public class BugRaceController implements Runnable, TimeListener {
 			if (_ranking == 1) {
 				_first = _littleBugBear[i].getName();
 				SetWinRaceTicketPrice(_ticket[i], _ration[i]);
-				AddWinCount(i);
-				CInstanceWork.scheduleRequired(new Runnable(){
-					@Override
-					public void run(){
-						우승자멘트(String.format("제 %d회 우승자는 '%s' 입니다.", _round, _littleBugBear[i].getNameId()));						
-					}
-				}, 700L);
+				recordRacerResult(i, true);
 				final int raceRound = _round;
 				final int winnerId = i;
 				final String winnerName = _littleBugBear[i].getName();
@@ -1024,26 +973,13 @@ public class BugRaceController implements Runnable, TimeListener {
 				final double winnerRate = _ration[i];
 				final int totalPrice = totalTickets * 500;
 				final int winnerPrice = (int) (winnerRate * winnerTickets);
-				submitRaceDb(() -> {
-					try (Connection con = DatabaseFactory.getInstance().getConnection();
-					     PreparedStatement statement = con.prepareStatement(
-						"INSERT INTO bug_history SET round=?, winner_id=?, winner_name=?, total_ticket_count=?, winner_ticket_count=?, winner_ration=?, total_price=?, winner_price=?")) {
-						statement.setInt(1, raceRound);
-						statement.setInt(2, winnerId);
-						statement.setString(3, winnerName);
-						statement.setInt(4, totalTickets);
-						statement.setInt(5, winnerTickets);
-						statement.setDouble(6, winnerRate);
-						statement.setInt(7, totalPrice);
-						statement.setInt(8, winnerPrice);
-						statement.executeUpdate();
-					} catch (SQLException e) {
-						throw new IllegalStateException("BugRace history save failed: round=" + raceRound, e);
-					}
-				});
+                persistence.saveHistory(new BugRacePersistence.History(raceRound, winnerId, winnerName,
+                        totalTickets, winnerTickets, winnerRate, totalPrice, winnerPrice));
+				CInstanceWork.scheduleRequired(() ->
+						우승자멘트(String.format("제 %d회 우승자는 '%s' 입니다.", _round, _littleBugBear[i].getNameId())), 700L);
 			} else {
 				SetLoseRaceTicketPrice(_ticket[i], _ration[i]);
-				AddLoseCount(i);
+				recordRacerResult(i, false);
 			}
 		}
 

@@ -14,6 +14,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +28,9 @@ import com.zaxxer.hikari.HikariDataSource;
 public class DatabaseFactory {
     private static final Logger LOGGER = Logger.getLogger(DatabaseFactory.class.getName());
 
-    private static HikariDataSource DATABASE_POOL;
+    private static volatile HikariDataSource DATABASE_POOL;
+    private static final long ACQUIRE_LOG_INTERVAL_NS = TimeUnit.SECONDS.toNanos(10);
+    private static final AtomicLong nextAcquireFailureLog = new AtomicLong(System.nanoTime());
 
     private static final DatabaseFactory INSTANCE = new DatabaseFactory();
 
@@ -56,6 +60,7 @@ public class DatabaseFactory {
 
         DatabaseConfig.load();
 
+        HikariDataSource candidate = null;
         try {
             final HikariConfig config = new HikariConfig();
             config.setDriverClassName(DatabaseConfig.DATABASE_DRIVER);
@@ -81,7 +86,7 @@ public class DatabaseFactory {
             config.addDataSourceProperty("prepStmtCacheSize", "250");
             config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            DATABASE_POOL = new HikariDataSource(config);
+            candidate = new HikariDataSource(config);
 
             LOGGER.fine("데이터베이스: HikariCP 풀이 성공적으로 초기화되었습니다.");
             if (JDBC_TRACE) {
@@ -89,14 +94,18 @@ public class DatabaseFactory {
                         + "SQL 실행 시간 및 풀 획득 시간 기록. 실제 운영 시 비활성화 권장.");
             }
 
-            final boolean connected = DatabaseConfig.DATABASE_TEST_CONNECTIONS
-                    ? testDatabaseConnections()
-                    : testSingleConnection();
-            if (connected) {
-                System.out.println("데이터베이스 서버 연결이 완료되었습니다.");
+            if (DatabaseConfig.DATABASE_TEST_CONNECTIONS) {
+                testDatabaseConnections(candidate);
+            } else {
+                try (Connection connection = candidate.getConnection()) {
+                    if (!connection.isValid(5)) throw new SQLException("DB startup connection failed validation");
+                }
             }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "데이터베이스: HikariCP 풀 초기화에 실패했습니다.", e);
+            DATABASE_POOL = candidate;
+            System.out.println("데이터베이스 서버 연결이 완료되었습니다.");
+        } catch (Exception failure) {
+            if (candidate != null) candidate.close();
+            throw new IllegalStateException("데이터베이스 초기화 실패", failure);
         }
     }
 
@@ -168,88 +177,40 @@ public class DatabaseFactory {
         return Math.max(determineMaxPoolSize(configuredMax) / 10, 2);
     }
 
-    private static boolean testDatabaseConnections() {
-        final List<Connection> connections = new ArrayList<>();
-        int successfulConnections = 0;
-
+    private static void testDatabaseConnections(HikariDataSource candidate) throws SQLException {
+        final List<Connection> opened = new ArrayList<>();
+        final int target = candidate.getMaximumPoolSize();
         try {
-            LOGGER.info("데이터베이스: 데이터베이스 연결 테스트 중...");
-            for (int i = 0; i < DATABASE_POOL.getMaximumPoolSize(); i++) {
-                Connection connection = null;
+            for (int i = 0; i < target; i++) {
                 try {
-                    connection = DATABASE_POOL.getConnection();
-                    connections.add(connection);
-                    successfulConnections++;
-                    LOGGER.info("데이터베이스: 연결 성공적으로 열림: " + connection.toString() + ".");
-                } catch (SQLException e) {
-                    LOGGER.log(Level.SEVERE, "데이터베이스: " + (i + 1) + "번째 연결 열기 실패!", e);
+                    opened.add(candidate.getConnection());
+                } catch (SQLException failure) {
+                    if (opened.isEmpty()) throw failure;
+                    LOGGER.log(Level.WARNING, "DB startup probe opened " + opened.size()
+                            + " of " + target + " configured connections", failure);
                     break;
                 }
             }
-
-            if (successfulConnections == DATABASE_POOL.getMaximumPoolSize()) {
-                LOGGER.info("데이터베이스: 총 " + successfulConnections + "개의 연결로 초기화되었습니다.");
-            } else {
-                LOGGER.warning("데이터베이스: 설정된 " + DATABASE_POOL.getMaximumPoolSize()
-                        + "개 중 " + successfulConnections + "개의 연결만 성공했습니다.");
-                adjustPoolSize(successfulConnections);
-            }
         } finally {
-            for (Connection connection : connections) {
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (SQLException e) {
-                        LOGGER.log(Level.SEVERE, "데이터베이스: 연결을 닫는 중 오류가 발생했습니다.", e);
-                    }
+            for (Connection connection : opened) {
+                try {
+                    connection.close();
+                } catch (SQLException failure) {
+                    LOGGER.log(Level.WARNING, "DB startup probe connection close failed", failure);
                 }
             }
         }
-        return successfulConnections > 0;
-    }
-
-    private static void adjustPoolSize(int successfulConnections) {
-        LOGGER.warning("데이터베이스: 성공한 연결을 바탕으로 풀 크기를 조정하는 중입니다.");
-
-        int newConnectionCount = successfulConnections;
-        if (successfulConnections > 100) {
-            newConnectionCount = (successfulConnections / 100) * 100;
-        } else if (successfulConnections > 50) {
-            newConnectionCount = (successfulConnections / 50) * 50;
-        }
-
-        newConnectionCount = Math.max(newConnectionCount, 20);
-
-        try {
-            DATABASE_POOL.setMaximumPoolSize(newConnectionCount);
-            DATABASE_POOL.setMinimumIdle(determineMinimumIdle(newConnectionCount));
-            LOGGER.info("데이터베이스: 풀 크기가 다음 값으로 재초기화되었습니다: " + newConnectionCount + ".");
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "데이터베이스: 풀 크기 조정에 실패했습니다.", e);
-        }
-    }
-
-    private static boolean testSingleConnection() {
-        try (Connection connection = DATABASE_POOL.getConnection()) {
-            if (connection.isValid(5)) {
-                LOGGER.fine("데이터베이스: 유효한 연결로 초기화되었습니다.");
-                return true;
-            }
-            LOGGER.warning("데이터베이스: 연결이 유효하지 않습니다.");
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "데이터베이스: 커넥션 풀 초기화 중 문제가 발생했습니다.", e);
-        }
-        return false;
     }
 
     public static Connection getConnectionInstance() {
         final long startNs = JDBC_TRACE ? System.nanoTime() : 0L;
         try {
-            if (DATABASE_POOL == null || DATABASE_POOL.isClosed()) {
+            HikariDataSource pool = DATABASE_POOL;
+            if (pool == null || pool.isClosed()) {
                 throw new SQLException("HikariDataSource is closed or not initialized.");
             }
 
-            final Connection con = DATABASE_POOL.getConnection();
+            final Connection con = pool.getConnection();
             if (!JDBC_TRACE) {
                 return con;
             }
@@ -263,7 +224,13 @@ public class DatabaseFactory {
             if (JDBC_TRACE) {
                 traceJdbc("CONNECTION", "getConnection()", System.nanoTime() - startNs, e);
             }
-            LOGGER.log(Level.SEVERE, "데이터베이스: 연결을 가져올 수 없습니다.", e);
+            // A single outage can fail thousands of borrowers. Keep throwing to
+            // every caller while bounding synchronous stack traces from this site.
+            long now = System.nanoTime();
+            long next = nextAcquireFailureLog.get();
+            if (now - next >= 0 && nextAcquireFailureLog.compareAndSet(next, now + ACQUIRE_LOG_INTERVAL_NS)) {
+                LOGGER.log(Level.SEVERE, "DB connection acquisition failed (sampled every 10s)", e);
+            }
             throw new RuntimeException("데이터베이스 연결을 획득할 수 없습니다.", e);
         }
     }

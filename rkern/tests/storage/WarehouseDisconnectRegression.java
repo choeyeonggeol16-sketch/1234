@@ -21,7 +21,10 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.companion.basic.classinfo.CompanionClassInfo;
+import l1j.server.server.model.inventory.warehouse.ElfWarehouse;
 import l1j.server.server.model.inventory.warehouse.PrivateWarehouse;
+import l1j.server.server.model.inventory.warehouse.SupplementaryService;
+import l1j.server.server.model.inventory.warehouse.Warehouse;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
@@ -368,8 +371,27 @@ public final class WarehouseDisconnectRegression {
                 && item.getLastStatus().count == 8, "failed pending item applied after repairing the row");
     }
 
+    private static void retryTimestampedInsert(Warehouse house, String table) throws Exception {
+        var template = new L1EtcItem();
+        template.setItemId(301);
+        template.setName("timed fixture");
+        var item = new L1ItemInstance(template, 2);
+        item.setId(FIRST_ID + 600);
+        item.setLastUsed(java.sql.Timestamp.valueOf("2026-11-27 23:59:59.987654"));
+        item.setEndTime(java.sql.Timestamp.valueOf("2026-11-28 12:34:56.123456"));
+        house.insertItem(item);
+        house.insertItem(item);
+        check(CacheD.getInstance().flushDbOwner(house.transferOrderKey(), 4000),
+                "duplicate timed insert kept " + table + " owner blocked");
+        check(count(table, " WHERE id=" + item.getId() + " AND count=2") == 1,
+                "timed duplicate changed warehouse contents in " + table);
+    }
+
     private static void verify() throws Exception {
         saveWhileWriting();
+        retryTimestampedInsert(new PrivateWarehouse("timed"), "character_warehouse");
+        retryTimestampedInsert(new ElfWarehouse("timed"), "character_elf_warehouse");
+        retryTimestampedInsert(new SupplementaryService("timed"), "character_supplementary_service");
         Config.MAX_ONLINE_USERS = 8;
         Config.MAX_PERSONAL_WAREHOUSE_ITEM = 150;
         Config.RATE_WEIGHT_LIMIT = 1;

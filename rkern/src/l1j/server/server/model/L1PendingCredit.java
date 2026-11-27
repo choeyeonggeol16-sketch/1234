@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.DatabaseFactory;
@@ -77,23 +78,31 @@ public final class L1PendingCredit {
         if(!(object instanceof L1PcInstance))return;
         final L1PcInstance pc=(L1PcInstance)object;
         final int stamp=pc.getSessionStamp();
-        CacheD.getInstance().submitDbJob(()->{
-            try(Connection con=DatabaseFactory.getInstance().getConnection()) {
-                final List<Credit> credits=read(con,characterId,false);
-                if(credits.isEmpty())return;
-                CIOThreadCallback.getInstance().completeWarehouseMove(pc,stamp,()->{
-                    if(pc.isItemTransferBusy() || pc.getTradeID()!=0)return;
-                    try(L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,KEY)) {
-                        tx.requireTables("character_pending_credits");
-                        for(Credit credit:credits) {
-                            if(tx.grant(40308,credit.amount)==null)return;
-                            tx.sql(c->remove(c,characterId,credit));
-                        }
-                        tx.commit(()->SC_SystemMessage.send(pc,"경매 환불/정산금이 지급되었습니다."));
+        try {
+            CacheD.getInstance().submitDbJob(() -> deliverOnline(pc, stamp, characterId));
+        } catch (RejectedExecutionException busy) {
+            // The auction and credit already committed. Login will read the durable
+            // ledger even if the optional online delivery job cannot enter CacheD.
+            LOG.fine("Credit delivery deferred to login");
+        }
+    }
+
+    private static void deliverOnline(L1PcInstance pc, int stamp, int characterId) {
+        try(Connection con=DatabaseFactory.getInstance().getConnection()) {
+            final List<Credit> credits=read(con,characterId,false);
+            if(credits.isEmpty())return;
+            CIOThreadCallback.getInstance().completeWarehouseMove(pc,stamp,()->{
+                if(pc.isItemTransferBusy() || pc.getTradeID()!=0)return;
+                try(L1InventoryTransaction tx=L1InventoryTransaction.begin(pc,KEY)) {
+                    tx.requireTables("character_pending_credits");
+                    for(Credit credit:credits) {
+                        if(tx.grant(40308,credit.amount)==null)return;
+                        tx.sql(c->remove(c,characterId,credit));
                     }
-                },failure->{if(failure!=null)LOG.fine("Credit delivery deferred to login");});
-            } catch(SQLException failure){throw new IllegalStateException("Credit read failed",failure);}
-        });
+                    tx.commit(()->SC_SystemMessage.send(pc,"경매 환불/정산금이 지급되었습니다."));
+                }
+            },failure->{if(failure!=null)LOG.fine("Credit delivery deferred to login");});
+        } catch(SQLException failure){throw new IllegalStateException("Credit read failed",failure);}
     }
     /** Existing CacheD login worker calls this BEFORE loading item rows. */
     public static void recoverBeforeLoad(int characterId)throws SQLException {

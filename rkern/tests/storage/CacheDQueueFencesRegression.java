@@ -1,4 +1,4 @@
-// Run each of expedite, quarantine, release, reload, coalesce and logout in a fresh JVM.
+// Run each regression mode in a fresh JVM.
 import com.zaxxer.hikari.HikariDataSource;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,8 +22,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Instance.L1ItemInstance;
+import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CItem;
 import l1j.server.server.storage.cached.CPendingState;
@@ -46,14 +49,150 @@ public class CacheDQueueFencesRegression {
         switch (args[0]) {
             case "expedite" -> expedite(cache);
             case "quarantine" -> quarantine(cache);
+            case "quarantine-chain" -> quarantineChain(cache);
             case "release" -> release(cache);
             case "reload" -> reload(cache);
             case "coalesce" -> coalesce(cache);
             case "coalesce-profile" -> profileQueuedItemSaves(cache);
             case "logout" -> logout(cache);
-            default -> throw new IllegalArgumentException("expected expedite, quarantine, release, reload, coalesce, coalesce-profile or logout");
+            case "autosave" -> autosave(cache);
+            case "item-admission" -> itemAdmission(cache);
+            default -> throw new IllegalArgumentException("unknown CacheD regression mode: " + args[0]);
         }
         System.out.println("PASS actual CacheD " + args[0]);
+    }
+
+    private static void itemAdmission(CacheD cache) throws Exception {
+        int owner = 21111;
+        L1EtcItem template = new L1EtcItem();
+        template.setItemId(40001);
+        template.setName("Fixture");
+        L1ItemInstance detached = new L1ItemInstance(template, 1);
+        detached.setId(44111);
+        cache.registerLoadedItemOwner(owner, detached.getId());
+        cache.requestCharacterItemOwnerRelease(owner);
+        L1ItemInstance owned = new L1ItemInstance(template, 1);
+        owned.setId(44112);
+        cache.registerLoadedItemOwner(owner, owned.getId());
+
+        boolean saveRejected = false;
+        try { cache.saveItem(detached, 16L); }
+        catch (RejectedExecutionException expected) { saveRejected = true; }
+        int storesRejected = 0;
+        for (int invalidOwner : new int[] {0, -1}) {
+            try { cache.storeItem(invalidOwner, owned); }
+            catch (IllegalArgumentException expected) { storesRejected++; }
+        }
+        check(cache.flushAll(250), "invalid ordinary item jobs must not block flush");
+        check(saveRejected && storesRejected == 2, "reject unknown save owner and nonpositive store owners");
+        check(!cache.isItemPersistencePending(detached.getId()) && !cache.isItemPersistencePending(owned.getId())
+                && writes.get() == 0, "invalid item requests enqueue no SQL work");
+        Object monitor = field(CacheD.class, "lock").get(cache);
+        CWareHouse warehouse = (CWareHouse) field(CacheD.class, "warehouse").get(cache);
+        synchronized (monitor) {
+            check(warehouse.itemOwners.get(detached.getId()) == 0 && warehouse.itemOwners.get(owned.getId()) == owner,
+                    "rejected item requests preserve existing ownership");
+        }
+    }
+
+    private static void autosave(CacheD cache) throws Exception {
+        final int ownerId = 21101;
+        final L1PcInstance pc = new L1PcInstance();
+        pc.setId(ownerId);
+        pc.setName("fixture-autosave");
+        pc.setCacheDSessionEpoch(cache.registerLoadedCharacterSession("fixture-account", pc.getName(), ownerId));
+        final L1EtcItem template = new L1EtcItem();
+        template.setItemId(40001);
+        template.setName("Fixture");
+        final L1ItemInstance transferred = addDirtyInventoryItem(cache, pc, template, 21111);
+        final L1ItemInstance valid = addDirtyInventoryItem(cache, pc, template, 21112);
+        // The immutable inventory membership may still contain the old object.
+        cache.registerLoadedItemOwner(ownerId + 1, transferred.getId());
+        try {
+            pc.saveInventory();
+            throw new AssertionError("legacy save should reject the former owner's first row");
+        } catch (RejectedExecutionException expected) {
+            check(writes.get() == 0 && valid.getRecordingColumns() != 0,
+                    "legacy spillover skipped the independent item");
+        }
+        check(pc.saveInventoryIfReady(), "autosave covered transferred and valid rows");
+        check(cache.flushItemsByCharacter(ownerId, 1000) && writes.get() == 1
+                && valid.getRecordingColumns() == 0 && transferred.getRecordingColumns() != 0,
+                "only the currently owned item was persisted");
+
+        final Object timer = newInventorySaveTimer(pc);
+        final Class<?> timerType = timer.getClass();
+        final Method saveOnWorker = timerType.getDeclaredMethod("saveOnWorker");
+        saveOnWorker.setAccessible(true);
+        final Field next = field(timerType, "nextInvSaveNs");
+        final Field failures = field(timerType, "invSaveFailures");
+        valid.setCount(3);
+        try (var ignored = CacheD.beginWarehouseMove(ownerId, ownerId + 2)) {
+            // The real autosave work runs off the thread that prepares the receipt.
+            final long due = System.nanoTime();
+            next.setLong(timer, due - 1);
+            final var attempt = new FutureTask<>(() -> {
+                saveOnWorker.invoke(timer);
+                return null;
+            });
+            Thread.ofVirtual().start(attempt);
+            attempt.get(2L, TimeUnit.SECONDS);
+            check(failures.getInt(timer) == 1 && next.getLong(timer) - due >= TimeUnit.SECONDS.toNanos(2)
+                    && next.getLong(timer) - due < TimeUnit.SECONDS.toNanos(4)
+                    && cache.pendingItems() == 0 && writes.get() == 1,
+                    "unprepared receipt returned explicit deferral without queueing a stale image");
+        }
+        final long retry = System.nanoTime();
+        next.setLong(timer, retry - 1);
+        saveOnWorker.invoke(timer);
+        check(failures.getInt(timer) == 0 && next.getLong(timer) - retry >= TimeUnit.SECONDS.toNanos(1200)
+                && cache.flushItemsByCharacter(ownerId, 1000) && writes.get() == 2
+                && valid.getRecordingColumns() == 0, "retry captured the item after the fence cleared");
+
+        cache.deleteItem(valid);
+        valid.setCount(4);
+        check(pc.saveInventoryIfReady() && cache.flushItemsByCharacter(ownerId, 1000)
+                && writes.get() == 3, "a deleted row did not enqueue an owner-zero update");
+
+        final IllegalStateException brokenImage = new IllegalStateException("fixture item capture failed");
+        final L1ItemInstance broken = new L1ItemInstance(template, 1) {
+            @Override public int getRecordingColumns() { throw brokenImage; }
+        };
+        broken.setId(21113);
+        pc.getInventory().getItems().add(broken);
+        final L1ItemInstance later = addDirtyInventoryItem(cache, pc, template, 21114);
+        try {
+            pc.saveInventoryIfReady();
+            throw new AssertionError("autosave hid a capture error");
+        } catch (IllegalStateException expected) {
+            check(expected == brokenImage, "autosave reported the original failed item");
+        }
+        check(cache.flushItemsByCharacter(ownerId, 1000) && writes.get() == 4
+                && later.getRecordingColumns() == 0, "later independent dirty item persisted after a capture error");
+    }
+
+    private static Object newInventorySaveTimer(L1PcInstance pc) throws Exception {
+        Config.AUTOSAVE_INTERVAL = 0;
+        Config.AUTOSAVE_INTERVAL_INVENTORY = 1200;
+        final String cio = "l1j.server.server.model.network.thread.CIOThreadCallback";
+        final Class<?> handle = Class.forName(cio + "$TaskHandle");
+        final var newHandle = handle.getDeclaredConstructor();
+        newHandle.setAccessible(true);
+        final var newTimer = Class.forName(cio + "$UserTimerTask").getDeclaredConstructor(
+                L1PcInstance.class, handle, Class.forName(cio + "$CIOThread"));
+        newTimer.setAccessible(true);
+        return newTimer.newInstance(pc, newHandle.newInstance(), null);
+    }
+
+    private static L1ItemInstance addDirtyInventoryItem(CacheD cache, L1PcInstance pc, L1EtcItem template, int id) {
+        final L1ItemInstance item = new L1ItemInstance(template, 1);
+        item.setId(id);
+        item._cha = pc;
+        item.getLastStatus().updateAll();
+        pc.getInventory().getItems().add(item);
+        cache.registerLoadedItemOwner(pc.getId(), id);
+        item.setCount(2);
+        return item;
     }
 
     private static void logout(CacheD cache) throws Exception {
@@ -196,10 +335,13 @@ public class CacheDQueueFencesRegression {
                     + " fullReleaseTraversals=" + waiters.traversals);
             check(waiters.traversals == 0, "known writes scanned unrelated logouts");
 
-            // Previously unknown owner becomes known before the write is selected.
+            // Simulate a legacy unknown-owner queue entry before an owner reload.
+            // New ordinary admissions reject this entry in item-admission mode.
             L1ItemInstance unknown = new L1ItemInstance(template, 1);
             unknown.setId(700);
-            cache.saveItem(unknown, 16L);
+            Method capture = CacheD.class.getDeclaredMethod("captureItemSave", L1ItemInstance.class, int.class, long.class);
+            capture.setAccessible(true);
+            check((boolean) capture.invoke(cache, unknown, 0, 16L), "legacy unknown item staged");
             cache.requestCharacterItemOwnerRelease(800);
             check(waiters.contains(800), "unknown item must hold unrelated logout");
             cache.registerLoadedItemOwner(current, 700);
@@ -394,16 +536,7 @@ public class CacheDQueueFencesRegression {
         int primary = 20001, secondary = 20002, extra = 20003, unrelated = 20099;
         CountDownLatch entered = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
-        CountDownLatch quarantined = new CountDownLatch(1);
-        Logger logger = Logger.getLogger(CacheD.class.getName());
-        logger.setUseParentHandlers(false);
-        logger.addHandler(new Handler() {
-            public void publish(LogRecord event) {
-                if (event.getMessage().contains("QUARANTINED")) quarantined.countDown();
-            }
-            public void flush() {}
-            public void close() {}
-        });
+        CountDownLatch quarantined = awaitQuarantineEvent();
         AtomicInteger affectedExecutions = new AtomicInteger();
         cache.submitWarehouseLoginJob(primary, secondary, extra, () -> {
             entered.countDown();
@@ -441,6 +574,66 @@ public class CacheDQueueFencesRegression {
         }
     }
 
+    private static void quarantineChain(CacheD cache) throws Exception {
+        int unresolved = 20501, linked = 20502, tail = 20503, independent = 20599;
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        CountDownLatch quarantined = awaitQuarantineEvent();
+        AtomicInteger blockedExecutions = new AtomicInteger();
+        cache.submitDbJobOrdered(unresolved, () -> {
+            entered.countDown();
+            await(release);
+            throw new IllegalStateException(new CTransaction.OutcomeUnknownException("fixture", null));
+        });
+        try {
+            await(entered);
+            cache.submitDbJobOrdered(unresolved, linked, blockedExecutions::incrementAndGet);
+            cache.submitDbJobOrdered(linked, tail, blockedExecutions::incrementAndGet);
+        } finally {
+            release.countDown();
+        }
+        await(quarantined);
+        check(cache.isOwnerPersistenceQuarantined(unresolved) && !cache.isOwnerPersistenceQuarantined(linked)
+                && !cache.isOwnerPersistenceQuarantined(tail), "quarantine stays scoped to the unresolved transaction");
+        int accepted = 0;
+        for (int i = 0; i < 2200; i++) {
+            try {
+                cache.submitDbJobRetryOrdered(tail, blockedExecutions::incrementAndGet);
+                accepted++;
+            } catch (RejectedExecutionException expected) { }
+        }
+        check(accepted == 0, "indirectly blocked admissions consumed " + accepted + " shared queue slots");
+        rejected(() -> cache.submitDbJobOrdered(linked, blockedExecutions::incrementAndGet));
+        rejected(() -> cache.submitWarehouseLoginJob(independent + 1, independent + 2, tail,
+                blockedExecutions::incrementAndGet));
+        rejected(() -> CacheD.beginMailEconomyMove(independent + 1, linked, new int[0]));
+        CountDownLatch independentWrite = new CountDownLatch(1);
+        cache.submitDbJobOrdered(independent, independentWrite::countDown);
+        check(cache.flushDbOwner(independent, 1000) && independentWrite.getCount() == 0,
+                "independent owners still progress");
+        check(!cache.flushDbOwner(tail, 0) && blockedExecutions.get() == 0,
+                "pre-admitted work stays in order behind the unresolved transaction");
+        Object monitor = field(CacheD.class, "lock").get(cache);
+        synchronized (monitor) {
+            check(field(CacheD.class, "pendingDbJobs").getInt(cache) == 3,
+                    "only unresolved and pre-admitted work remains");
+        }
+    }
+
+    private static CountDownLatch awaitQuarantineEvent() {
+        CountDownLatch quarantined = new CountDownLatch(1);
+        Logger logger = Logger.getLogger(CacheD.class.getName());
+        logger.setUseParentHandlers(false);
+        logger.addHandler(new Handler() {
+            public void publish(LogRecord event) {
+                if (event.getMessage().contains("QUARANTINED")) quarantined.countDown();
+            }
+            public void flush() {}
+            public void close() {}
+        });
+        return quarantined;
+    }
+
     private static Connection connect() {
         return proxy(Connection.class, (obj, method, args) -> switch (method.getName()) {
             case "close" -> null;
@@ -456,6 +649,7 @@ public class CacheDQueueFencesRegression {
             case "close" -> null;
             // The synthetic enchant-only update binds owner last.
             case "setInt" -> { boundOwner[0] = (Integer) args[1]; yield null; }
+            case "setTimestamp" -> null;
             case "setString" -> { tables.add((String) args[1]); yield null; }
             case "executeQuery" -> rows(sql.contains("information_schema.TABLES") ? tables : new ArrayList<>(java.util.List.of("fixture")));
             case "executeUpdate" -> {

@@ -16,7 +16,7 @@ public final class RaidUserTimeStore {
         synchronized (account) {
             account.setDragonRaid(new Timestamp(untilMillis));
             try {
-                CacheD.getInstance().saveRaidBuff(account.getName(), untilMillis);
+                CacheD.getInstance().saveRaidBuff(account.getName(), account.getAccountId(), untilMillis);
                 return true;
             } catch (RuntimeException failure) {
                 LOG.log(Level.SEVERE, "Raid cooldown save admission failed: " + account.getName(), failure);

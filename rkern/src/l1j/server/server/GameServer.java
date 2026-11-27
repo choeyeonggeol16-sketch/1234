@@ -601,7 +601,11 @@ public class GameServer {
 	        CInventoryExpiry.getInstance().stop();
 
 
-	        BugRaceController.getInstance().stop();
+            final BugRaceController bugRace = BugRaceController.getInstance();
+            bugRace.stop();
+            while (!bugRace.awaitPersistence(30_000L)) {
+                System.err.println("[BugRace] Waiting for pending results to save");
+            }
 
 	        CPacketFilter.getInstance().release();
 

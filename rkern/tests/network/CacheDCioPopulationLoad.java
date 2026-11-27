@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.SQLTransientConnectionException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +57,9 @@ import l1j.server.server.storage.mysql.MySqlCharactersItemStorage;
  * Arguments: connected population (default 5120), repeating active subset (default 1024).
  * Use -Drkern.population.soakRounds=15 for sixty seconds of repeated full-population work.
  * Use -Drkern.population.allStorage=true for a separate two-second full-population storage burst.
+ * Use -Drkern.population.outageOnly=true for controlled JDBC checkout failure and recovery.
+ * Use -Drkern.population.serverOutageOnly=true with an external disposable DB stop/restart.
+ * The test creates db-stop.ready and db-start.ready, then waits for db-stopped and db-restored.
  * -Drkern.population.observers=N controls only the fixture's blocking save waiters (default six).
  */
 public final class CacheDCioPopulationLoad {
@@ -79,6 +83,8 @@ public final class CacheDCioPopulationLoad {
     private final ConcurrentLinkedQueue<String> receiptIds = new ConcurrentLinkedQueue<>();
     private final MySqlCharactersItemStorage itemStore = new MySqlCharactersItemStorage();
     private final ThreadPoolExecutor observers;
+    private final boolean outageOnly = Boolean.getBoolean("rkern.population.outageOnly");
+    private final boolean serverOutageOnly = Boolean.getBoolean("rkern.population.serverOutageOnly");
     private HikariDataSource db;
     private CacheD cache;
     private CIOServer server;
@@ -87,6 +93,7 @@ public final class CacheDCioPopulationLoad {
     CacheDCioPopulationLoad(int population, int active) {
         this.population = population;
         this.active = active;
+        check(!outageOnly || !serverOutageOnly, "select one outage fixture");
         receiptCounts = new AtomicIntegerArray(population);
         accountSaves = new AtomicIntegerArray(population);
         characterSaves = new AtomicIntegerArray(population);
@@ -136,6 +143,7 @@ public final class CacheDCioPopulationLoad {
                 config.setCatalog(schema);
                 config.setMaximumPoolSize(8);
                 config.setMinimumIdle(8);
+                if (outageOnly || serverOutageOnly) config.setConnectionTimeout(1000);
                 config.setTransactionIsolation("TRANSACTION_REPEATABLE_READ");
                 try (var source = new HikariDataSource(config)) {
                     db = source;
@@ -147,7 +155,15 @@ public final class CacheDCioPopulationLoad {
                     exercise();
                 }
             } finally {
-                ddl.execute("DROP DATABASE `" + schema + "`");
+                if (serverOutageOnly) {
+                    // The original admin session also disconnected with MariaDB.
+                    try (var adminAfterRestart = DriverManager.getConnection(jdbc, user, password);
+                         var remove = adminAfterRestart.createStatement()) {
+                        remove.execute("DROP DATABASE `" + schema + "`");
+                    }
+                } else {
+                    ddl.execute("DROP DATABASE `" + schema + "`");
+                }
             }
         }
     }
@@ -269,17 +285,24 @@ public final class CacheDCioPopulationLoad {
             sample("idle");
             churn(executor, population >= 1024 ? 256 : 8);
             sample("after_churn");
-            long deadlocksBefore = status("Innodb_deadlocks");
-            long locksBefore = status("Innodb_row_lock_waits");
-            long commitsBefore = status("Com_commit");
-            phase(executor, clients, "all_actors", population, 1, 2800, false);
-            phase(executor, clients, "steady", active, 3, 1600, false);
-            phase(executor, clients, "burst", active, 1, 160, true);
-            phase(executor, clients, "recover", active, 2, 1800, false);
-            int soak = Integer.getInteger("rkern.population.soakRounds", 0);
-            if (soak > 0) phase(executor, clients, "soak", population, soak, 4000, false);
-            if (Boolean.getBoolean("rkern.population.allStorage"))
-                phase(executor, clients, "all_db", population, 1, 2000, false, true);
+            // A real restart resets MariaDB's global status counters.
+            long deadlocksBefore = serverOutageOnly ? 0 : status("Innodb_deadlocks");
+            long locksBefore = serverOutageOnly ? 0 : status("Innodb_row_lock_waits");
+            long commitsBefore = serverOutageOnly ? 0 : status("Com_commit");
+            if (serverOutageOnly) {
+                serverOutage(executor, clients);
+            } else if (outageOnly) {
+                outage(executor, clients);
+            } else {
+                phase(executor, clients, "all_actors", population, 1, 2800, false);
+                phase(executor, clients, "steady", active, 3, 1600, false);
+                phase(executor, clients, "burst", active, 1, 160, true);
+                phase(executor, clients, "recover", active, 2, 1800, false);
+                int soak = Integer.getInteger("rkern.population.soakRounds", 0);
+                if (soak > 0) phase(executor, clients, "soak", population, soak, 4000, false);
+                if (Boolean.getBoolean("rkern.population.allStorage"))
+                    phase(executor, clients, "all_db", population, 1, 2000, false, true);
+            }
             check(cache.flushAll(8000), "final storage drain");
             verifyState();
             long deadlocks = status("Innodb_deadlocks") - deadlocksBefore;
@@ -336,6 +359,165 @@ public final class CacheDCioPopulationLoad {
         System.out.printf("POPULATION %s sockets=%d authenticated=%d entered=%d verified_ready=%d world_actors=%d owners=%d leases=%d direct_bytes=%d heap_used_bytes=%d%n",
                 phase, snapshot.tcp(), snapshot.authenticated(), snapshot.entered(), snapshot.verifiedReady(),
                 snapshot.worldRegistry(), server.ownerDiagnostics().size(), leases, bytes, heap);
+    }
+
+    private void outage(ExecutorService executor, Client[] clients) throws Exception {
+        check(population >= 32, "outage test needs at least 32 clients");
+        check(cache.flushAll(5000), "outage starts with a drained CacheD");
+
+        // Exhaust only this test's pool. The daemon and other sandbox schemas
+        // remain available throughout the failure and recovery.
+        Throwable previousFailure = cache.lastFailure();
+        String account = CioSyntheticPopulation.login(0);
+        Future<?> accountSave;
+        double echoDuringFailure;
+        try (var held = new PoolHold()) {
+            accountSave = executor.submit(() -> { clients[0].exchange(ACCOUNT); return null; });
+            awaitCheckout();
+            echoDuringFailure = echoes(executor, clients, 1, 16);
+            awaitConnectionFailure(previousFailure, false);
+            check(!accountSave.isDone() && cache.pendingAccounts() == 1,
+                    "failed checkout retains one dirty account and emits no success");
+        }
+        accountSave.get(5, TimeUnit.SECONDS);
+        check(cache.flushAll(5000), "account retry drained after pool recovery");
+        verifyAccountRetry(account);
+
+        int blocked = Math.min(population / 2, 128);
+        var storage = new ArrayList<Future<?>>(blocked);
+        double echoDuringHold;
+        int queued;
+        try (var held = new PoolHold()) {
+            for (int i = 0; i < blocked; i++) {
+                Client client = clients[i];
+                int kind = RECEIPT + i % (KIND.length - RECEIPT);
+                storage.add(executor.submit(() -> { client.exchange(kind); return null; }));
+            }
+            awaitCheckout();
+            echoDuringHold = echoes(executor, clients, blocked, 16);
+            queued = cache.pendingDbJobs();
+            check(queued > 0 && queued <= blocked && storage.stream().noneMatch(Future::isDone),
+                    "outage queues owner work within submitted count and emits no durable success");
+            sample("db_checkout_blocked");
+        }
+        for (var task : storage) task.get(8, TimeUnit.SECONDS);
+        System.out.printf(Locale.ROOT,
+                "OUTAGE checkout_failure_verified=1 dirty_retry=1 held_requests=%d sampled_pending_db=%d "
+                + "echo_failure_max_ms=%.3f echo_hold_max_ms=%.3f recovered=%d sockets=%d%n",
+                blocked, queued, echoDuringFailure, echoDuringHold, storage.size(), population);
+    }
+
+    private void serverOutage(ExecutorService executor, Client[] clients) throws Exception {
+        check(population >= 32, "server outage test needs at least 32 clients");
+        check(cache.flushAll(5000), "server outage starts with a drained CacheD");
+        Throwable previousFailure = cache.lastFailure();
+        Files.writeString(Path.of("db-stop.ready"), db.getCatalog());
+        awaitSignal("db-stopped");
+
+        var accountSave = executor.submit(() -> { clients[0].exchange(ACCOUNT); return null; });
+        awaitConnectionFailure(previousFailure, true);
+        check(!accountSave.isDone() && cache.pendingAccounts() == 1,
+                "no account success while MariaDB is stopped");
+        double offlineEchoMax = echoes(executor, clients, 1, 16);
+        sample("mariadb_stopped");
+        Files.createFile(Path.of("db-start.ready"));
+        awaitSignal("db-restored");
+
+        accountSave.get(7, TimeUnit.SECONDS);
+        verifyAccountRetry(CioSyntheticPopulation.login(0));
+        check(receiptIds.isEmpty(), "no receipt from the stopped database");
+        clients[0].exchange(RECEIPT);
+        clients[1].exchange(ITEM_SAVE);
+        clients[2].exchange(CHARACTER);
+        clients[3].exchange(INVENTORY);
+        check(receiptIds.size() == 1, "exactly one fresh receipt after restart");
+        sample("mariadb_restored");
+        System.out.printf(Locale.ROOT,
+                "RESTART checkout_failure_verified=1 dirty_retry=1 offline_echoes=16 "
+                + "offline_echo_max_ms=%.3f fresh_receipts=1 sockets=%d%n", offlineEchoMax, population);
+    }
+
+    private static void awaitSignal(String marker) throws InterruptedException {
+        var path = Path.of(marker);
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (!Files.exists(path)) {
+            check(System.nanoTime() < deadline, "DB harness did not signal " + marker);
+            Thread.sleep(10);
+        }
+    }
+
+    private void verifyAccountRetry(String account) throws SQLException {
+        try (var con = db.getConnection(); var query = con.prepareStatement(
+                "SELECT UNIX_TIMESTAMP(raid_buff)*1000 FROM accounts WHERE login=?")) {
+            query.setString(1, account);
+            try (var row = query.executeQuery()) {
+                check(row.next() && row.getLong(1) == SNAPSHOT_START + 1000L * accountSaves.get(0),
+                        "the failed account snapshot was durably retried");
+            }
+        }
+    }
+
+    private void awaitCheckout() {
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(600);
+        while (db.getHikariPoolMXBean().getThreadsAwaitingConnection() == 0) {
+            check(System.nanoTime() < deadline, "CacheD reached the exhausted connection pool");
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
+        }
+    }
+
+    private void awaitConnectionFailure(Throwable previousFailure, boolean serverStopped) {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
+        while (cache.lastFailure() == previousFailure) {
+            check(System.nanoTime() < deadline, "the account save failed its JDBC checkout");
+            LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
+        }
+        for (Throwable cause = cache.lastFailure(); cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLTransientConnectionException) return;
+            if (serverStopped && cause instanceof SQLException sql && sql.getSQLState() != null
+                    && sql.getSQLState().startsWith("08")) return;
+        }
+        throw new AssertionError("expected Hikari checkout timeout", cache.lastFailure());
+    }
+
+    private static double echoes(ExecutorService executor, Client[] clients, int first, int count) throws Exception {
+        var replies = new ArrayList<Future<Long>>(count);
+        for (int i = first; i < first + count; i++) {
+            Client client = clients[i];
+            replies.add(executor.submit(() -> {
+                long begin = System.nanoTime();
+                client.exchange(ECHO);
+                return System.nanoTime() - begin;
+            }));
+        }
+        long max = 0;
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(350);
+        for (var reply : replies) max = Math.max(max, reply.get(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS));
+        return max / 1e6;
+    }
+
+    private final class PoolHold implements AutoCloseable {
+        private final List<Connection> held = new ArrayList<>(db.getMaximumPoolSize());
+
+        PoolHold() throws SQLException {
+            try {
+                for (int i = 0; i < db.getMaximumPoolSize(); i++) held.add(db.getConnection());
+            } catch (SQLException failure) {
+                try { close(); } catch (SQLException cleanup) { failure.addSuppressed(cleanup); }
+                throw failure;
+            }
+        }
+
+        @Override
+        public void close() throws SQLException {
+            SQLException failure = null;
+            for (Connection connection : held) {
+                try { connection.close(); } catch (SQLException unableToClose) {
+                    if (failure == null) failure = unableToClose;
+                    else failure.addSuppressed(unableToClose);
+                }
+            }
+            if (failure != null) throw failure;
+        }
     }
 
     /** Anonymous TCP peers join and close while every published actor stays live. */
@@ -497,7 +679,8 @@ public final class CacheDCioPopulationLoad {
                 }
             };
             case ACCOUNT -> {
-                cache.saveRaidBuff(account, SNAPSHOT_START + 1000L * sequence);
+                cache.saveRaidBuff(account, CioSyntheticPopulation.accountId(ordinal),
+                        SNAPSHOT_START + 1000L * sequence);
                 accountSaves.set(ordinal, sequence);
                 yield () -> check(cache.flushAccount(account, 8000), "durable account snapshot");
             }

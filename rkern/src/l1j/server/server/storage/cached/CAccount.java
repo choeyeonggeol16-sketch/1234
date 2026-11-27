@@ -1,9 +1,11 @@
 package l1j.server.server.storage.cached;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import l1j.server.DatabaseFactory;
 
@@ -15,8 +17,12 @@ public final class CAccount extends CPendingState {
     public static final int RAID_BUFF = 1 << 3;
     private static final int ALL_FIELDS = LAST_ACTIVE | LAST_LOGOUT | BLESS_OF_AIN | RAID_BUFF;
     private static final String[] UPDATE_SQL = updateStatements();
+    private static final String FIND_IDENTITY = "SELECT 1 FROM accounts WHERE login=? AND id=?";
 
     public final String login;
+    // Bound once before this state admits its first dirty image, under the CacheD lock.
+    public int accountId;
+    public boolean obsolete;
     public String ip;
     public long lastActive;
     public long lastLogout;
@@ -59,6 +65,7 @@ public final class CAccount extends CPendingState {
     /** Immutable DB write image; later account updates remain in the owner. */
     public static final class Snapshot {
         public final String login;
+        public final int accountId;
         public final int mask;
         public final long version;
         public final String ip;
@@ -69,6 +76,7 @@ public final class CAccount extends CPendingState {
 
         public Snapshot(CAccount owner) {
             this.login = owner.login;
+            this.accountId = owner.accountId;
             this.mask = owner.dirty;
             this.version = owner.version;
             this.ip = owner.ip;
@@ -103,7 +111,7 @@ public final class CAccount extends CPendingState {
             sql.append("raid_buff=?,");
         }
         sql.setLength(sql.length() - 1);
-        sql.append(" WHERE login=?");
+        sql.append(" WHERE login=? AND id=?");
         return sql.toString();
     }
 
@@ -112,25 +120,43 @@ public final class CAccount extends CPendingState {
         if (mask == 0) return;
         final String sql = (mask & ~ALL_FIELDS) == 0 ? UPDATE_SQL[mask] : updateStatement(mask);
 
-        try (Connection con = DatabaseFactory.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            int idx = 1;
-            if ((mask & CAccount.LAST_ACTIVE) != 0) {
-                ps.setTimestamp(idx++, new Timestamp(snapshot.lastActive));
-                ps.setString(idx++, snapshot.ip);
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                int idx = 1;
+                if ((mask & CAccount.LAST_ACTIVE) != 0) {
+                    ps.setTimestamp(idx++, new Timestamp(snapshot.lastActive));
+                    ps.setString(idx++, snapshot.ip);
+                }
+                if ((mask & CAccount.LAST_LOGOUT) != 0) {
+                    ps.setTimestamp(idx++, new Timestamp(snapshot.lastLogout));
+                }
+                if ((mask & CAccount.BLESS_OF_AIN) != 0) {
+                    ps.setInt(idx++, snapshot.blessOfAin);
+                }
+                if ((mask & CAccount.RAID_BUFF) != 0) {
+                    ps.setTimestamp(idx++, new Timestamp(snapshot.raidBuffUntil));
+                }
+                ps.setString(idx++, snapshot.login);
+                ps.setInt(idx, snapshot.accountId);
+                if (ps.executeUpdate() != 0) return;
             }
-            if ((mask & CAccount.LAST_LOGOUT) != 0) {
-                ps.setTimestamp(idx++, new Timestamp(snapshot.lastLogout));
+
+            // With changed-row counts, an unchanged update also returns zero.
+            try (PreparedStatement ps = con.prepareStatement(FIND_IDENTITY)) {
+                ps.setString(1, snapshot.login);
+                ps.setInt(2, snapshot.accountId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) throw new MissingAccountException(snapshot.accountId);
+                }
             }
-            if ((mask & CAccount.BLESS_OF_AIN) != 0) {
-                ps.setInt(idx++, snapshot.blessOfAin);
-            }
-            if ((mask & CAccount.RAID_BUFF) != 0) {
-                ps.setTimestamp(idx++, new Timestamp(snapshot.raidBuffUntil));
-            }
-            ps.setString(idx, snapshot.login);
-            ps.executeUpdate();
         }
     }
 
+    public static final class MissingAccountException extends SQLException {
+        private static final long serialVersionUID = 1L;
+
+        private MissingAccountException(int accountId) {
+            super("Account row no longer exists for ID " + accountId);
+        }
+    }
 }

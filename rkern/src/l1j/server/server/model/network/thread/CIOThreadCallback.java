@@ -1132,6 +1132,11 @@ public final class CIOThreadCallback {
 			nextCharSaveNs = System.nanoTime() + saveRetryNs(charSaveFailures);
 		}
 
+		private void retryInventorySave() {
+			invSaveFailures = Math.min(31, invSaveFailures + 1);
+			nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
+		}
+
 		/** Capture and enqueue CacheD writes off the character's CIO owner. */
 		private void saveOnWorker() {
 			try {
@@ -1158,13 +1163,15 @@ public final class CIOThreadCallback {
 					if (!activeSession(pc)) return;
 					if (invSaveIntervalNs > 0L && System.nanoTime() - nextInvSaveNs >= 0L) {
 						try {
-							pc.saveInventory();
-							invSaveFailures = 0;
-							nextInvSaveNs = System.nanoTime() + invSaveIntervalNs
-									+ saveJitterNs(invSaveIntervalNs);
+							if (pc.saveInventoryIfReady()) {
+								invSaveFailures = 0;
+								nextInvSaveNs = System.nanoTime() + invSaveIntervalNs
+										+ saveJitterNs(invSaveIntervalNs);
+							} else {
+								retryInventorySave();
+							}
 						} catch (Throwable failure) {
-							invSaveFailures = Math.min(31, invSaveFailures + 1);
-							nextInvSaveNs = System.nanoTime() + saveRetryNs(invSaveFailures);
+							retryInventorySave();
 							LOGGER.log(Level.WARNING, "Inv save failed: " + pc.getName(), failure);
 						}
 					}

@@ -17,7 +17,6 @@ import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.monitor.LoggerInstance;
-import l1j.server.server.utils.PerformanceTimer;
 
 /**
  * l1j-jp의 서버를 기동한다.
@@ -245,22 +244,9 @@ public class Server {
      * @throws Exception
      */
     public Server() {
-        new Thread(
-                new ConsoleScanner())
-                        .start();
-
         initLogManager();
         initDBFactory();
-
-        try {
-            PerformanceTimer timer =
-                    new PerformanceTimer();
-
-            timer.reset();
-            timer = null;
-
-        } catch (Exception e) {
-        }
+        new Thread(new ConsoleScanner()).start();
     }
 
     public static boolean startGameServer() {

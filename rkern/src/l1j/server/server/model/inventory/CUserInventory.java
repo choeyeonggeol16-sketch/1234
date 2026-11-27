@@ -22,6 +22,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_Weight;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.SC_ADD_INVENTORY_NOTI;
+import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.CharactersItemStorage;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.templates.L1Item;
@@ -674,7 +675,7 @@ public class CUserInventory extends CInventory {
 		// coherent item snapshot rather than submitting one snapshot per field.
 		long mask = 0L;
 		if ((column & COL_SAVE_ALL) != 0) {
-			mask = (1L << 18) - 1L;
+			mask = ALL_ITEM_SAVE_COLUMNS;
 		} else {
 			if ((column & COL_ITEMID) != 0) mask |= 1L;
 			if ((column & COL_COUNT) != 0) mask |= 2L;
@@ -696,17 +697,26 @@ public class CUserInventory extends CInventory {
 			if ((column & COL_BLESS_LEVEL2) != 0) mask |= 1L << 14;
 			// Legacy COL_BLESS2 has no dedicated character_items column;
 			// retain the old full-save behavior instead of silently dropping it.
-			if ((column & COL_BLESS2) != 0) mask = (1L << 18) - 1L;
+			if ((column & COL_BLESS2) != 0) mask = ALL_ITEM_SAVE_COLUMNS;
 		}
 		if (mask == 0L) return;
 		try {
-			l1j.server.server.storage.CacheD.getInstance().saveItem(item, mask);
+			CacheD.getInstance().saveItem(item, mask);
 		} catch (RuntimeException e) {
 			java.util.logging.Logger.getLogger(CUserInventory.class.getName())
 				.log(java.util.logging.Level.SEVERE, "CacheD inventory dirty submission failed: item=" + item.getId(), e);
 			throw e;
 		}
 	}
+
+    private static final long ALL_ITEM_SAVE_COLUMNS = (1L << 18) - 1L;
+
+    /** The autosave membership snapshot may contain an item which has since moved. */
+    public boolean saveDirtyItemIfReady(L1ItemInstance item, long sessionEpoch) {
+        if (item == null || item.getRecordingColumns() == 0 || !HasItemInstance(item)) return true;
+        // A full dirty image keeps reversions while earlier SQL is in flight.
+        return CacheD.getInstance().saveItemIfReady(item, _owner.getId(), sessionEpoch, ALL_ITEM_SAVE_COLUMNS);
+    }
 
 	@Override
 	public synchronized void Pop(L1ItemInstance item) {

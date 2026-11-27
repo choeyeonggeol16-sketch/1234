@@ -1,9 +1,11 @@
 package l1j.server.server.storage;
 
 import java.sql.SQLException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -368,10 +370,10 @@ public final class CacheD {
                 if (cache.dbJobsByOwner.get(characterId) != 0
                         || (!queueBehindMailboxWork && cache.dbJobsByOwner.get(warehouseKey) != 0))
                     throw new RejectedExecutionException("Prior warehouse DB write not yet committed");
-                if (queueBehindMailboxWork) {
-                    cache.rejectQuarantinedOwner(warehouseKey);
-                    for (int owner : extraOwnerIds) cache.rejectQuarantinedOwner(owner);
-                } else {
+                cache.rejectBlockedOwner(characterId);
+                cache.rejectBlockedOwner(warehouseKey);
+                for (int owner : extraOwnerIds) cache.rejectBlockedOwner(owner);
+                if (!queueBehindMailboxWork) {
                     for (int owner : extraOwnerIds)
                         if (cache.dbJobsByOwner.get(owner) != 0)
                             throw new RejectedExecutionException("Prior party DB write not yet committed");
@@ -1025,6 +1027,40 @@ public final class CacheD {
             return key <= 0 || laneHead(map.get(key)) == node;
         }
 
+        /** Walk older FIFO heads only. A joined reservation can block a second
+         * owner even though that owner has no unresolved transaction of its own. */
+        boolean hasQuarantinedPredecessor(int ownerId) {
+            final CPendingState head = laneHead(owners.get(ownerId));
+            if (head == null || (head.readySecondOwner <= 0 && head.readyItemId <= 0
+                    && (!(head instanceof DbJob job) || job.extraOwnerIds.length == 0))) return false;
+
+            final ArrayDeque<CPendingState> pending = new ArrayDeque<>();
+            final IdentityHashMap<CPendingState, Boolean> seen = new IdentityHashMap<>();
+            pending.add(head);
+            while (!pending.isEmpty()) {
+                final CPendingState node = pending.removeLast();
+                if (seen.put(node, Boolean.TRUE) != null) continue;
+                if (isOwnerQuarantined(node.readyFirstOwner) || isOwnerQuarantined(node.readySecondOwner)) return true;
+                addEarlierHead(owners, node.readyFirstOwner, node, pending);
+                addEarlierHead(owners, node.readySecondOwner, node, pending);
+                addEarlierHead(itemsById, node.readyItemId, node, pending);
+                if (node instanceof DbJob job) {
+                    for (int owner : job.extraOwnerIds) {
+                        if (isOwnerQuarantined(owner)) return true;
+                        addEarlierHead(owners, owner, node, pending);
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void addEarlierHead(Int2ObjectOpenHashMap<Object> lanes, int key, CPendingState node,
+                ArrayDeque<CPendingState> pending) {
+            if (key <= 0) return;
+            final CPendingState head = laneHead(lanes.get(key));
+            if (head != null && head.readyOrder < node.readyOrder) pending.add(head);
+        }
+
         private boolean extraLanesReady(CPendingState node) {
             if (!(node instanceof DbJob job)) return true;
             for (int owner : job.extraOwnerIds) {
@@ -1288,7 +1324,7 @@ public final class CacheD {
         if (ownerId <= 0) return;
         if (deletingIds.contains(ownerId) || deletedIds.contains(ownerId))
             throw new RejectedExecutionException("CacheD owner is being deleted");
-        rejectQuarantinedOwner(ownerId);
+        rejectBlockedOwner(ownerId);
     }
 
     // Quarantine keeps the owner FIFO closed until authoritative reconciliation.
@@ -1301,9 +1337,12 @@ public final class CacheD {
         return ownerId > 0 && (activeOwnerIds.contains(ownerId) || isOwnerQuarantined(ownerId));
     }
 
-    private void rejectQuarantinedOwner(int ownerId) {
+    private void rejectBlockedOwner(int ownerId) {
+        if (ownerId <= 0 || quarantinedOwnerIds == null) return;
         if (isOwnerQuarantined(ownerId))
             throw new RejectedExecutionException("CacheD owner is quarantined: " + ownerId);
+        if (ready.hasQuarantinedPredecessor(ownerId))
+            throw new RejectedExecutionException("CacheD owner waits behind a quarantined transaction: " + ownerId);
     }
 
     /** Called by an existing CIO owner, including an immediate scheduling rejection.
@@ -1629,8 +1668,9 @@ public final class CacheD {
         submitDbJobOrdered(accountOrderKey(account), task);
     }
 
-    private CAccount getOrCreate(String login) {
+    private CAccount getOrCreate(String login, int accountId) {
         Objects.requireNonNull(login, "login");
+        if (accountId <= 0) throw new IllegalArgumentException("Invalid account ID: " + accountId);
         if (!accepting) {
             throw new RejectedExecutionException("CacheD is closed");
         }
@@ -1640,8 +1680,13 @@ public final class CacheD {
                 throw new RejectedExecutionException("CacheD account cache is full");
             }
             state = activeAccounts.get(login);
-            if (state == null) state = new CAccount(login);
+            if (state == null || state.obsolete || (state.accountId != 0 && state.accountId != accountId)) {
+                state = new CAccount(login);
+            }
+            state.accountId = accountId;
             accounts.put(login, state);
+        } else if (state.accountId != accountId) {
+            throw new RejectedExecutionException("Previous account ID still has pending writes: " + login);
         }
         return state;
     }
@@ -1652,35 +1697,35 @@ public final class CacheD {
         signalReadyChange();
     }
 
-    public void saveLastActive(String login, long timestampMillis, String ip) {
+    public void saveLastActive(String login, int accountId, long timestampMillis, String ip) {
         synchronized (lock) {
-            CAccount state = getOrCreate(login);
+            CAccount state = getOrCreate(login, accountId);
             state.lastActive = timestampMillis;
             state.ip = ip;
             changed(state, CAccount.LAST_ACTIVE);
         }
     }
 
-    public void saveLastLogout(String login, long timestampMillis) {
+    public void saveLastLogout(String login, int accountId, long timestampMillis) {
         synchronized (lock) {
-            CAccount state = getOrCreate(login);
+            CAccount state = getOrCreate(login, accountId);
             state.lastLogout = timestampMillis;
             changed(state, CAccount.LAST_LOGOUT);
         }
     }
 
-    public void saveBlessOfAin(String login, int value) {
+    public void saveBlessOfAin(String login, int accountId, int value) {
         synchronized (lock) {
-            CAccount state = getOrCreate(login);
+            CAccount state = getOrCreate(login, accountId);
             state.blessOfAin = value;
             changed(state, CAccount.BLESS_OF_AIN);
         }
     }
 
 
-    public void saveRaidBuff(String login, long untilMillis) {
+    public void saveRaidBuff(String login, int accountId, long untilMillis) {
         synchronized (lock) {
-            CAccount state = getOrCreate(login);
+            CAccount state = getOrCreate(login, accountId);
             state.raidBuffUntil = untilMillis;
             changed(state, CAccount.RAID_BUFF);
         }
@@ -1916,31 +1961,55 @@ public final class CacheD {
             if (deletingItemIds.contains(item.getId())) {
                 throw new RejectedExecutionException("Item is being deleted: " + item.getId());
             }
-            int ownerId = warehouse.itemOwners.get(item.getId());
+            final int ownerId = warehouse.itemOwners.get(item.getId());
+            if (ownerId <= 0)
+                throw new RejectedExecutionException("Item save owner is unknown: " + item.getId());
             checkItemSession(item);
-            if (item._cha != null && ownerId > 0 && item._cha.getId() != ownerId)
+            if (item._cha != null && item._cha.getId() != ownerId)
                 throw new RejectedExecutionException("Stale transferred item object: " + item.getId());
             if (ownerApplyJobsByOwner.get(ownerId) != 0) return;
             checkItemOwner(ownerId);
-            CItem state = items.get(item.getId());
-            if (state != null && state.mergeQueued(item, ownerId, mask)) return;
-            ItemSnapshot snapshot = ItemSnapshot.capture(item, ownerId);
-            if (state == null) {
-                if (items.size() >= MAX_ITEMS) {
-                    throw new RejectedExecutionException("CacheD item cache is full");
-                }
-                state = new CItem(snapshot.id);
-                items.put(state.id, state);
-                warehouse.addPendingId(ownerId, state.id);
-                state.ownerId = ownerId;
-            } else {
-                warehouse.trackPendingItem(state, ownerId);
-            }
-            state.capture(snapshot, mask);
-            ready.reindexResources(state);
-            enqueueNext(state, COALESCE_NANOS);
-            signalReadyChange();
+            if (!captureItemSave(item, ownerId, mask))
+                throw new RejectedExecutionException("CacheD item cache is full");
         }
+    }
+
+    /** Periodic inventory save. Skips rows that left this inventory and
+     * defers eligible rows while their owner's durable state is fenced. */
+    public boolean saveItemIfReady(L1ItemInstance item, int expectedOwner, long epoch, long mask) {
+        if (item == null || item.getId() <= 0 || expectedOwner <= 0 || mask == 0L) return true;
+        synchronized (lock) {
+            final int itemId = item.getId();
+            if (warehouse.itemOwners.get(itemId) != expectedOwner || deletingItemIds.contains(itemId)
+                    || deletingIds.contains(expectedOwner) || deletedIds.contains(expectedOwner)) return true;
+            final CUser active = activeUsers.get(expectedOwner);
+            if (!accepting || active == null || active.sessionEpoch != epoch || pendingOwnerReplay(expectedOwner)
+                    || isOwnerQuarantined(expectedOwner)
+                    || (quarantinedOwnerIds != null && ready.hasQuarantinedPredecessor(expectedOwner))) return false;
+            if (item._cha != null && (item._cha.getId() != expectedOwner
+                    || item._cha.getCacheDSessionEpoch() != epoch)) return true;
+            return captureItemSave(item, expectedOwner, mask);
+        }
+    }
+
+    private boolean captureItemSave(L1ItemInstance item, int ownerId, long mask) {
+        CItem state = items.get(item.getId());
+        if (state != null && state.mergeQueued(item, ownerId, mask)) return true;
+        if (state == null && items.size() >= MAX_ITEMS) return false;
+        ItemSnapshot snapshot = ItemSnapshot.capture(item, ownerId);
+        if (state == null) {
+            state = new CItem(snapshot.id);
+            items.put(state.id, state);
+            warehouse.addPendingId(ownerId, state.id);
+            state.ownerId = ownerId;
+        } else {
+            warehouse.trackPendingItem(state, ownerId);
+        }
+        state.capture(snapshot, mask);
+        ready.reindexResources(state);
+        enqueueNext(state, COALESCE_NANOS);
+        signalReadyChange();
+        return true;
     }
 
     // Submitting a persistence command never waits for a DB worker. A successful
@@ -1968,6 +2037,7 @@ public final class CacheD {
     private void submitItemCommand(L1ItemInstance item, int ownerId, boolean delete) {
         final int id = item.getId();
         if (id <= 0) throw new IllegalArgumentException("Invalid item ID: " + id);
+        if (!delete && ownerId <= 0) throw new IllegalArgumentException("Invalid item owner: " + ownerId);
         synchronized (lock) {
             if (!accepting) throw new RejectedExecutionException("CacheD is closed");
             if (pendingItemCommands >= MAX_ITEMS) {
@@ -2391,6 +2461,18 @@ public final class CacheD {
                         } else {
                             enqueueNext(state, COALESCE_NANOS);
                         }
+                    } else if (failure instanceof CAccount.MissingAccountException) {
+                        // The durable identity is gone. Drop any newer dirty
+                        // fields for this same ID without acknowledging them.
+                        state.obsolete = true;
+                        state.dirty = 0;
+                        if (state.queued) {
+                            ready.remove(state);
+                            state.queued = false;
+                        }
+                        accounts.remove(state.login, state);
+                        lastFailure = failure;
+                        diagnostic = "CacheD account save target no longer exists: " + state.login;
                     } else {
                         state.dirty |= accountSnapshot.mask;
                         diagnostic = retry(state, failure, "account=" + state.login);
@@ -2530,6 +2612,7 @@ public final class CacheD {
         }
     }
 
+    /** Waits for the pending version observed at entry. An empty barrier succeeds. */
     public boolean flushAccount(String login, long timeoutMillis) {
         Objects.requireNonNull(login, "login");
         final DbJob executingJob = DB_JOB_CONTEXT.get();
@@ -2549,6 +2632,7 @@ public final class CacheD {
             ready.refresh(state);
             signalReadyChange();
             while (state.savedVersion < requiredVersion) {
+                if (state.obsolete) return false;
                 long remaining = deadline - System.nanoTime();
                 if (remaining <= 0) return false;
                 try {

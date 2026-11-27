@@ -12,6 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import l1j.server.DatabaseFactory;
+import l1j.server.server.model.CWorld;
+import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.L1PendingCredit;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.storage.cached.CTransaction;
 
@@ -37,12 +40,17 @@ public final class CacheDAdmissionReserveRegression {
             ddl.executeUpdate("CREATE DATABASE " + schema);
             try {
                 admin.setCatalog(schema);
-                for (String table : List.of("character_items", "character_warehouse", "clan_warehouse",
+                for (String table : List.of("character_warehouse", "clan_warehouse",
                         "character_elf_warehouse", "character_special_warehouse",
-                        "character_supplementary_service", "characters")) {
+                        "character_supplementary_service")) {
                     ddl.executeUpdate("CREATE TABLE " + table + "(id INT PRIMARY KEY) ENGINE=InnoDB");
                 }
-                ddl.executeUpdate("CREATE TABLE cached_transaction_receipts (tx_id CHAR(36) PRIMARY KEY) ENGINE=InnoDB");
+                ddl.executeUpdate("CREATE TABLE characters (objid INT PRIMARY KEY) ENGINE=InnoDB");
+                ddl.executeUpdate("CREATE TABLE character_items (id INT PRIMARY KEY, char_id INT, item_id INT, count INT) ENGINE=InnoDB");
+                ddl.executeUpdate("CREATE TABLE cached_transaction_receipts (tx_id CHAR(36) PRIMARY KEY,kind VARCHAR(16),owner_a INT,owner_b INT) ENGINE=InnoDB");
+                ddl.executeUpdate("CREATE TABLE character_pending_credits (credit_id CHAR(36) PRIMARY KEY, char_id INT, amount INT, reason VARCHAR(40)) ENGINE=InnoDB");
+                ddl.executeUpdate("INSERT INTO characters VALUES (" + OWNER + ")");
+                ddl.executeUpdate("INSERT INTO character_items VALUES (111," + OWNER + ",40308,10)");
                 ddl.executeUpdate("CREATE TABLE character_quests (char_id INT, quest_id INT, PRIMARY KEY(char_id,quest_id)) ENGINE=InnoDB");
                 ddl.executeUpdate("CREATE TABLE character_level_gifts (char_id INT, gift_level INT, PRIMARY KEY(char_id,gift_level)) ENGINE=InnoDB");
                 ddl.executeUpdate("CREATE TABLE bench_owner_state(owner_id INT PRIMARY KEY, balance INT NOT NULL) ENGINE=InnoDB");
@@ -80,6 +88,8 @@ public final class CacheDAdmissionReserveRegression {
         final CacheD cache = CacheD.getInstance();
         try {
             check(cache.flushAll(5_000L), "transaction schema validation drained");
+            CTransaction.persistEconomy(UUID.randomUUID().toString(), OWNER, 0,
+                    new CTransaction.Mutation[]{ L1PendingCredit.prepare(OWNER, 7, "AUCTION_REFUND") });
             final long before = deadlocks();
             final var firstStarted = new CountDownLatch(1);
             final var primaryWrites = new AtomicInteger();
@@ -105,6 +115,17 @@ public final class CacheDAdmissionReserveRegression {
                 rejected(() -> cache.submitDbJobOrdered(OWNER, () -> {}), "free slots reserved for disjoint owners");
                 rejected(() -> cache.submitDbJobOrdered(PROBE, OWNER, () -> {}), "busy secondary owner may not consume reserve");
                 rejected(() -> cache.submitDbJob(() -> {}), "unidentified job may not consume reserve");
+                var recipient = new L1PcInstance();
+                recipient.setId(OWNER);
+                recipient.setName("RefundFixture");
+                CWorld world = CWorld.getInstance();
+                world.storeObject(recipient);
+                try {
+                    L1PendingCredit.notifyOnline(OWNER);
+                    check(pending(cache) == SHARED_CAP, "optional refund notification deferred");
+                } finally {
+                    world.removeObject(recipient);
+                }
 
                 final var progressed = new CountDownLatch(1);
                 submit(cache, PROBE, 0, null, progressed, disjointWrites, failure);
@@ -137,11 +158,18 @@ public final class CacheDAdmissionReserveRegression {
             check(recovery.await(5L, TimeUnit.SECONDS) && cache.flushAll(5_000L), "old owner can submit again after drain");
             check(durableBalance(OWNER) == SHARED_CAP + 1 && failure.get() == null, "post-drain SQL durable");
             verifyNoReadyRetention(cache);
+            L1PendingCredit.recoverBeforeLoad(OWNER);
+            L1PendingCredit.recoverBeforeLoad(OWNER);
+            try (var c = db.getConnection(); var stmt = c.createStatement();
+                 var rows = stmt.executeQuery("SELECT count,(SELECT COUNT(*) FROM character_pending_credits) FROM character_items WHERE id=111")) {
+                check(rows.next() && rows.getInt(1) == 17 && rows.getInt(2) == 0,
+                        "deferred auction credit paid exactly once on login");
+            }
             check(deadlocks() == before, "no added InnoDB deadlock");
             check(ManagementFactory.getThreadMXBean().findDeadlockedThreads() == null, "no JVM deadlock");
             System.out.printf(java.util.Locale.ROOT,
                     "CAP shared=%d protected=%d global=%d hard_rejected=1 witness_durable_while_held=1 "
-                    + "durable_shared_after_recovery=%d drain_ms=%.1f pending=0 deadlocks=0%n",
+                    + "durable_shared_after_recovery=%d drain_ms=%.1f deferred_credit=7 pending=0 deadlocks=0%n",
                     SHARED_CAP, HARD_CAP-SHARED_CAP, HARD_CAP, SHARED_CAP+1, drain);
         } finally {
             check(cache.shutdown(10_000L), "workers stopped");

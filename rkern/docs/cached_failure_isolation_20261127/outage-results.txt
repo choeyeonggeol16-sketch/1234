@@ -1,0 +1,24 @@
+# 기준 버전 · 풀 고갈
+POPULATION idle sockets=5120 authenticated=5120 entered=5120 verified_ready=5120 world_actors=5120 owners=2 leases=5120 direct_bytes=22577152 heap_used_bytes=134793232
+OUTAGE checkout_failure_verified=1 dirty_retry=1 held_requests=128 sampled_pending_db=64 echo_failure_max_ms=3.150 echo_hold_max_ms=28.041 recovered=128 sockets=5120
+CHECKS receipts=22 accounts=5120 characters=5120 pending_db=0 pending_items=0
+DB_WORK explicit_commits=0 row_lock_waits=0 innodb_deadlocks=0 jvm_deadlocks=0
+DISCONNECT elapsed_ms=675.7 sockets=0 actors=0
+
+# 수정본 · 풀 고갈
+POPULATION idle sockets=5120 authenticated=5120 entered=5120 verified_ready=5120 world_actors=5120 owners=2 leases=5120 direct_bytes=22560768 heap_used_bytes=130074640
+OUTAGE checkout_failure_verified=1 dirty_retry=1 held_requests=128 sampled_pending_db=64 echo_failure_max_ms=2.360 echo_hold_max_ms=10.459 recovered=128 sockets=5120
+CHECKS receipts=22 accounts=5120 characters=5120 pending_db=0 pending_items=0
+DB_WORK explicit_commits=0 row_lock_waits=0 innodb_deadlocks=0 jvm_deadlocks=0
+DISCONNECT elapsed_ms=330.8 sockets=0 actors=0
+
+# 수정본 · DB 프로세스 재시작
+POPULATION idle sockets=5120 authenticated=5120 entered=5120 verified_ready=5120 world_actors=5120 owners=2 leases=5120 direct_bytes=22593536 heap_used_bytes=133220368
+POPULATION mariadb_stopped sockets=5120 authenticated=5120 entered=5120 verified_ready=5120 world_actors=5120 owners=2 leases=5120 direct_bytes=22761472 heap_used_bytes=139511824
+RESTART checkout_failure_verified=1 dirty_retry=1 offline_echoes=16 offline_echo_max_ms=1.008 fresh_receipts=1 sockets=5120
+CHECKS receipts=1 accounts=5120 characters=5120 pending_db=0 pending_items=0
+DB_WORK explicit_commits=0 row_lock_waits=0 innodb_deadlocks=0 jvm_deadlocks=0
+DISCONNECT elapsed_ms=682.5 sockets=0 actors=0
+
+# 수정본 · 2,048건 접수 한도
+CAP shared=2044 protected=4 global=2048 hard_rejected=1 witness_durable_while_held=1 durable_shared_after_recovery=2045 drain_ms=1230.9 deferred_credit=7 pending=0 deadlocks=0

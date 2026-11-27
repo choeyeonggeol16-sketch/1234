@@ -1,4 +1,5 @@
 package l1j.server.server.model.network.core.cs.packet;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,14 +14,14 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Account;
 import l1j.server.server.auth.login.AccountAlreadyLoginException;
+import l1j.server.server.auth.login.GameServerFullException;
 import l1j.server.server.auth.login.LoginAttemptGuard;
 import l1j.server.server.auth.login.LoginController;
-import l1j.server.server.auth.login.GameServerFullException;
+import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_CommonNews;
 import l1j.server.server.model.network.core.sc.packet.SC_LoginResult;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.utill.CConnectionState;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.utils.GameUtils;
@@ -97,8 +98,10 @@ public final class CS_AuthLogin {
                             return;
                         }
                         try {
-                            if (isAuthority(client, accountName, loaded))
+                            if (isAuthority(client, accountName, loaded)) {
+                                client.finishLoginDbLoad(request);
                                 sendNotice(client, client.getAccountName());
+                            }
                         } catch (Exception e) {
                             _log.log(Level.WARNING, "RAuthLoginHandler flow exception", e);
                             client.close();
@@ -304,18 +307,24 @@ public final class CS_AuthLogin {
             return;
         }
         final Account expectedAccount = client.getAccount();
-        final CConnectionState expectedState = client.getConnectionState();
-        if (!isCurrentNoticeSession(client, expectedAccount, expectedState, account)) return;
+        if (expectedAccount == null || !account.equals(expectedAccount.getName())) return;
+        final CUserSocket.LoginDbLoad request = client.tryBeginLoginDbLoad(client.getConnectionState(), expectedAccount);
+        if (request == null) return;
         try {
             CacheD.getInstance().submitDbJobOrdered(account, () -> {
+                if (!client.isCurrentLoginDbLoad(request)) {
+                    client.finishLoginDbLoad(request);
+                    return;
+                }
                 try {
-                    if (!isCurrentNoticeSession(client, expectedAccount, expectedState, account)) return;
                     final SC_CommonNews.NoticeData notice = SC_CommonNews.loadUnreadNotice(account);
-                    if (!CIOThreadCallback.getInstance().completeSession(client, () -> {
-                        if (!isCurrentNoticeSession(client, expectedAccount, expectedState, account)) return;
+                    CIOThreadCallback.getInstance().completeSession(client, () -> {
+                        if (!client.isCurrentLoginDbLoad(request)) return;
                         if (notice == null || !SC_CommonNews.send(client, notice.message)) {
-                            if (isCurrentNoticeSession(client, expectedAccount, expectedState, account))
+                            if (client.isCurrentLoginDbLoad(request)) {
+                                client.finishLoginDbLoad(request);
                                 new CS_CommonClick(client);
+                            }
                             return;
                         }
                         try {
@@ -324,27 +333,26 @@ public final class CS_AuthLogin {
                         } catch (RuntimeException e) {
                             _log.log(Level.WARNING, "Notice read-state update rejected: " + account, e);
                         }
-                    })) {
-                        _log.warning("Notice DB callback rejected: " + account);
-                    }
-                } catch (Exception e) {
-                    _log.log(Level.SEVERE, "Notice DB failed: " + account, e);
-                    CIOThreadCallback.getInstance().completeSession(client, () -> {
-                        if (isCurrentNoticeSession(client, expectedAccount, expectedState, account)) client.close();
-                    });
+                    }, failure -> finishNoticeLoad(client, request, account, failure));
+                } catch (RuntimeException failure) {
+                    finishNoticeLoad(client, request, account, failure);
                 }
             });
-        } catch (RuntimeException e) {
-            _log.log(Level.SEVERE, "Notice DB request rejected: " + account, e);
-            if (isCurrentNoticeSession(client, expectedAccount, expectedState, account)) client.close();
+        } catch (RuntimeException failure) {
+            finishNoticeLoad(client, request, account, failure);
         }
     }
 
-    private static boolean isCurrentNoticeSession(
-            CUserSocket client, Account expectedAccount, CConnectionState expectedState, String account) {
-        return expectedAccount != null && client.isConnected()
-                && client.getAccount() == expectedAccount && account.equals(expectedAccount.getName())
-                && client.getConnectionState() == expectedState && client.getActiveChar() == null;
+    private static void finishNoticeLoad(CUserSocket client, CUserSocket.LoginDbLoad request,
+            String account, Throwable failure) {
+        try {
+            if (failure != null && client.isCurrentLoginDbLoad(request)) {
+                _log.log(Level.WARNING, "Notice load failed: " + account, failure);
+                client.close();
+            }
+        } finally {
+            client.finishLoginDbLoad(request);
+        }
     }
 
     private static boolean isAccountIpQuotaReached(String ip, int limit) {

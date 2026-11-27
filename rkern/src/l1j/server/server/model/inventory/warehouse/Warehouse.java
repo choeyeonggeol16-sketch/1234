@@ -343,7 +343,6 @@ public abstract class Warehouse extends L1Object {
                             && row.durability == rs.getInt("durability")
                             && row.charge == rs.getInt("charge_count")
                             && row.remaining == rs.getInt("remaining_time")
-                            && Objects.equals(row.lastUsed, rs.getTimestamp("last_used"))
                             && row.attr == rs.getInt("attr_enchantlvl")
                             && (type == CLAN_ROWS || type == PACKAGE_ROWS || row.bless == rs.getInt("bless"))
                             && row.special == rs.getInt("special_enchant")
@@ -351,8 +350,12 @@ public abstract class Warehouse extends L1Object {
                             && (type == SUPPLEMENT_ROWS || row.blessLevel == rs.getInt("bless_level"))
                             && row.blessQuality == rs.getInt("bless_level2")
                             && (type == SUPPLEMENT_ROWS || (row.itemLevel == rs.getInt("item_level")
-                                && Objects.equals(row.hotel, rs.getString("Hotel_Town"))
-                                && Objects.equals(row.endTime, rs.getTimestamp("end_time"))))) return;
+                                && Objects.equals(row.hotel, rs.getString("Hotel_Town"))))) {
+                        int endIndex = type == SUPPLEMENT_ROWS ? 0 : rs.findColumn("end_time");
+                        CTransaction.verifyItemTimestamps(ps, rs, row.id, rs.findColumn("last_used"),
+                                row.lastUsed, endIndex, row.endTime);
+                        return;
+                    }
                 }
             } catch (SQLException checkFailed) {
                 ex.addSuppressed(checkFailed);

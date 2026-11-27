@@ -200,6 +200,47 @@ public final class CacheDWarehouseInsertConcurrency {
         }
     }
 
+    private void timestampPreimages(Connection con) throws SQLException {
+        boolean maria = con.getMetaData().getDatabaseProductName().contains("MariaDB");
+        String[] modes = maria ? new String[]{"", "TIME_ROUND_FRACTIONAL"} : new String[]{null};
+        for (String mode : modes) {
+            if (mode != null) execute(con, "SET SESSION sql_mode='" + mode + "'");
+            for (int precision : new int[]{0, 3, 6}) {
+                execute(con, "ALTER TABLE character_items MODIFY last_used DATETIME(" + precision
+                        + "), MODIFY end_time DATETIME(" + precision + ")");
+                var template = new L1EtcItem();
+                template.setItemId(ITEM_ID);
+                template.setName("timestamp fixture");
+                var item = new L1ItemInstance(template, 2);
+                item.setId(220);
+                item.setLastUsed(java.sql.Timestamp.valueOf("2026-11-27 23:59:59.987654"));
+                item.setEndTime(java.sql.Timestamp.valueOf("2026-11-28 12:34:56.123456"));
+                ItemSnapshot image = ItemSnapshot.capture(item, 100);
+                con.setAutoCommit(false);
+                try {
+                    CTransaction.writeCharacterMoveRow(con, image, false, 2);
+                    CTransaction.verifyItemPreimage(con, image);
+                    for (String field : new String[]{"last_used", "end_time"}) {
+                        var savepoint = con.setSavepoint();
+                        int microseconds = switch (precision) { case 0 -> 1000000; case 3 -> 1000; default -> 1; };
+                        execute(con, "UPDATE character_items SET " + field + "=DATE_ADD(" + field
+                                + ",INTERVAL " + microseconds + " MICROSECOND) WHERE id=220");
+                        try {
+                            CTransaction.verifyItemPreimage(con, image);
+                            throw new AssertionError("Changed timestamp accepted: " + field + " at precision " + precision);
+                        } catch (SQLException expected) {
+                            if (!expected.getMessage().contains("field=" + field + " ")) throw expected;
+                        }
+                        con.rollback(savepoint);
+                    }
+                } finally {
+                    con.rollback();
+                    con.setAutoCommit(true);
+                }
+            }
+        }
+    }
+
     private void run() throws Exception {
         try (Connection admin = connect()) {
             execute(admin, "CREATE DATABASE " + schema);
@@ -230,11 +271,12 @@ public final class CacheDWarehouseInsertConcurrency {
                 checkDuplicateRollbackAndConservation(admin);
                 checkCharacterStackUpdate();
                 checkOrderedPreimages();
+                timestampPreimages(admin);
             } finally {
                 execute(admin, "DROP DATABASE " + schema);
             }
         }
-        System.out.println("PASS independent warehouse inserts, duplicate rollback, guarded stack updates and ordered full preimage checks");
+        System.out.println("PASS independent warehouse inserts, duplicate rollback, guarded stack updates and ordered full preimage checks and native timestamp precision");
     }
 
     public static void main(String[] arguments) throws Exception {

@@ -238,11 +238,12 @@ public final class CacheDNetMixedLoad {
             for (int level = 41; level <= 80; level++) growth.record(level, 10 + level % 3, 4 + level % 2);
             encodedGrowth = growth.encode();
             s.execute("INSERT INTO bench_owner_state SELECT " + BASE + "+seq-1," + FIRST_BALANCE + " FROM seq_1_to_1200");
-            try (var a = c.prepareStatement("INSERT INTO accounts(login,charslot,gamepassword,Shop_open_count) VALUES(?,8,0,0)");
+            try (var a = c.prepareStatement("INSERT INTO accounts(id,login,charslot,gamepassword,Shop_open_count) VALUES(?,?,8,0,0)");
                  var ch = c.prepareStatement("INSERT INTO characters (objid,char_name,account_name,Clanname,notes,ReturnStat) VALUES (?,?,?,'','',0)")) {
                 for (int i = 0; i < USERS; i++) {
                     String name = name(i);
-                    a.setString(1, name);
+                    a.setInt(1, actor(i));
+                    a.setString(2, name);
                     a.addBatch();
                     ch.setInt(1, actor(i));
                     ch.setString(2, name);
@@ -266,7 +267,8 @@ public final class CacheDNetMixedLoad {
                 }
                 for (int i = 0; i < readerCount; i++) {
                     String name = readName(i);
-                    a.setString(1, name);
+                    a.setInt(1, readActor(i));
+                    a.setString(2, name);
                     a.addBatch();
                     ch.setInt(1, readActor(i));
                     ch.setString(2, name);
@@ -361,7 +363,7 @@ public final class CacheDNetMixedLoad {
                         final String name = name(user);
                         if (kind == 2) {
                             long time = DATE + (blockSql ? 60_000_000L : 0L) + 1_000L*ordinal;
-                            cache.saveRaidBuff(name, time);
+                            cache.saveRaidBuff(name, actor(user), time);
                             accountExpected[user] = time;
                         } else {
                             String title = (blockSql ? "measure-" : "warm-") + ordinal;

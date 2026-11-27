@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.DatabaseFactory;
+import l1j.server.server.storage.cached.CTransaction;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.storage.CacheD;
@@ -197,9 +198,10 @@ public class PrivateWarehouse extends Warehouse {
                             && row.pack == rs.getInt(12) && row.blessLevel == rs.getInt(13)
                             && row.blessQuality == rs.getInt("bless_level2")
                             && row.itemLevel == rs.getInt("item_level")
-                            && java.util.Objects.equals(row.hotel, rs.getString("Hotel_Town"))
-                            && java.util.Objects.equals(row.used, rs.getTimestamp("last_used"))
-                            && java.util.Objects.equals(row.end, rs.getTimestamp("end_time"))) return;
+                            && java.util.Objects.equals(row.hotel, rs.getString("Hotel_Town"))) {
+                        CTransaction.verifyItemTimestamps(ps, rs, row.id, 17, row.used, 18, row.end);
+                        return;
+                    }
                 }
             } catch (SQLException checkFailure) {
                 e.addSuppressed(checkFailure);

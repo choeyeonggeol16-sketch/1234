@@ -1,14 +1,18 @@
 import com.zaxxer.hikari.HikariDataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.storage.cached.CTransaction;
@@ -25,11 +29,41 @@ public final class CacheDReceiptClaimRegression {
     static String url;
     static String schema;
 
+    enum ReceiptFault { READ_LAST_OWNER, CLOSE_ROWS, CLOSE_STATEMENT }
+
+    static Object invoke(Object target, Method method, Object[] args) throws Throwable {
+        try { return method.invoke(target, args); }
+        catch (InvocationTargetException failure) { throw failure.getCause(); }
+    }
+
+    static PreparedStatement faultyReceiptRead(PreparedStatement statement, ReceiptFault fault) {
+        return (PreparedStatement) Proxy.newProxyInstance(Pool.class.getClassLoader(),
+                new Class<?>[]{PreparedStatement.class}, (proxy, method, args) -> {
+                    Object result = invoke(statement, method, args);
+                    if (method.getName().equals("close") && fault == ReceiptFault.CLOSE_STATEMENT)
+                        throw new SQLException("Fixture failed to close receipt statement", "08S01");
+                    if (!method.getName().equals("executeQuery")) return result;
+                    ResultSet rows = (ResultSet) result;
+                    return Proxy.newProxyInstance(Pool.class.getClassLoader(), new Class<?>[]{ResultSet.class},
+                            (p, m, a) -> {
+                                if (m.getName().equals("getInt") && Integer.valueOf(3).equals(a[0])
+                                        && fault == ReceiptFault.READ_LAST_OWNER)
+                                    throw new SQLException("Fixture failed to read full receipt identity", "08S01");
+                                Object value = invoke(rows, m, a);
+                                if (m.getName().equals("close") && fault == ReceiptFault.CLOSE_ROWS)
+                                    throw new SQLException("Fixture failed to close receipt cursor", "08S01");
+                                return value;
+                            });
+                });
+    }
+
     static final class Pool extends HikariDataSource {
         final AtomicInteger engineChecks = new AtomicInteger();
         final AtomicInteger insertClaims = new AtomicInteger();
         final AtomicInteger duplicateReads = new AtomicInteger();
         final AtomicInteger commitFailure = new AtomicInteger();
+        final AtomicReference<ReceiptFault> duplicateFault = new AtomicReference<>();
+        final AtomicReference<ReceiptFault> recoveryFault = new AtomicReference<>();
         final AtomicInteger explicitCommits = new AtomicInteger();
         final AtomicInteger autoCommitEnables = new AtomicInteger();
         final AtomicInteger aborts = new AtomicInteger();
@@ -47,9 +81,12 @@ public final class CacheDReceiptClaimRegression {
                                 engineChecks.incrementAndGet();
                             if (sql.startsWith("INSERT INTO cached_transaction_receipts"))
                                 insertClaims.incrementAndGet();
-                            if (sql.startsWith("SELECT kind,owner_a,owner_b FROM cached_transaction_receipts")
-                                    && sql.endsWith("LOCK IN SHARE MODE"))
-                                duplicateReads.incrementAndGet();
+                            if (sql.startsWith("SELECT kind,owner_a,owner_b FROM cached_transaction_receipts")) {
+                                boolean duplicate = sql.endsWith("LOCK IN SHARE MODE");
+                                if (duplicate) duplicateReads.incrementAndGet();
+                                ReceiptFault fault = (duplicate ? duplicateFault : recoveryFault).getAndSet(null);
+                                if (fault != null) return faultyReceiptRead(physical.prepareStatement(sql), fault);
+                            }
                         } else if (name.equals("abort")) {
                             aborts.incrementAndGet();
                         } else if (name.equals("commit") || (name.equals("setAutoCommit") && (boolean) args[0])) {
@@ -157,8 +194,27 @@ public final class CacheDReceiptClaimRegression {
         }
     }
 
+    static void duplicateReadFailures(Connection admin, Pool pool, String tx) throws SQLException {
+        for (ReceiptFault fault : ReceiptFault.values()) {
+            pool.duplicateFault.set(fault);
+            apply(tx, 12);
+            check(pool.duplicateFault.get() == null, "duplicate receipt fault ran");
+        }
+        pool.duplicateFault.set(ReceiptFault.READ_LAST_OWNER);
+        pool.recoveryFault.set(ReceiptFault.READ_LAST_OWNER);
+        check(requireFailure(() -> apply(tx, 12)) instanceof CTransaction.OutcomeUnknownException,
+                "Unreadable existing receipt reported rollback");
+        check(pool.recoveryFault.get() == null, "fresh verification was attempted");
+        pool.duplicateFault.set(ReceiptFault.CLOSE_ROWS);
+        SQLException collision = requireFailure(() -> apply(tx, 13));
+        check(!(collision instanceof CTransaction.OutcomeUnknownException)
+                && collision.getMessage().contains("identity collision"), "known collision lost");
+        verify(admin, 1, 1);
+    }
+
     static void ambiguousCommits(Connection admin, Pool pool, int before) throws SQLException {
         pool.commitFailure.set(LOSE_CONFIRMATION_AFTER_COMMIT);
+        pool.recoveryFault.set(pool.initiallyAutoCommit ? ReceiptFault.CLOSE_ROWS : ReceiptFault.CLOSE_STATEMENT);
         String confirmed = UUID.randomUUID().toString();
         apply(confirmed, 12);
         apply(confirmed, 12);
@@ -237,6 +293,7 @@ public final class CacheDReceiptClaimRegression {
                     apply(first, 12);
                     check(pool.duplicateReads.get() == 1, "Replay missed the current identity check");
                     requireFailure(() -> apply(first, 13));
+                    duplicateReadFailures(admin, pool, first);
                     verify(admin, 1, 1);
                     duplicateConcurrent(pool);
                     verify(admin, 2, 2);
@@ -276,6 +333,6 @@ public final class CacheDReceiptClaimRegression {
             }
         }
         System.out.println("PASS one-statement receipt claim, concurrent dedup, rollback, "
-                + "manual and auto-commit response loss, Hikari session disposal, engine drift and missing schema");
+                + "manual and auto-commit response loss, partial receipt reads, read cleanup failures, Hikari session disposal, engine drift and missing schema");
     }
 }

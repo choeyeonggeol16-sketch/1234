@@ -446,7 +446,7 @@ public class Account {
 
 	public static void updateLastActive(final Account account, String ip) {
 		final long now = System.currentTimeMillis();
-		CacheD.getInstance().saveLastActive(account.getName(), now, ip);
+		CacheD.getInstance().saveLastActive(account.getName(), account.getAccountId(), now, ip);
 		account._lastActive = new Timestamp(now);
 		account._ip = ip;
 	}
@@ -981,7 +981,7 @@ public class Account {
 
     public synchronized void updateBlessOfAin() {
 		if (_blessOfAin < 0) _blessOfAin = 0;
-		CacheD.getInstance().saveBlessOfAin(_name, _blessOfAin);
+		CacheD.getInstance().saveBlessOfAin(_name, _id, _blessOfAin);
 	}
 
 
@@ -992,7 +992,7 @@ public class Account {
 	
 	public void updateLastLogOut() {
 		final long now = System.currentTimeMillis();
-		CacheD.getInstance().saveLastLogout(_name, now);
+		CacheD.getInstance().saveLastLogout(_name, _id, now);
 		_lastlogout = new Timestamp(now);
 	}
 

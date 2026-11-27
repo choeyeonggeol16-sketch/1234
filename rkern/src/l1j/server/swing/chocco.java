@@ -719,11 +719,22 @@ public class chocco extends JFrame {
 			first.setText("상태 : 로딩중");
 			first.setForeground(new Color(128, 0, 0));
 			serverStartAt = System.currentTimeMillis();
+			serverstart = true;
 			new Thread(() -> {
-				new Server();
+				try {
+					new Server();
+				} catch (IllegalStateException failure) {
+					java.util.logging.Logger.getLogger(chocco.class.getName())
+							.log(java.util.logging.Level.SEVERE, "서버 준비 실패", failure);
+					SwingUtilities.invokeLater(() -> {
+						serverstart = false;
+						serverStartAt = 0L;
+						first.setText("서버 준비 실패 · DB 확인 후 재시도");
+					});
+					return;
+				}
 				new ServerStart();
 			}, "Lineage Server-Boot").start();
-			serverstart = true;
 		} else {
 			JOptionPane.showMessageDialog(this, "이미 서버가 실행중입니다.", "Lineage Server", JOptionPane.ERROR_MESSAGE);
 		}

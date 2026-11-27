@@ -4432,7 +4432,6 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 		}
 	}
 
-	/** 로봇관련 빽섭 수정 **/
 	public void saveInventory() {
 		if (noPlayerCK || noPlayerRobot || noPlayerck2)
 			return;
@@ -4441,6 +4440,25 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 				getInventory().saveItem(item, item.getRecordingColumns() != 0 ? CUserInventory.COL_SAVE_ALL : 0);
 		}
 	}
+
+    /** A temporarily deferred item is recaptured on the next autosave attempt. */
+    public boolean saveInventoryIfReady() {
+        if (noPlayerCK || noPlayerRobot || noPlayerck2) return true;
+        final CUserInventory inventory = getInventory();
+        final List<L1ItemInstance> items = inventory.getItemSnapshot();
+        final long sessionEpoch = getCacheDSessionEpoch();
+        boolean ready = true;
+        RuntimeException firstFailure = null;
+        for (int i = 0, size = items.size(); i < size; i++) {
+            try {
+                if (!inventory.saveDirtyItemIfReady(items.get(i), sessionEpoch)) ready = false;
+            } catch (RuntimeException failure) {
+                if (firstFailure == null) firstFailure = failure;
+            }
+        }
+        if (firstFailure != null) throw firstFailure;
+        return ready;
+    }
 
 	private int _maxweight = 0;
 

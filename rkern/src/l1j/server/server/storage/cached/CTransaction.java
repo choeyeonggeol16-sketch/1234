@@ -3,6 +3,8 @@ package l1j.server.server.storage.cached;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.UUID;
 import java.sql.SQLException;
@@ -35,6 +37,17 @@ public final class CTransaction {
         }
     }
 
+    private static final class ReceiptIdentityCollision extends SQLException {
+        private static final long serialVersionUID = 1L;
+
+        ReceiptIdentityCollision(String txId) { super("CacheD receipt identity collision: " + txId); }
+    }
+
+    private static void logReceipt(Level level, String message, Throwable failure) {
+        try { LOG.log(level, message, failure); }
+        catch (RuntimeException ignored) { /* A logging handler cannot change the transaction outcome. */ }
+    }
+
     @FunctionalInterface
     public interface Mutation {
         void apply(Connection connection) throws SQLException;
@@ -50,6 +63,7 @@ public final class CTransaction {
     private static boolean hasReceipt(Connection con, String txId, String kind,
                                       int firstOwner, int secondOwner, boolean readCurrent)
             throws SQLException {
+        boolean confirmed = false;
         try (PreparedStatement ps = con.prepareStatement(
                 "SELECT kind,owner_a,owner_b FROM cached_transaction_receipts WHERE tx_id=?"
                         + (readCurrent ? " LOCK IN SHARE MODE" : ""))) {
@@ -58,11 +72,15 @@ public final class CTransaction {
                 if (!rs.next()) return false;
                 if (!kind.equals(rs.getString(1)) || firstOwner != rs.getInt(2)
                         || secondOwner != rs.getInt(3)) {
-                    throw new SQLException("CacheD receipt identity collision: " + txId);
+                    throw new ReceiptIdentityCollision(txId);
                 }
-                return true;
+                confirmed = true;
             }
+        } catch (SQLException | RuntimeException cleanup) {
+            if (!confirmed) throw cleanup;
+            logReceipt(Level.WARNING, "Confirmed receipt read cleanup failed: " + txId, cleanup);
         }
+        return true;
     }
 
     private static void insertReceipt(Connection con, String txId, String kind,
@@ -95,8 +113,18 @@ public final class CTransaction {
             // INSERT has resolved the unique-key conflict. A shared current
             // read verifies the committed owner without a lock upgrade or a
             // stale repeatable-read snapshot.
-            if (failure.getErrorCode() == 1062
-                    && hasReceipt(con, txId, kind, firstOwner, secondOwner, true)) return false;
+            if (failure.getErrorCode() == 1062) {
+                try {
+                    if (hasReceipt(con, txId, kind, firstOwner, secondOwner, true)) return false;
+                } catch (ReceiptIdentityCollision collision) {
+                    throw collision;
+                } catch (SQLException | RuntimeException readFailure) {
+                    // Our INSERT lost. Rolling back this attempt cannot undo an
+                    // earlier receipt whose identity we could not finish reading.
+                    readFailure.addSuppressed(failure);
+                    throw new OutcomeUnknownException("Duplicate receipt identity unreadable: " + txId, readFailure);
+                }
+            }
             throw failure;
         }
     }
@@ -114,14 +142,14 @@ public final class CTransaction {
             if (confirmed) {
                 // Closing the verification connection cannot undo a receipt
                 // that was already read from committed storage.
-                LOG.log(Level.WARNING, "Confirmed receipt connection close failed", verificationFailure);
+                logReceipt(Level.WARNING, "Confirmed receipt connection close failed", verificationFailure);
             } else uncertain.addSuppressed(verificationFailure);
         }
         if (confirmed) {
-            LOG.log(Level.WARNING, "Recovered confirmed CacheD COMMIT using receipt {0}", txId);
+            logReceipt(Level.WARNING, "Recovered confirmed CacheD COMMIT using receipt " + txId, null);
             return true;
         }
-        LOG.log(Level.SEVERE, "CacheD transaction result unresolved, owner frozen; receipt=" + txId,
+        logReceipt(Level.SEVERE, "CacheD transaction result unresolved, owner frozen; receipt=" + txId,
                 uncertain);
         return false;
     }
@@ -259,10 +287,47 @@ public final class CTransaction {
             requirePreimageInt(v.id, "bless_level", r.getInt(14), v.blessLevel);
             requirePreimageInt(v.id, "bless_level2", r.getInt(15), v.blessLevel2);
             requirePreimageInt(v.id, "item_level", r.getInt(16), v.itemLevel);
-            requirePreimageObject(v.id, "last_used", r.getTimestamp(17), v.lastUsed);
-            requirePreimageObject(v.id, "end_time", r.getTimestamp(18), v.endTime);
             requirePreimageObject(v.id, "Hotel_Town", r.getString(19), v.hotelTown);
+            verifyItemTimestamps(ps, r, v.id, 17, v.lastUsed, 18, v.endTime);
         }
+    }
+
+    /** Final check on a selected row. Releases its result set before a native conversion.
+     * A zero endIndex means that the table does not store an end time. */
+    public static void verifyItemTimestamps(PreparedStatement select, ResultSet rows, int id,
+            int lastIndex, Timestamp lastUsed, int endIndex, Timestamp endTime) throws SQLException {
+        Timestamp storedLast = rows.getTimestamp(lastIndex);
+        Timestamp storedEnd = endIndex == 0 ? null : rows.getTimestamp(endIndex);
+        int lastScale = timestampScale(rows, lastIndex, id, "last_used", storedLast, lastUsed);
+        int endScale = endIndex == 0 ? -1 : timestampScale(rows, endIndex, id, "end_time", storedEnd, endTime);
+        if (lastScale < 0 && endScale < 0) return;
+        // Servers can round or truncate, including across a second boundary.
+        // Reuse the original JDBC session and binding. Never accept a tolerance window.
+        rows.close();
+        String sql = "SELECT CAST(? AS DATETIME(" + Math.max(0, lastScale)
+                + ")), CAST(? AS DATETIME(" + Math.max(0, endScale) + "))";
+        try (PreparedStatement cast = select.getConnection().prepareStatement(sql)) {
+            cast.setTimestamp(1, lastScale < 0 ? null : lastUsed);
+            cast.setTimestamp(2, endScale < 0 ? null : endTime);
+            try (ResultSet normalized = cast.executeQuery()) {
+                if (!normalized.next()) throw new SQLException("Timestamp conversion failed for item " + id);
+                if (lastScale >= 0) requirePreimageObject(id, "last_used", storedLast, normalized.getTimestamp(1));
+                if (endScale >= 0) requirePreimageObject(id, "end_time", storedEnd, normalized.getTimestamp(2));
+            }
+        }
+    }
+
+    private static int timestampScale(ResultSet rows, int index, int id, String field,
+            Timestamp stored, Timestamp expected) throws SQLException {
+        if (java.util.Objects.equals(stored, expected)) return -1;
+        if (stored != null && expected != null && expected.getNanos() != 0) {
+            ResultSetMetaData meta = rows.getMetaData();
+            String type = meta.getColumnTypeName(index);
+            int precision = meta.getScale(index);
+            if (("DATETIME".equalsIgnoreCase(type) || "TIMESTAMP".equalsIgnoreCase(type))
+                    && precision >= 0 && precision <= 6) return precision;
+        }
+        throw preimageFailure(id, field, stored, expected);
     }
 
     private static SQLException preimageFailure(int id, String field, Object persisted, Object expected) {
@@ -308,7 +373,7 @@ public final class CTransaction {
                     } catch (SQLException | RuntimeException cleanup) {
                         // Do not restore auto-commit after a failed rollback.
                         // Connection close/pool cleanup owns this read-only scope.
-                        LOG.log(Level.WARNING, "Confirmed receipt connection cleanup failed", cleanup);
+                        logReceipt(Level.WARNING, "Confirmed receipt connection cleanup failed", cleanup);
                     }
                     return;
                 }
@@ -336,7 +401,7 @@ public final class CTransaction {
             throw uncertain;
         } catch (SQLException | RuntimeException failure) {
             if (!committed) throw failure;
-            LOG.log(Level.WARNING, "Committed connection close failed", failure);
+            logReceipt(Level.WARNING, "Committed connection close failed", failure);
         }
     }
 
