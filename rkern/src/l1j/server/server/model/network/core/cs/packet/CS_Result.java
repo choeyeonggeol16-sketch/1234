@@ -1,21 +1,15 @@
 package l1j.server.server.model.network.core.cs.packet;
 
-import l1j.server.server.datatables.CObjectDB;
 import java.util.ArrayList;
 
-import l1j.server.server.model.shop.ShopTable;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.CWareHouseRequest;
-import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.shop.CBuySell;
-import l1j.server.server.model.shop.L1ShopBuyOrder;
-import l1j.server.server.model.shop.L1ShopBuyOrderList;
+import l1j.server.server.model.shop.CEquipmentExchange;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
 public final class CS_Result {
 
@@ -50,6 +44,8 @@ public final class CS_Result {
             return; // Retired legacy auto-potion selection packet.
         }
 
+        if (CEquipmentExchange.handleResult(client, pc, npcObjectId, resultType, size,
+                param1(packed0, params, 0), param2D(packed0, params, 0))) return;
         if (MerchantTransactions.handleResult(client, pc, npcObjectId, resultType, size, packed0, params)) return;
 
         if (size == 0 && (resultType == 0 || resultType == 1)) {
@@ -127,126 +123,6 @@ public final class CS_Result {
             return;
         }
 
-		// 아이템 교환 로직 (1 ~ 20)
-		if (processChangeItems(pc, size, packed0, params)) {
-			return;
-		}
-
-
-	}
-
-	private static boolean processChangeItems(L1PcInstance pc, int size, long packed0, byte[] params) {
-		for (int n = 1; n <= 20; n++) {
-			boolean isChange = false;
-			int changeNpcId = 0;
-			L1ItemInstance defaultItem = null;
-			int consumeMaterialId = 77100 + (n == 5 ? 0 : (n == 1 ? 1 : (n == 2 ? 2 : (n == 3 ? 3 : (n == 4 ? 4 : (n == 6 ? 5 : (n == 7 ? 6 : (n == 8 ? 7 : (n == 9 ? 8 : (n == 10 ? 9 : (n == 11 ? 10 : (n == 12 ? 11 : (n == 13 ? 12 : (n == 14 ? 13 : (n == 15 ? 14 : (n == 16 ? 15 : (n == 17 ? 16 : (n == 18 ? 17 : (n == 19 ? 18 : 19)))))))))))))))))));
-
-			// 각 교환 번호별 세팅 연동
-			switch (n) {
-				case 1: isChange = pc.getIsChangeItem1(); changeNpcId = pc.changeNpcId1; defaultItem = pc.getDefaultItem1(); consumeMaterialId = 77101; break;
-				case 2: isChange = pc.getIsChangeItem2(); changeNpcId = pc.changeNpcId2; defaultItem = pc.getDefaultItem2(); consumeMaterialId = 77102; break;
-				case 3: isChange = pc.getIsChangeItem3(); changeNpcId = pc.changeNpcId3; defaultItem = pc.getDefaultItem3(); consumeMaterialId = 77103; break;
-				case 4: isChange = pc.getIsChangeItem4(); changeNpcId = pc.changeNpcId4; defaultItem = pc.getDefaultItem4(); consumeMaterialId = 77104; break;
-				case 5: isChange = pc.getIsChangeItem5(); changeNpcId = pc.changeNpcId5; defaultItem = pc.getDefaultItem5(); consumeMaterialId = 77100; break;
-				case 6: isChange = pc.getIsChangeItem6(); changeNpcId = pc.changeNpcId6; defaultItem = pc.getDefaultItem6(); consumeMaterialId = 77105; break;
-				case 7: isChange = pc.getIsChangeItem7(); changeNpcId = pc.changeNpcId7; defaultItem = pc.getDefaultItem7(); consumeMaterialId = 77106; break;
-				case 8: isChange = pc.getIsChangeItem8(); changeNpcId = pc.changeNpcId8; defaultItem = pc.getDefaultItem8(); consumeMaterialId = 77107; break;
-				case 9: isChange = pc.getIsChangeItem9(); changeNpcId = pc.changeNpcId9; defaultItem = pc.getDefaultItem9(); consumeMaterialId = 77108; break;
-				case 10: isChange = pc.getIsChangeItem10(); changeNpcId = pc.changeNpcId10; defaultItem = pc.getDefaultItem10(); consumeMaterialId = 77109; break;
-				case 11: isChange = pc.getIsChangeItem11(); changeNpcId = pc.changeNpcId11; defaultItem = pc.getDefaultItem11(); consumeMaterialId = 77110; break;
-				case 12: isChange = pc.getIsChangeItem12(); changeNpcId = pc.changeNpcId12; defaultItem = pc.getDefaultItem12(); consumeMaterialId = 77111; break;
-				case 13: isChange = pc.getIsChangeItem13(); changeNpcId = pc.changeNpcId13; defaultItem = pc.getDefaultItem13(); consumeMaterialId = 77112; break;
-				case 14: isChange = pc.getIsChangeItem14(); changeNpcId = pc.changeNpcId14; defaultItem = pc.getDefaultItem14(); consumeMaterialId = 77113; break;
-				case 15: isChange = pc.getIsChangeItem15(); changeNpcId = pc.changeNpcId15; defaultItem = pc.getDefaultItem15(); consumeMaterialId = 77114; break;
-				case 16: isChange = pc.getIsChangeItem16(); changeNpcId = pc.changeNpcId16; defaultItem = pc.getDefaultItem16(); consumeMaterialId = 77115; break;
-				case 17: isChange = pc.getIsChangeItem17(); changeNpcId = pc.changeNpcId17; defaultItem = pc.getDefaultItem17(); consumeMaterialId = 77116; break;
-				case 18: isChange = pc.getIsChangeItem18(); changeNpcId = pc.changeNpcId18; defaultItem = pc.getDefaultItem18(); consumeMaterialId = 77117; break;
-				case 19: isChange = pc.getIsChangeItem19(); changeNpcId = pc.changeNpcId19; defaultItem = pc.getDefaultItem19(); consumeMaterialId = 77118; break;
-				case 20: isChange = pc.getIsChangeItem20(); changeNpcId = pc.changeNpcId20; defaultItem = pc.getDefaultItem20(); consumeMaterialId = 77119; break;
-			}
-
-			if (isChange) {
-				if (defaultItem == null) {
-					resetChangeFlags(pc, n);
-					return true;
-				}
-				CBuySell shop = ShopTable.getInstance().get(changeNpcId);
-				if (shop != null) {
-					L1ShopBuyOrderList oList = shop.newBuyOrderList();
-					int totalcount = 0;
-					int itemno = defaultItem.getItemId();
-					if (size > 0) {
-						for (int i = 0; i < size; i++) {
-							int itemNumber = param1(packed0, params, i);
-							long itemcount = param2D(packed0, params, i);
-
-							totalcount++;
-							if (totalcount > 1) {
-								SC_SystemMessage.send(pc, "아이템은 한개씩 교환할 수 있습니다");
-								resetChangeFlags(pc, n);
-								return true;
-							}
-							if (itemcount <= 0L) {
-								resetChangeFlags(pc, n);
-								return true;
-							}
-							oList.add(itemNumber, 1, pc);
-						}
-					}
-					if (pc.getInventory().HaveItemByClassId(consumeMaterialId) && pc.getInventory().HaveItemByClassId(itemno)) {
-						L1ItemInstance item = null;
-						for (L1ShopBuyOrder order : oList.getList()) {
-							int itemId = order.getItem().getItemId();
-							item = CObjectDB.LoadItem().createItem(itemId);
-						}
-						if (item != null) {
-							item.setEnchantLevel(defaultItem.getEnchantLevel());
-							item.setBless(defaultItem.getBless());
-							item.setAttrEnchantLevel(defaultItem.getAttrEnchantLevel());
-							item.setIdentified(true);
-							item.set_bless_level(defaultItem.get_bless_level());
-							item.set_item_level(defaultItem.get_item_level());
-							pc.getInventory().CreateOrAddItem(item);
-							pc.getInventory().DeleteItemInInventory(consumeMaterialId, 1);
-							pc.getInventory().DeleteItemAmount(defaultItem, 1);
-						}
-					} else {
-						SC_SystemMessage.send(pc, "재료 아이템이 존재하지 않습니다.");
-					}
-				}
-				resetChangeFlags(pc, n);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private static void resetChangeFlags(L1PcInstance pc, int n) {
-		switch (n) {
-			case 1: pc.setIsChangeItem1(false); pc.setDefaultItem1(null); break;
-			case 2: pc.setIsChangeItem2(false); pc.setDefaultItem2(null); break;
-			case 3: pc.setIsChangeItem3(false); pc.setDefaultItem3(null); break;
-			case 4: pc.setIsChangeItem4(false); pc.setDefaultItem4(null); break;
-			case 5: pc.setIsChangeItem5(false); pc.setDefaultItem5(null); break;
-			case 6: pc.setIsChangeItem6(false); pc.setDefaultItem6(null); break;
-			case 7: pc.setIsChangeItem7(false); pc.setDefaultItem7(null); break;
-			case 8: pc.setIsChangeItem8(false); pc.setDefaultItem8(null); break;
-			case 9: pc.setIsChangeItem9(false); pc.setDefaultItem9(null); break;
-			case 10: pc.setIsChangeItem10(false); pc.setDefaultItem10(null); break;
-			case 11: pc.setIsChangeItem11(false); pc.setDefaultItem11(null); break;
-			case 12: pc.setIsChangeItem12(false); pc.setDefaultItem12(null); break;
-			case 13: pc.setIsChangeItem13(false); pc.setDefaultItem13(null); break;
-			case 14: pc.setIsChangeItem14(false); pc.setDefaultItem14(null); break;
-			case 15: pc.setIsChangeItem15(false); pc.setDefaultItem15(null); break;
-			case 16: pc.setIsChangeItem16(false); pc.setDefaultItem16(null); break;
-			case 17: pc.setIsChangeItem17(false); pc.setDefaultItem17(null); break;
-			case 18: pc.setIsChangeItem18(false); pc.setDefaultItem18(null); break;
-			case 19: pc.setIsChangeItem19(false); pc.setDefaultItem19(null); break;
-			case 20: pc.setIsChangeItem20(false); pc.setDefaultItem20(null); break;
-		}
-		pc.setIsChangeItem(false);
-		pc.setDefaultItem(null);
 	}
 
 	public static int param1(long packed0, byte[] rest, int index) {

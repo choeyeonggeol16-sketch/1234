@@ -17,6 +17,7 @@ public class CraftInputItemSlotInfo {
     private int _elemental_enchant_type;
     private int _elemental_enchant_value;
     private int _bless;
+    private L1ItemInstance consumedItem;
 
     private LinkedList<TemporaryRemovedItemInstance> _temporaryRemovedItems;
     private int _temporaryRemovedCount;
@@ -54,11 +55,6 @@ public class CraftInputItemSlotInfo {
 
         if(_enchant != item.getEnchantLevel())
             return false;
-
-        if(item.isStackable()){
-            if(_count > item.getCount())
-                return false;
-        }
 
         if(_elemental_enchant_type >= 1 && _elemental_enchant_type <= 4)
             return L1ItemInstance.equalsElement(item, _elemental_enchant_type, _elemental_enchant_value);
@@ -98,26 +94,33 @@ public class CraftInputItemSlotInfo {
         _temporaryRemovedCount = 0;
     }
 
-    /** 서버 정의 재료(craftinfo)와 유저 슬롯 검증 — 신규 CraftInputItem 기준 */
-    public boolean validation(CraftInputItem input){
-        if(input.get_nameId() != _item_name_id)
-            return false;
-
-        int bless = input.get_bless();
-        if(bless != 3 && bless != _bless)
-            return false;
-        _bless = bless; 
-
-        if(!input.get_allEnchantsAllowed() && input.get_enchant() != _enchant)
-            return false;
-
-        int elementalType = input.get_elementalEnchantType();
-        if(elementalType >= 1 && elementalType <= 4){
-            if(elementalType != _elemental_enchant_type || input.get_elementalEnchantValue() != _elemental_enchant_value)
-                return false;
-        }
-        return true;
+    boolean validAttributes() {
+        return _elemental_enchant_type == 0 && _elemental_enchant_value == 0
+                || L1ItemInstance.calculateElementalEnchant(_elemental_enchant_type, _elemental_enchant_value) != 0;
     }
+
+    /** Match submitted selection fields without altering them while trying alternatives. */
+    public boolean validation(CraftInputItem input) {
+        if (input.get_nameId() != _item_name_id
+                || input.get_bless() != 3 && input.get_bless() != _bless
+                || !input.get_allEnchantsAllowed() && input.get_enchant() != _enchant) return false;
+        final int type = input.get_elementalEnchantType();
+        return type < 1 || type > 4
+                || type == _elemental_enchant_type && input.get_elementalEnchantValue() == _elemental_enchant_value;
+    }
+
+    void applyDefinition(CraftInputItem input) {
+        _count = input.get_count();
+        _bless = input.get_bless();
+    }
+
+    public void resetConsumedItem() { consumedItem = null; }
+
+    public void recordConsumption(L1ItemInstance item) {
+        if (consumedItem == null) consumedItem = item;
+    }
+
+    public L1ItemInstance consumedItem() { return consumedItem; }
 
     public static class TemporaryRemovedItemInstance {
         public final L1ItemInstance item;

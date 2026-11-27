@@ -3,7 +3,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoReader;
+
 
 /**
  * CS_CRAFT_BATCH_REQ (0x005C) 
@@ -28,8 +28,15 @@ public final class CS_CRAFT_BATCH_REQ {
             if (!hasNpc || !hasCraft || !hasCount) return;
 
             final L1PcInstance pc = client.getActiveChar();
-            if (pc == null) return;
-            SC_CRAFT_BATCH_ACK.send(pc, SC_CRAFT_BATCH_ACK.RP_SUCCESS, SC_CRAFT_LIST_ALL_ACK.BATCH_TRANSACTION++);
+            if (!CraftRequestAccess.active(client, pc)) return;
+            final var npc = CraftRequestAccess.findNpc(npcId);
+            if (count <= 0 || count > CraftRequestAccess.MAX_COUNT || npc == null
+                    || !CraftRequestAccess.inRange(pc, npc) || CraftRequestAccess.recipe(npc, craftId) == null) {
+                SC_CRAFT_BATCH_ACK.send(pc, SC_CRAFT_BATCH_ACK.RP_FAILURE, 0);
+                return;
+            }
+            // This ACK opens the batch UI; only MAKE can admit a settlement.
+            SC_CRAFT_BATCH_ACK.send(pc, SC_CRAFT_BATCH_ACK.RP_SUCCESS, SC_CRAFT_LIST_ALL_ACK.nextBatchTransaction());
         } catch (Exception e) {
             e.printStackTrace();
         }

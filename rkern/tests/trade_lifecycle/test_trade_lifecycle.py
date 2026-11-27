@@ -91,6 +91,7 @@ public class L1PcInstance {
     public boolean getIsChangeItem18(){return false;}
     public boolean getIsChangeItem19(){return false;}
     public boolean getIsChangeItem20(){return false;}
+    public boolean equipmentExchangeOpen;
     public String account;
     public final CUserSocket socket=new CUserSocket();
     public final CUserInventory inv=new CUserInventory();
@@ -136,6 +137,7 @@ stub(P,"SC_TradeAddItem","public class SC_TradeAddItem { public static boolean s
 stub(P,"SC_TradeStatus","public class SC_TradeStatus { public static boolean send(CUserSocket s,int result){s.result=result;s.results++;return true;} }",imports)
 stub(P,"SC_ItemStatus","public class SC_ItemStatus { public static boolean send(L1PcInstance pc,L1ItemInstance item){pc.socket.resync++;return true;} }",imports)
 stub(P,"SC_ServerMessage","public class SC_ServerMessage { public static boolean send(L1PcInstance pc,int type,String... text){return true;} }",imports)
+stub(M+".shop","CEquipmentExchange","public class CEquipmentExchange { public static boolean isOpen(L1PcInstance pc){return pc.equipmentExchangeOpen;} }",f"import {M}.Instance.L1PcInstance;")
 stub(P,"SC_SystemMessage","public class SC_SystemMessage { public static boolean send(L1PcInstance pc,String text){pc.socket.messages++;return true;} }",imports)
 stub(M+".network.thread","CIOThreadCallback","""
 public class CIOThreadCallback {
@@ -247,6 +249,9 @@ public class TradeLifecycleTest {
     }
     public static void main(String[] args)throws Exception{
         L1PcInstance a=pc(),b=pc(),other=pc();
+        a.equipmentExchangeOpen=true;
+        check(!MGR.CreateTrade(a,b),"equipment exchange view prevents opening a second transfer");
+        a.equipmentExchangeOpen=false;
         CTrade t=request(a,b);var timer=WHEEL.last();
         check(!MGR.CreateTrade(a,other),"one exchange per PC");
         var firstItems=CTrade.class.getDeclaredField("firstItems");firstItems.setAccessible(true);

@@ -35,7 +35,10 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     
     private static final long CRAFT_CHUNK_DELAY_MS = 50L;
 
-    public static int BATCH_TRANSACTION = 0;
+    private static final java.util.concurrent.atomic.AtomicInteger BATCH_TRANSACTION =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+
+    static int nextBatchTransaction() { return BATCH_TRANSACTION.getAndIncrement(); }
     public static final int CRAFT_ITEM_SUCCESS_MILLIONS = 1000000;
 
     public static final int RP_CRAFT_LOAD_START = 0;
@@ -46,7 +49,8 @@ public final class SC_CRAFT_LIST_ALL_ACK {
 
     private static volatile ArrayList<byte[]> _craftCaches;
     private static final byte[] SAME_HASH_REPLY = makeErrorCache(RP_ERROR_SAME_HASH_VAL);
-    private static volatile HashMap<Integer, byte[]> _npc2craftId;
+    private record NpcCatalog(byte[] ack, int[] craftIds) {}
+    private static volatile java.util.Map<Integer, NpcCatalog> npcCatalogs = java.util.Map.of();
 
     private SC_CRAFT_LIST_ALL_ACK() {}
 
@@ -285,8 +289,8 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     // NPC별 craft id list 캐시
     // ------------------------------------------------------------------
 
-    public static void buildNpcCaches() {
-        final HashMap<Integer, byte[]> map = new HashMap<>();
+    public static synchronized void buildNpcCaches() {
+        final HashMap<Integer, NpcCatalog> map = new HashMap<>();
 
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement pstm = con.prepareStatement("select npc_id, craft_list from craftlist");
@@ -295,10 +299,10 @@ public final class SC_CRAFT_LIST_ALL_ACK {
             final ArrangeParsee<Integer> parsee = ArrangeParseeFactory.createIntArrange();
 
             while (rs.next()) {
-                map.put(rs.getInt("npc_id"), buildNpcAckBytes(rs.getString("craft_list"), parsee));
+                map.put(rs.getInt("npc_id"), buildNpcCatalog(rs.getString("craft_list"), parsee));
             }
 
-            _npc2craftId = map;
+            npcCatalogs = java.util.Map.copyOf(map);
 
         } catch (Exception e) {
             _log.log(Level.SEVERE, "[SC_CRAFT_LIST_ALL_ACK] npc cache build failed", e);
@@ -310,36 +314,40 @@ public final class SC_CRAFT_LIST_ALL_ACK {
     // NPC craft ID ACK
     // ------------------------------------------------------------------
 
-    private static byte[] buildNpcAckBytes(String craftListCsv, ArrangeParsee<Integer> parsee) {
+    private static NpcCatalog buildNpcCatalog(String csv, ArrangeParsee<Integer> parsee) {
+        final Integer[] entries = csv == null || csv.isBlank() ? new Integer[0]
+                : (Integer[]) ArrangeParser.parsing(csv, ",", parsee).result();
+        final int[] craftIds = new int[entries.length];
+        int count = 0;
         try (ProtoWriter w = ProtoWriter.borrow()) {
             w.enumV(1, 0);
             w.int32(3, 0);
             w.enumV(4, 0);
-
-            try {
-                final Integer[] ids = (Integer[]) ArrangeParser.parsing(craftListCsv, ",", parsee).result();
-
-                for (Integer id : ids) {
-                    if (id == null) continue;
-
-                    w.msg(2);
-                    w.int32(1, id);
-                    w.int32(2, 0);
-                    w.int32(3, 0);
-                    w.end();
-                }
-            } catch (Exception e) {
-                _log.log(Level.WARNING, "[SC_CRAFT_LIST_ALL_ACK] NPC craft id parsing failed", e);
+            for (Integer id : entries) {
+                if (id == null || id <= 0) continue;
+                craftIds[count++] = id;
+                w.msg(2);
+                w.int32(1, id);
+                w.int32(2, 0);
+                w.int32(3, 0);
+                w.end();
             }
-
-            return w.finishWithTrailer(ProtoMsg.SC_CRAFT_ID_LIST_ACK);
+            final int[] allowed = java.util.Arrays.copyOf(craftIds, count);
+            java.util.Arrays.sort(allowed);
+            return new NpcCatalog(w.finishWithTrailer(ProtoMsg.SC_CRAFT_ID_LIST_ACK), allowed);
         }
     }
 
     public static byte[] getCraftIdListFromNpcId(int npcId) {
-        return _npc2craftId == null ? null : _npc2craftId.get(npcId);
+        final NpcCatalog catalog = npcCatalogs.get(npcId);
+        return catalog == null ? null : catalog.ack();
     }
-    
+
+    static boolean offersRecipe(int npcId, int craftId) {
+        final NpcCatalog catalog = npcCatalogs.get(npcId);
+        return catalog != null && java.util.Arrays.binarySearch(catalog.craftIds(), craftId) >= 0;
+    }
+
     public static void onDisconnect(CUserSocket client) {
         if (client != null) {
             client.endCraftListSend();

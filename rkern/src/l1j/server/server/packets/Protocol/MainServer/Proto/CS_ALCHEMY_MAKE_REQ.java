@@ -107,7 +107,7 @@ public final class CS_ALCHEMY_MAKE_REQ {
         if (pc.isItemTransferBusy() || pc.getTradeID() != 0 || inputs.isEmpty()) return;
 
         // ── 특수 상태 합성 차단 (server IsChangeItem 체크 그대로) ──
-        if (pc.getIsChangeItem1() || pc.getIsChangeItem2() || pc.getIsChangeItem3() || pc.getIsChangeItem4() || pc.getIsChangeItem5() ||
+        if (l1j.server.server.model.shop.CEquipmentExchange.isOpen(pc) || pc.getIsChangeItem1() || pc.getIsChangeItem2() || pc.getIsChangeItem3() || pc.getIsChangeItem4() || pc.getIsChangeItem5() ||
             pc.getIsChangeItem6() || pc.getIsChangeItem7() || pc.getIsChangeItem8() || pc.getIsChangeItem9() || pc.getIsChangeItem10() ||
             pc.getIsChangeItem11() || pc.getIsChangeItem12() || pc.getIsChangeItem13() || pc.getIsChangeItem14() || pc.getIsChangeItem15() ||
             pc.getIsChangeItem16() || pc.getIsChangeItem17() || pc.getIsChangeItem18() || pc.getIsChangeItem19() || pc.getIsChangeItem20()) {

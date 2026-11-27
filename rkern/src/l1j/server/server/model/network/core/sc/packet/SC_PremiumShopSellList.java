@@ -3,6 +3,8 @@ package l1j.server.server.model.network.core.sc.packet;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.shop.NpcShopView;
+import l1j.server.server.model.shop.CEquipmentExchange;
+import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.CObjectDB;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -39,6 +41,14 @@ public final class SC_PremiumShopSellList {
     }
 
     public static boolean send(CUserSocket client, int npcId, int objId) {
+        return send(client, npcId, objId, null);
+    }
+
+    public static boolean sendEquipmentExchange(CUserSocket client, CEquipmentExchange.Selection exchange) {
+        return send(client, exchange.shopId(), IdFactory.getInstance().nextId(), exchange);
+    }
+
+    private static boolean send(CUserSocket client, int npcId, int objId, CEquipmentExchange.Selection exchange) {
         if (npcId == 7320055) return false;
         if (client == null || !client.isConnected()) return false;
         final CUserSocket connection = client;
@@ -97,9 +107,15 @@ public final class SC_PremiumShopSellList {
             statuses[count++] = status;
         }
         capacity += tailSize;
-        final NpcShopView view = pc != null && shop != null
-                && CWorld.getInstance().findObject(objId) instanceof L1NpcInstance npc
-                ? NpcShopView.purchase(connection, pc, npc, objId, shop, offers) : null;
+        final NpcShopView view;
+        if (exchange != null) {
+            if (count == 0 || pc == null || !connection.ownsReadyGameSession()) return false;
+            view = NpcShopView.equipmentExchange(connection, pc, objId, shop, offers, exchange);
+            if (!view.currentFor(connection, pc)) return false;
+        } else {
+            view = pc != null && shop != null && CWorld.getInstance().findObject(objId) instanceof L1NpcInstance npc
+                    ? NpcShopView.purchase(connection, pc, npc, objId, shop, offers) : null;
+        }
         final CIOFrame frame = connection.beginDirectFrame((int) capacity);
         if (frame == null) return false;
         boolean committed = false;

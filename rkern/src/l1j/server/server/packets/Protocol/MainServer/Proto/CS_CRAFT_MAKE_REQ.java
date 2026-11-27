@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -9,7 +9,7 @@ import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Object;
+import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
@@ -24,14 +24,13 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftInputList;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItem;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftOutputItemResult;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.eCraftMakeReqResultType;
-import l1j.server.server.shared.L1Type;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Item;
 
 public final class CS_CRAFT_MAKE_REQ {
     private CS_CRAFT_MAKE_REQ() {}
 
-    private static final int MAX_COUNT = 1000;
+    private static final int MAX_SLOTS = 255;
 
     public static void handleRequest(CUserSocket client, ProtoReader r) {
         L1PcInstance pc = null;
@@ -39,7 +38,7 @@ public final class CS_CRAFT_MAKE_REQ {
             int npcId = 0, craftId = 0, count = 0;
             boolean hasNpc = false, hasCraft = false, hasCount = false;
             boolean slotsValid = true;
-            LinkedList<CraftInputItemSlotInfo> slots = null;
+            List<CraftInputItemSlotInfo> slots = null;
 
             while (!r.isAtEnd()) {
                 final int tag = r.tag();
@@ -52,8 +51,9 @@ public final class CS_CRAFT_MAKE_REQ {
                     if (s == null) {
                         slotsValid = false;
                     } else {
-                        if (slots == null) slots = new LinkedList<>();
-                        slots.add(s);
+                        if (slots == null) slots = new ArrayList<>();
+                        if (slots.size() == MAX_SLOTS) slotsValid = false;
+                        else slots.add(s);
                     }
                     break;
                 }
@@ -63,24 +63,14 @@ public final class CS_CRAFT_MAKE_REQ {
             }
 
             pc = client.getActiveChar();
-            if (pc == null) return;
+            if (!CraftRequestAccess.active(client, pc)) return;
             if (pc.isItemTransferBusy() || pc.getTradeID() != 0) return;
             if (!hasNpc || !hasCraft || !hasCount || !slotsValid
                     || slots == null || slots.isEmpty()) {
                 eCraftMakeReqResultType.RP_ERROR_INVALID_INPUT.sendCachedMessage(pc);
                 return;
             }
-            final boolean zeroBasedSlots = slots.getFirst().get_input_slot_no() == 0;
-            for (int i = 0, n = slots.size(); i < n; i++) {
-                final CraftInputItemSlotInfo slot = slots.get(i);
-                if (slot.get_input_slot_no() != i + (zeroBasedSlots ? 0 : 1)) {
-                    eCraftMakeReqResultType.RP_ERROR_INVALID_INPUT.sendCachedMessage(pc);
-                    return;
-                }
-                if (zeroBasedSlots) slot.set_input_slot_no(i + 1);
-            }
-
-            if (pc.getIsChangeItem1() || pc.getIsChangeItem2() || pc.getIsChangeItem3() || pc.getIsChangeItem4() || pc.getIsChangeItem5()
+            if (l1j.server.server.model.shop.CEquipmentExchange.isOpen(pc) || pc.getIsChangeItem1() || pc.getIsChangeItem2() || pc.getIsChangeItem3() || pc.getIsChangeItem4() || pc.getIsChangeItem5()
                     || pc.getIsChangeItem6() || pc.getIsChangeItem7() || pc.getIsChangeItem8() || pc.getIsChangeItem9() || pc.getIsChangeItem10()
                     || pc.getIsChangeItem11() || pc.getIsChangeItem12() || pc.getIsChangeItem13() || pc.getIsChangeItem14() || pc.getIsChangeItem15()
                     || pc.getIsChangeItem16() || pc.getIsChangeItem17() || pc.getIsChangeItem18() || pc.getIsChangeItem19() || pc.getIsChangeItem20()) {
@@ -88,53 +78,31 @@ public final class CS_CRAFT_MAKE_REQ {
                 return;
             }
 
-            if (count <= 0) {
-                System.out.println(String.format("[(제작)제작 수량이 비정상적입니다.] 캐릭터이름 : %s, 제작아이디 : %d, 수량 : %d", pc.getName(), craftId, count));
+            if (count <= 0 || count > CraftRequestAccess.MAX_COUNT) {
+                eCraftMakeReqResultType.RP_ERROR_INVALID_INPUT.sendCachedMessage(pc);
                 return;
             }
-            if (count > MAX_COUNT) {
-                System.out.println(String.format("[(제작)제작 수량 상한 초과 - 차단.] 캐릭터이름 : %s, 제작아이디 : %d, 수량 : %d", pc.getName(), craftId, count));
-                return;
-            }
-
-            final L1Object obj = CWorld.getInstance().findObject(npcId);
-            if (obj == null || !obj.instanceOf(L1Type.L1TYPE_NPC)) {
+            final L1NpcInstance npc = CraftRequestAccess.findNpc(npcId);
+            if (npc == null) {
                 eCraftMakeReqResultType.RP_ERROR_INVALID_NPC.sendCachedMessage(pc);
                 return;
             }
-            
-            if(pc.getMapId() != obj.getMapId()) {
+            if (!CraftRequestAccess.inRange(pc, npc)) {
                 eCraftMakeReqResultType.RP_ERROR_NPC_OUT_OF_RANGE.sendCachedMessage(pc);
                 return;
             }
-
-            if (Math.abs(pc.getX() - obj.getX()) > 15 || Math.abs(pc.getY() - obj.getY()) > 15) {
-                eCraftMakeReqResultType.RP_ERROR_NPC_OUT_OF_RANGE.sendCachedMessage(pc);
-                return;
-            }
-
-            final Craft craft = Craft.getCraft(craftId);
-            if (craft == null) {
+            final Craft craft = CraftRequestAccess.recipe(npc, craftId);
+            if (craft == null || craft.get_outputs() == null) {
                 eCraftMakeReqResultType.RP_ERROR_CRAFT_DOES_NOT_EXIST.sendCachedMessage(pc);
-                System.out.println(String.format("[(제작)제작 아이디를 찾을 수 없습니다.] 캐릭터이름 : %s, 제작아이디 : %d", pc.getName(), craftId));
                 return;
             }
-
             final CraftInputList inputs = craft.get_inputs();
-            if (!inputs.has_arr_input_item()) {
+            final int probability = inputs == null ? -1 : inputs.validateSelection(slots);
+            if (probability < 0) {
                 eCraftMakeReqResultType.RP_ERROR_INVALID_INPUT.sendCachedMessage(pc);
-                System.out.println(String.format("[(제작)제작 재료 아이템 리스트를 찾을 수 없습니다.] 캐릭터이름 : %s, 제작아이디 : %d", pc.getName(), craftId));
                 return;
             }
-
-            final int[] calcSlotAndIncreaseProb = inputs.calculateSlotAndIncreaseProb(slots);
-            if (calcSlotAndIncreaseProb[0] - 1 != slots.size()) {
-                eCraftMakeReqResultType.RP_ERROR_INVALID_INPUT.sendCachedMessage(pc);
-                System.out.println(String.format("[(제작)재료 슬롯 정보가 일치하지 않습니다.] 캐릭터이름 : %s, 제작아이디 : %d, 슬롯번호 : %d, 유저가 보내온 패킷 슬롯 수 : %d", pc.getName(), craftId, calcSlotAndIncreaseProb[0] - 1, slots.size()));
-                return;
-            }
-
-            makeBatch(pc, craft, slots, craftId, count, calcSlotAndIncreaseProb[1]);
+            makeBatch(client, pc, npc, craft, slots, craftId, count, probability);
         } catch (Exception e) {
             e.printStackTrace();
             if (pc != null) {
@@ -156,29 +124,32 @@ public final class CS_CRAFT_MAKE_REQ {
     /** A multi-count request is one durable input/output batch, never a series
      * of half-committed material removals. Only pre-existing inputs are used.
      */
-    private static void makeBatch(L1PcInstance pc, Craft craft,
-            LinkedList<CraftInputItemSlotInfo> slots, int craftId, int count, int probability) {
-        final ArrayList<CraftAttempt> attempts = new ArrayList<>(count);
-        final CUserInventory inventory = pc.getInventory();
-        final Int2ObjectOpenHashMap<L1ItemInstance[]> candidates = new Int2ObjectOpenHashMap<>(slots.size());
-        final Int2IntOpenHashMap available = new Int2IntOpenHashMap();
-        for (CraftInputItemSlotInfo slot : slots) {
-            final int descId = slot.get_item_name_id();
-            if (candidates.containsKey(descId)) continue;
-            final L1ItemInstance[] rows = inventory.GetItemListByDescID(descId);
-            candidates.put(descId, rows);
-            for (L1ItemInstance item : rows) available.put(item.getId(), item.getCount());
-        }
+    private static void makeBatch(CUserSocket session, L1PcInstance pc, L1NpcInstance npc, Craft craft,
+            List<CraftInputItemSlotInfo> slots, int craftId, int count, int probability) {
+        final int stamp = pc.getSessionStamp();
+        final long npcIdentity = CWorld.getInstance().smartIdOf(npc);
         try (L1InventoryTransaction tx = L1InventoryTransaction.begin(pc,
-                CacheD.accountOrderKey("craft:" + pc.getId()))) {
+                CacheD.accountOrderKey("craft:", pc.getId()))) {
+            if (!CraftRequestAccess.stillAllowed(session, pc, stamp, npc, npcIdentity, craft)) return;
+            final ArrayList<CraftAttempt> attempts = new ArrayList<>(count);
+            final CUserInventory inventory = pc.getInventory();
+            final Int2ObjectOpenHashMap<L1ItemInstance[]> candidates = new Int2ObjectOpenHashMap<>(slots.size());
+            final Int2IntOpenHashMap available = new Int2IntOpenHashMap();
+            for (CraftInputItemSlotInfo slot : slots) {
+                final int descId = slot.get_item_name_id();
+                if (candidates.containsKey(descId)) continue;
+                final L1ItemInstance[] rows = inventory.GetItemListByDescID(descId);
+                candidates.put(descId, rows);
+                for (L1ItemInstance item : rows) available.put(item.getId(), item.getCount());
+            }
             for (int attempt = 0; attempt < count; attempt++) {
+                if (!prepareInputs(tx, slots, candidates, available)) {
+                    eCraftMakeReqResultType.RP_ERROR_NO_REQUIRED_ITEM.sendCachedMessage(pc);
+                    return;
+                }
                 final CraftOutputItemResult output = craft.get_outputs().createOutputItem(probability, craftId);
                 if (output == null || (output.isSuccess && output.outputItem == null))
                     throw new IllegalStateException("Craft output configuration is missing");
-                if (!prepareInputs(tx, slots, candidates, available)) {
-                    eCraftMakeReqResultType.RP_ERROR_NO_REQUIRED_ITEM.sendCachedMessage(pc);
-                    return; // no SQL, memory, success packet, or material debit
-                }
                 L1ItemInstance result = null;
                 if (output.outputItem != null) {
                     CraftOutputItem outputItem = output.outputItem;
@@ -192,22 +163,14 @@ public final class CS_CRAFT_MAKE_REQ {
                     result.setEnchantLevel(outputItem.get_enchant());
                     result.setBless(outputItem.get_bless());
                     result.setIdentified(true);
-                    int inherit = outputItem.get_inheritElementalEnchantFrom();
-                    for (CraftInputItemSlotInfo slot : slots) {
-                        if ((inherit != 0 && inherit == slot.get_item_name_id())
-                                || outputItem.get_nameId() == slot.get_item_name_id()) {
-                            int type = slot.get_elemental_enchant_type();
-                            int value = slot.get_elemental_enchant_value();
-                            if (type != 0 && value != 0)
-                                result.setAttrEnchantLevel(L1ItemInstance.calculateElementalEnchant(type, value));
-                            if (inherit == slot.get_item_name_id()) inherit = 0;
-                        }
-                    }
+                    applyInheritance(result, outputItem, slots);
                     result = tx.grant(result);
                     if (result == null) throw new IllegalStateException("Craft result capacity exceeded");
                 }
                 attempts.add(new CraftAttempt(output, result));
             }
+            if (!CraftRequestAccess.stillAllowed(session, pc, stamp, npc, npcIdentity, craft)) return;
+            tx.onFailure(() -> eCraftMakeReqResultType.RP_ERROR_TOO_MANY_MAKE_REQ.sendCachedMessage(pc));
             tx.commit(() -> {
                 for (CraftAttempt attempt : attempts) {
                     final eCraftMakeReqResultType code = attempt.output.isSuccess
@@ -232,9 +195,10 @@ public final class CS_CRAFT_MAKE_REQ {
      * row can be spent twice, even when two recipe slots match the same item.
      */
     private static boolean prepareInputs(L1InventoryTransaction tx,
-            LinkedList<CraftInputItemSlotInfo> slots,
+            List<CraftInputItemSlotInfo> slots,
             Int2ObjectOpenHashMap<L1ItemInstance[]> candidates, Int2IntOpenHashMap available) {
         for (CraftInputItemSlotInfo slot : slots) {
+            slot.resetConsumedItem();
             int needed = slot.get_count();
             if (needed <= 0) return false;
             for (L1ItemInstance item : candidates.get(slot.get_item_name_id())) {
@@ -244,12 +208,39 @@ public final class CS_CRAFT_MAKE_REQ {
                 if (remaining <= 0) continue;
                 int take = item.isStackable() ? Math.min(needed, remaining) : 1;
                 if (!tx.debit(item, take)) return false;
+                slot.recordConsumption(item);
                 available.put(item.getId(), remaining - take);
                 needed -= take;
             }
             if (needed != 0) return false;
         }
         return true;
+    }
+
+    private static void applyInheritance(L1ItemInstance reward, CraftOutputItem output,
+            List<CraftInputItemSlotInfo> slots) {
+        final int enchantSource = output.get_inheritEnchantFrom();
+        final int elementSource = output.get_inheritElementalEnchantFrom();
+        L1ItemInstance elementalItem = null;
+        boolean hasExplicitElementSource = false;
+        boolean hasEnchantSource = false;
+        for (CraftInputItemSlotInfo slot : slots) {
+            final L1ItemInstance consumed = slot.consumedItem();
+            if (consumed == null) continue;
+            final int desc = slot.get_item_name_id();
+            if (!hasEnchantSource && enchantSource != 0 && desc == enchantSource) {
+                reward.setEnchantLevel(consumed.getEnchantLevel());
+                hasEnchantSource = true;
+            }
+            if (!hasExplicitElementSource && elementSource != 0 && desc == elementSource) {
+                elementalItem = consumed;
+                hasExplicitElementSource = true;
+            } else if (!hasExplicitElementSource && output.get_nameId() == desc
+                    && slot.get_elemental_enchant_type() != 0) {
+                elementalItem = consumed;
+            }
+        }
+        if (elementalItem != null) reward.setAttrEnchantLevel(elementalItem.getAttrEnchantLevel());
     }
 
     private static CraftInputItemSlotInfo parseSlot(ProtoReader r) {

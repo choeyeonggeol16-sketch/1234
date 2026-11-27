@@ -16,7 +16,7 @@ import l1j.server.server.templates.L1ShopItem;
 
 /** A server-issued NPC shop list, scoped to one character session. */
 public final class NpcShopView {
-    private enum Source { NPC, ADEN, GM_SEARCH, DOG_FIGHT }
+    private enum Source { NPC, ADEN, GM_SEARCH, DOG_FIGHT, EQUIPMENT_EXCHANGE }
 
     private final Source source;
     private final int ownerId;
@@ -33,10 +33,11 @@ public final class NpcShopView {
     private final int[] saleIds;
     private final DogFightHistoryInfo dogFightRound;
     private final int ticketOptions;
+    private final CEquipmentExchange.Selection equipmentExchange;
 
     private NpcShopView(Source source, CUserSocket client, L1PcInstance pc, L1NpcInstance npc,
             int resultId, CBuySell shop, boolean buying, L1ShopItem[] offers, int[] saleIds,
-            DogFightHistoryInfo dogFightRound, int ticketOptions) {
+            DogFightHistoryInfo dogFightRound, int ticketOptions, CEquipmentExchange.Selection equipmentExchange) {
         this.source = source;
         ownerId = pc.getId();
         sessionStamp = pc.getSessionStamp();
@@ -53,34 +54,42 @@ public final class NpcShopView {
         if (saleIds != null) Arrays.sort(saleIds);
         this.dogFightRound = dogFightRound;
         this.ticketOptions = ticketOptions;
+        this.equipmentExchange = equipmentExchange;
     }
 
     public static NpcShopView purchase(CUserSocket client, L1PcInstance pc, L1NpcInstance npc,
             int resultId, CBuySell shop, L1ShopItem[] offers) {
-        return new NpcShopView(Source.NPC, client, pc, npc, resultId, shop, true, offers, null, null, 0);
+        return new NpcShopView(Source.NPC, client, pc, npc, resultId, shop, true, offers, null, null, 0, null);
+    }
+
+    public static NpcShopView equipmentExchange(CUserSocket client, L1PcInstance pc, int resultId,
+            CBuySell shop, L1ShopItem[] offers, CEquipmentExchange.Selection selection) {
+        return new NpcShopView(Source.EQUIPMENT_EXCHANGE, client, pc, null, resultId,
+                shop, true, offers, null, null, 0, selection);
     }
 
     public static NpcShopView sale(CUserSocket client, L1PcInstance pc, L1NpcInstance npc,
             CBuySell shop, int[] saleIds) {
-        return new NpcShopView(Source.NPC, client, pc, npc, npc.getId(), shop, false, null, saleIds, null, 0);
+        return new NpcShopView(Source.NPC, client, pc, npc, npc.getId(), shop, false, null, saleIds, null, 0, null);
     }
 
     public static NpcShopView aden(CUserSocket client, L1PcInstance pc, int resultId, CBuySell shop, L1ShopItem[] offers) {
-        return new NpcShopView(Source.ADEN, client, pc, null, resultId, shop, true, offers, null, null, 0);
+        return new NpcShopView(Source.ADEN, client, pc, null, resultId, shop, true, offers, null, null, 0, null);
     }
 
     public static NpcShopView gmSearch(CUserSocket client, L1PcInstance pc, int resultId, CBuySell shop, L1ShopItem[] offers) {
-        return new NpcShopView(Source.GM_SEARCH, client, pc, null, resultId, shop, true, offers, null, null, 0);
+        return new NpcShopView(Source.GM_SEARCH, client, pc, null, resultId, shop, true, offers, null, null, 0, null);
     }
 
     public static NpcShopView dogFight(CUserSocket client, L1PcInstance pc, L1NpcInstance npc,
             boolean buying, DogFightHistoryInfo round, int ticketOptions, int[] saleIds) {
         return new NpcShopView(Source.DOG_FIGHT, client, pc, npc, npc.getId(), null,
-                buying, null, saleIds, round, ticketOptions);
+                buying, null, saleIds, round, ticketOptions, null);
     }
 
     public int resultId() { return resultId; }
     public int shopId() { return shopId; }
+    public CEquipmentExchange.Selection equipmentExchange() { return equipmentExchange; }
     public boolean buying() { return buying; }
     public boolean dynamic() { return dynamic; }
     public boolean dogFight() { return source == Source.DOG_FIGHT; }
@@ -99,6 +108,7 @@ public final class NpcShopView {
         if (source == Source.ADEN)
             return !Config.Arden && Config.아덴상점타입 != Config.아덴상점엔샵아덴샵설정;
         if (source == Source.GM_SEARCH) return pc.isGm();
+        if (source == Source.EQUIPMENT_EXCHANGE) return true;
         final L1NpcInstance npc = npc();
         return npc != null && !npc.isDead() && npc.getMap() == map
                 && Math.abs((long) pc.getX() - npc.getX()) <= 12

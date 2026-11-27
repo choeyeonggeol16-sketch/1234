@@ -357,7 +357,7 @@ public final class CS_DropItem {
     }
 
     private static boolean hasActiveChangeItem(L1PcInstance pc) {
-        return pc.getIsChangeItem()
+        return l1j.server.server.model.shop.CEquipmentExchange.isOpen(pc) || pc.getIsChangeItem()
                 || pc.getIsChangeItem1()
                 || pc.getIsChangeItem2()
                 || pc.getIsChangeItem3()

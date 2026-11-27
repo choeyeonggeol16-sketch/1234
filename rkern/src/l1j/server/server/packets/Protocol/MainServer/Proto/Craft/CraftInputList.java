@@ -2,7 +2,8 @@ package l1j.server.server.packets.Protocol.MainServer.Proto.Craft;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStream;
@@ -23,28 +24,41 @@ public class CraftInputList {
     public ArrayList<CraftInputItem> get_arr_option_item() { return _arr_option_item; }
     public void add_arr_option_item(CraftInputItem v)      { _arr_option_item.add(v); }
 
-    /** 유저 슬롯 검증 + 성공확률 증가치 계산 */
-    public int[] calculateSlotAndIncreaseProb(LinkedList<CraftInputItemSlotInfo> slotInfo){
-        int currentSlotNumber = 1;
-        int increase_prob = 0;
-        if (slotInfo == null || slotInfo.isEmpty()) return new int[]{0, 0};
-
-        for (CraftInputItem input : _arr_input_item) {
-            int slot = input.get_slot();
-            if (currentSlotNumber < slot) {
-                break;
-            } else if (currentSlotNumber > slot)
-                continue;
-
-            if (currentSlotNumber > slotInfo.size()) break;
-            CraftInputItemSlotInfo sInfo = slotInfo.get(currentSlotNumber - 1);
-            if (sInfo.validation(input)) {
-                increase_prob += input.get_increaseProb();
-                sInfo.set_count(input.get_count());
-                ++currentSlotNumber;
+    /** Select one server-defined material per group. Optional groups may be omitted. */
+    public int validateSelection(List<CraftInputItemSlotInfo> selections) {
+        if (selections == null || selections.isEmpty() || _arr_input_item.isEmpty()) return -1;
+        final int offset = selections.getFirst().get_input_slot_no() == 0 ? 1 : 0;
+        final IntOpenHashSet chosen = new IntOpenHashSet(selections.size());
+        long probability = 0;
+        for (CraftInputItemSlotInfo selection : selections) {
+            final int slot = selection.get_input_slot_no() + offset;
+            if (slot <= 0 || !chosen.add(slot) || !selection.validAttributes()) return -1;
+            CraftInputItem match = null;
+            boolean required = false;
+            for (CraftInputItem definition : _arr_input_item) {
+                if (definition.get_slot() != slot) continue;
+                required = true;
+                if (selection.validation(definition)) {
+                    match = definition;
+                    break;
+                }
             }
+            if (!required) {
+                for (CraftInputItem definition : _arr_option_item) {
+                    if (definition.get_slot() == slot && selection.validation(definition)) {
+                        match = definition;
+                        break;
+                    }
+                }
+            }
+            if (match == null || match.get_count() <= 0) return -1;
+            selection.applyDefinition(match);
+            probability += match.get_increaseProb();
         }
-        return new int[]{currentSlotNumber, increase_prob};
+        for (CraftInputItem input : _arr_input_item) {
+            if (!chosen.contains(input.get_slot())) return -1;
+        }
+        return (int) Math.clamp(probability, 0, CraftOutputList.CRAFT_ITEM_SUCCESS_MILLIONS);
     }
 
     // ── 역직렬화 ──

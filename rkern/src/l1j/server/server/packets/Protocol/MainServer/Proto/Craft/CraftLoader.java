@@ -1,27 +1,31 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.Craft;
 
+import java.util.HashMap;
+
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStream;
 
-public class CraftLoader {
+public final class CraftLoader {
+    private CraftLoader() {}
 
-    public static void load() {
-        Craft.clear();
-        ProtoInputStream in = null;
+    public static synchronized void load() {
         try {
-            in = ProtoInputStream.newInstance("./data/craftinfo.dat");
-            while(!in.isAtEnd()){
+            final var loaded = new HashMap<Integer, Craft>();
+            final ProtoInputStream in = ProtoInputStream.newInstance("./data/craftinfo.dat");
+            while (!in.isAtEnd()) {
                 int tag = in.readTag();
-                switch(tag >>> 3){
-                case 1: in.readEnum(); break;                              // eResult (파일에 보통 없음)
-                case 2: Craft.put(Craft.parse(in.readSlice())); break;  // repeated craft
-                default: in.skipField(tag); break;
+                switch (tag >>> 3) {
+                case 1 -> in.readEnum();
+                case 2 -> {
+                    Craft craft = Craft.parse(in.readSlice());
+                    loaded.put(craft.get_id(), craft);
+                }
+                default -> in.skipField(tag);
                 }
             }
-      //      System.out.println(String.format("[CraftLoader] loaded %d crafts.", Craft.all().size()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            // ProtoInputStream에 close 필요하면 추가
+            Craft.publish(loaded);
+        } catch (Exception failure) {
+            java.util.logging.Logger.getLogger(CraftLoader.class.getName()).log(java.util.logging.Level.SEVERE,
+                    "Craft data reload failed; previous recipes retained", failure);
         }
     }
 }

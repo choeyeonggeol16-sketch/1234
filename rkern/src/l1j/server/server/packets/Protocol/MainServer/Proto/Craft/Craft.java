@@ -1,7 +1,7 @@
 package l1j.server.server.packets.Protocol.MainServer.Proto.Craft;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 
 import l1j.server.server.packets.Protocol.MainServer.Proto.ProtoWriter;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Stream.ProtoInputStream;
@@ -23,12 +23,10 @@ public class Craft {
     private CraftOutputList _outputs;
     private int _batchDelaySec;
 
-    private static final HashMap<Integer, Craft> CRAFTS = new HashMap<Integer, Craft>();
+    private static volatile Map<Integer, Craft> crafts = Map.of();
 
-    public static void put(Craft c){ CRAFTS.put(c._id, c); }
-    public static Craft get(int craftId){ return CRAFTS.get(craftId); }
-    public static HashMap<Integer, Craft> all(){ return CRAFTS; }
-    public static void clear(){ CRAFTS.clear(); }
+    static void publish(Map<Integer, Craft> loaded) { crafts = java.util.Collections.unmodifiableMap(loaded); }
+    public static Map<Integer, Craft> all() { return crafts; }
 
     /** LEN 필드 본문을 바이트로 뽑아서 서브 파서에 넘김 */
     static byte[] readSub(ProtoInputStream in) throws IOException {

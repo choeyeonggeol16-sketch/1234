@@ -2929,8 +2929,14 @@ public final class CUserSocket extends CSocket {
         }
     }
 
-    public synchronized void clearNpcShopView(NpcShopView view) {
-        if (npcShopView == view) npcShopView = null;
+    public void clearNpcShopView(NpcShopView view) {
+        takeNpcShopView(view);
+    }
+
+    public synchronized boolean takeNpcShopView(NpcShopView view) {
+        if (view == null || npcShopView != view) return false;
+        npcShopView = null;
+        return true;
     }
 
     public synchronized void clearNpcShopViewFor(L1PcInstance pc) {

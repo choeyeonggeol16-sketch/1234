@@ -103,6 +103,11 @@ final class ItemActionDispatcher {
                     210117 -> TransformationScrollItems.handleLevelPolyScroll(use);
             case 40317, 30087 -> QuestRepairScrollUse.handleCombineMapFragments(use);
             case 210073, 210077, 500205, 500207 -> QuestTreasureFragmentCombine.handleCombineTreasureFragments(use);
+            case 77100, 77101, 77102, 77103, 77104, 77105, 77106, 77107, 77108, 77109,
+                    77110, 77111, 77112, 77113, 77114, 77115, 77116, 77117, 77118, 77119 -> {
+                l1j.server.server.model.shop.CEquipmentExchange.open(pc, item, use.targetItem());
+                yield ItemActionResult.STOP;
+            }
             case 40126, 40098 -> IdentificationAndScrollItems.handleIdentifyItem(use);
             case 41048, 41049, 41050, 41051, 41052, 41053, 41054, 41055,
                     41056, 41057 -> QuestVoucherExchange.handleVoucher(use);

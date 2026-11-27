@@ -2,10 +2,7 @@ package l1j.server.server.packets.Protocol.MainServer.Proto;
 
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.L1Object;
-import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.shared.L1Type;
 
 /**
  * CS_CRAFT_ID_LIST_REQ (0x0038)
@@ -39,24 +36,15 @@ public final class CS_CRAFT_ID_LIST_REQ {
         L1PcInstance pc = null;
         try {
             pc = client.getActiveChar();
-            if (pc == null) return;
-
-            L1Object obj = CWorld.getInstance().findObject(npcId);
-            if (obj == null || !obj.instanceOf(L1Type.L1TYPE_NPC)) {
+            if (!CraftRequestAccess.active(client, pc)) return;
+            L1NpcInstance npc = CraftRequestAccess.findNpc(npcId);
+            if (npc == null || npc.getNpcTemplate() == null) {
                 sendError(pc, RP_ERROR_INVALID_NPC_ID);
                 return;
             }
-            
-            if (Math.abs(pc.getX() - obj.getX()) > 15 || Math.abs(pc.getY() - obj.getY()) > 15) {
+            if (!CraftRequestAccess.inRange(pc, npc)) {
                 sendError(pc, RP_ERROR_OUT_OF_RANGE);
                 return;
-            }
-
-            L1NpcInstance npc = (L1NpcInstance) obj;
-            
-            if (pc.getMapId() != npc.getMapId()) {
-                sendError(pc, RP_ERROR_OUT_OF_RANGE);
-            	return;
             }
             byte[] data = SC_CRAFT_LIST_ALL_ACK.getCraftIdListFromNpcId(npc.getNpcId());
             if (data == null) {
