@@ -1,7 +1,6 @@
 package l1j.server.server.model.item.function;
 
 import l1j.server.Config;
-import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -29,7 +28,7 @@ final class ItemLearningRule {
 
         boolean allows(L1PcInstance pc) {
             if (playerClass>=0 && pc.getType()!=playerClass) return false;
-            if (this==GALE_85 && !SkillsTable.getInstance().spellCheck(pc.getId(), 174)) return false;
+            if (this==GALE_85 && !pc.HaveSkill(174)) return false;
             if (minimumLevel<0) return true;
             int level=switch(this) {
                 case CROWN_ADVANCE -> Config.어드밴스레벨;
@@ -58,7 +57,7 @@ final class ItemLearningRule {
 
         boolean allows(L1PcInstance pc) {
             if (this==NONE) return true;
-            boolean known=persisted ? SkillsTable.getInstance().spellCheck(pc.getId(), skill) : pc.hasSkillEffect(skill);
+            boolean known=persisted ? pc.HaveSkill(skill) : pc.hasSkillEffect(skill);
             if (known==required) return true;
             pc.sendPackets(failure);
             return false;

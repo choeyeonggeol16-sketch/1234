@@ -1,6 +1,9 @@
 package l1j.server.server.templates;
 
-public class L1Skills {
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public final class L1Skills {
 
 	public static final int ATTR_NONE = 0;
 	public static final int ATTR_EARTH = 1;
@@ -24,120 +27,117 @@ public class L1Skills {
 	public static final int TARGET_TO_PET = 16;
 	public static final int TARGET_TO_PLACE = 32;
 	
-	private String _name;
-	private String _target;
-	private String _nameId;
-	private boolean _isThrough;
-	private int _skillId;
-	private int _skillLevel;
-	private int _skillNumber;
-	private int _damageValue;
-	private int _damageDice;
-	private int _damageDiceCount;
-	private int _probabilityValue;
-	private int _probabilityDice;
-	private int _attr;
-	private int _type;
-	private int _ranged;
-	private int _area;
-	private int _id;
-	private int _actionId;
-	private int _actionId2;
-	private int _actionId3;
-	private int _castGfx;
-	private int _castGfx2;
-	private int _castGfx3;
-	private int _sysmsgIdHappen;
-	private int _sysmsgIdStop;
-	private int _sysmsgIdFail;
-	private int _lawful;
-	private int _mpConsume;
-	private int _hpConsume;
-	private int _itmeConsumeId;
-	private int _itmeConsumeCount;
-	private int _reuseDelay;
-	private int _buffDuration;
-	private int _targetTo; // 대상 0:자신 1:PC 2:NPC 4:혈맹 8:파티 16:펫 32:장소
+	private final String _name;
+	private final String _target;
+	private final String _nameId;
+	private final boolean _isThrough;
+	private final int _skillId;
+	private final int _skillLevel;
+	private final int _skillNumber;
+	private final int _damageValue;
+	private final int _damageDice;
+	private final int _damageDiceCount;
+	private final int _probabilityValue;
+	private final int _probabilityDice;
+	private final int _attr;
+	private final int _type;
+	private final int _ranged;
+	private final int _area;
+	private final int _id;
+	private final int _actionId;
+	private final int _actionId2;
+	private final int _actionId3;
+	private final int _castGfx;
+	private final int _castGfx2;
+	private final int _castGfx3;
+	private final int _sysmsgIdHappen;
+	private final int _sysmsgIdStop;
+	private final int _sysmsgIdFail;
+	private final int _lawful;
+	private final int _mpConsume;
+	private final int _hpConsume;
+	private final int _itmeConsumeId;
+	private final int _itmeConsumeCount;
+	private final int _reuseDelay;
+	private final int _buffDuration;
+	private final int _targetTo; // 대상 0:자신 1:PC 2:NPC 4:혈맹 8:파티 16:펫 32:장소
 
+
+	public L1Skills(ResultSet row) throws SQLException {
+		_skillId = row.getInt("skill_id");
+		_name = row.getString("name");
+		_skillLevel = row.getInt("skill_level");
+		_skillNumber = row.getInt("skill_number");
+		_mpConsume = row.getInt("mpConsume");
+		_hpConsume = row.getInt("hpConsume");
+		_itmeConsumeId = row.getInt("itemConsumeId");
+		_itmeConsumeCount = row.getInt("itemConsumeCount");
+		_reuseDelay = row.getInt("reuseDelay");
+		_buffDuration = row.getInt("buffDuration");
+		_target = row.getString("target");
+		_targetTo = row.getInt("target_to");
+		_damageValue = row.getInt("damage_value");
+		_damageDice = row.getInt("damage_dice");
+		_damageDiceCount = row.getInt("damage_dice_count");
+		_probabilityValue = row.getInt("probability_value");
+		_probabilityDice = row.getInt("probability_dice");
+		_attr = row.getInt("attr");
+		_type = row.getInt("type");
+		_lawful = row.getInt("lawful");
+		_ranged = row.getInt("ranged");
+		_area = row.getInt("area");
+		_isThrough = row.getInt("through") != 0;
+		_id = row.getInt("id");
+		_nameId = row.getString("nameid");
+		_actionId = row.getInt("action_id");
+		_actionId2 = row.getInt("action_id2");
+		_actionId3 = row.getInt("action_id3");
+		_castGfx = row.getInt("castgfx");
+		_castGfx2 = row.getInt("castgfx2");
+		_castGfx3 = row.getInt("castgfx3");
+		_sysmsgIdHappen = row.getInt("sysmsgID_happen");
+		_sysmsgIdStop = row.getInt("sysmsgID_stop");
+		_sysmsgIdFail = row.getInt("sysmsgID_fail");
+	}
 
 	public int getSkillId() {
 		return _skillId;
-	}
-
-	public void setSkillId(int i) {
-		_skillId = i;
 	}
 
 	public String getName() {
 		return _name;
 	}
 
-	public void setName(String s) {
-		_name = s;
-	}
-
 	public int getSkillLevel() {
 		return _skillLevel;
-	}
-
-	public void setSkillLevel(int i) {
-		_skillLevel = i;
 	}
 
 	public int getSkillNumber() {
 		return _skillNumber;
 	}
 
-	public void setSkillNumber(int i) {
-		_skillNumber = i;
-	}
-
 	public int getMpConsume() {
 		return _mpConsume;
-	}
-
-	public void setMpConsume(int i) {
-		_mpConsume = i;
 	}
 
 	public int getHpConsume() {
 		return _hpConsume;
 	}
 
-	public void setHpConsume(int i) {
-		_hpConsume = i;
-	}
-
 	public int getItemConsumeId() {
 		return _itmeConsumeId;
-	}
-
-	public void setItemConsumeId(int i) {
-		_itmeConsumeId = i;
 	}
 
 	public int getItemConsumeCount() {
 		return _itmeConsumeCount;
 	}
 
-	public void setItemConsumeCount(int i) {
-		_itmeConsumeCount = i;
-	}
-
 	public int getReuseDelay() {
 		return _reuseDelay;
 	}
 
-	public void setReuseDelay(int i) {
-		_reuseDelay = i;
-	}
-
 	public int getBuffDuration() {
 		return _buffDuration;
-	}
-
-	public void setBuffDuration(int i) {
-		_buffDuration = i;
 	}
 
 
@@ -145,161 +145,79 @@ public class L1Skills {
 		return _target;
 	}
 
-	public void setTarget(String s) {
-		_target = s;
-	}
-
 	public int getTargetTo() {
 		return _targetTo;
-	}
-
-	public void setTargetTo(int i) {
-		_targetTo = i;
 	}
 
 	public int getDamageValue() {
 		return _damageValue;
 	}
 
-	public void setDamageValue(int i) {
-		_damageValue = i;
-	}
-
 	public int getDamageDice() {
 		return _damageDice;
-	}
-
-	public void setDamageDice(int i) {
-		_damageDice = i;
 	}
 
 	public int getDamageDiceCount() {
 		return _damageDiceCount;
 	}
 
-	public void setDamageDiceCount(int i) {
-		_damageDiceCount = i;
-	}
-
 	public int getProbabilityValue() {
 		return _probabilityValue;
-	}
-
-	public void setProbabilityValue(int i) {
-		_probabilityValue = i;
 	}
 
 	public int getProbabilityDice() {
 		return _probabilityDice;
 	}
 
-	public void setProbabilityDice(int i) {
-		_probabilityDice = i;
-	}
-
 	public int getAttr() {
 		return _attr;
-	}
-
-	public void setAttr(int i) {
-		_attr = i;
 	}
 
 	public int getType() {
 		return _type;
 	}
 
-	public void setType(int i) {
-		_type = i;
-	}
-
 	public int getLawful() {
 		return _lawful;
-	}
-
-	public void setLawful(int i) {
-		_lawful = i;
 	}
 
 	public int getRanged() {
 		return _ranged;
 	}
 
-	public void setRanged(int i) {
-		_ranged = i;
-	}
-
 	public int getArea() {
 		return _area;
-	}
-
-	public void setArea(int i) {
-		_area = i;
 	}
 
 	public boolean getIsThrough() {
 		return _isThrough;
 	}
 
-	public void setIsThrough(int flag) {
-		if (flag == 0) {
-			_isThrough = false;
-		} else {
-			_isThrough = true;
-		}
-	}
-
 	public int getId() {
 		return _id;
-	}
-
-	public void setId(int i) {
-		_id = i;
 	}
 
 	public String getNameId() {
 		return _nameId;
 	}
 
-	public void setNameId(String s) {
-		_nameId = s;
-	}
-
 	public int getActionId() {  return _actionId;  }
-	public void setActionId(int i) {  _actionId = i;  }
 	public int getActionId2()  {  return _actionId2;  }
-	public void setActionId2(int i)  {  _actionId2 = i;  }
 	public int getActionId3(){  return _actionId3;  }
-	public void setActionId3(int i)  {  _actionId3 = i;  }
 
 	public int getCastGfx() {  return _castGfx;  }
-	public void setCastGfx(int i) {  _castGfx = i;  }
 	public int getCastGfx2()  {  return _castGfx2;  }
-	public void setCastGfx2(int i)  {  _castGfx2 = i;  }
 	public int getCastGfx3()  {  return _castGfx3;  }
-	public void setCastGfx3(int i)  {  _castGfx3 = i;  }
 
 	public int getSysmsgIdHappen() {
 		return _sysmsgIdHappen;
-	}
-
-	public void setSysmsgIdHappen(int i) {
-		_sysmsgIdHappen = i;
 	}
 
 	public int getSysmsgIdStop() {
 		return _sysmsgIdStop;
 	}
 
-	public void setSysmsgIdStop(int i) {
-		_sysmsgIdStop = i;
-	}
-
 	public int getSysmsgIdFail() {
 		return _sysmsgIdFail;
-	}
-
-	public void setSysmsgIdFail(int i) {
-		_sysmsgIdFail = i;
 	}
 }

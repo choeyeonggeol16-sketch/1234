@@ -11,7 +11,8 @@ import l1j.server.Config;
 import l1j.server.server.BadNamesList;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.CharacterTable;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
+import l1j.server.server.storage.mysql.CSkillAcquireStorage;
 import l1j.server.server.model.Beginner;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -126,7 +127,7 @@ public final class CS_CreateChar {
         final int creationKey = l1j.server.server.storage.CacheD.accountOrderKey("$character-create");
         final CWorld world = CWorld.getInstance();
         final int skillId = pc.isWizard() ? 4 : pc.isElf() ? 131 : 0;
-        final L1Skills skill = skillId == 0 ? null : SkillsTable.getInstance().getTemplate(skillId);
+        final L1Skills skill = skillId == 0 ? null : CSkillDB.getInstance().getTemplate(skillId);
         // Creation is metadata, with no live PC yet. Retain both account and
         // global creation lanes through owner publication, even if the client
         // disconnects after COMMIT. A rejected publication must quarantine.
@@ -157,13 +158,7 @@ public final class CS_CreateChar {
                     new l1j.server.server.storage.mysql.MySqlCharacterStorage().createCharacter(con, pc);
                     Beginner.getInstance().GiveItem(con, pc);
                     Beginner.getInstance().writeBookmark(con, pc);
-                    if (skill != null) {
-                        try (java.sql.PreparedStatement ps = con.prepareStatement("INSERT INTO character_skills "
-                                + "(char_obj_id,skill_id,skill_name,is_active,activetimeleft) VALUES (?,?,?,0,0)")) {
-                            ps.setInt(1, pc.getId()); ps.setInt(2, skillId); ps.setString(3, skill.getName());
-                            if (ps.executeUpdate() != 1) throw new java.sql.SQLException("Initial skill insert failed");
-                        }
-                    }
+                    if (skill != null) CSkillAcquireStorage.insert(con, pc.getId(), skill);
             });
             move.commit(() -> l1j.server.server.model.network.thread.CIOThreadCallback.getInstance()
                     .completeWorldMutation(world, () -> {

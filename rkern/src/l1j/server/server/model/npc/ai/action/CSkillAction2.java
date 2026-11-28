@@ -13,7 +13,7 @@ import java.util.Arrays;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.MobSkillTable;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -383,7 +383,7 @@ public final class CSkillAction2 {
             }
 
             final L1Skills skill =
-                    SkillsTable.getInstance().getTemplate(skillid);
+                    CSkillDB.getInstance().getTemplate(skillid);
 
             if (skill != null
                     && "attack".equals(skill.getTarget())

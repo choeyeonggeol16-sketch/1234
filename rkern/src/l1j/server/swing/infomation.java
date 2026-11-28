@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import javax.swing.ImageIcon;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -768,41 +768,25 @@ private String mesod(String id) {
 		return bong;
 	}
 
-	private String[][] skills(L1PcInstance pc) {
-		Connection con = null;
-		PreparedStatement pstm = null;
-		ResultSet rs = null;
-		String[][] ttl = new String[100][2];
-		int i = -1;String leaf= "";
-		try {
-			con = DatabaseFactory.getInstance().getConnection();
-			pstm = con.prepareStatement("SELECT * FROM character_skills WHERE char_obj_id=? ");
-			pstm.setInt(1, pc.getId());
-			rs = pstm.executeQuery();			
-			while (rs.next()) {
-				int skillId = rs.getInt("skill_id");
-				L1Skills l1skills = SkillsTable.getInstance().getTemplate(skillId);
-				ttl[++i][0] = l1skills.getName();
-				if(l1skills.getSkillId() >= 1 && l1skills.getSkillId() <= 80){leaf = "일반마법";}
-				else if(l1skills.getSkillId() >= 87 && l1skills.getSkillId() <= 91){leaf = "기사마법";}
-				else if(l1skills.getSkillId() >= 97 && l1skills.getSkillId() <= 111){leaf = "흑정령마법";}
-				else if(l1skills.getSkillId() >= 113 && l1skills.getSkillId() <= 120){leaf = "군주마법";}
-				else if(l1skills.getSkillId() >= 129 && l1skills.getSkillId() <= 176){leaf = "정령마법";}
-				else if(l1skills.getSkillId() >= 177 && l1skills.getSkillId() <= 200){leaf = "용언마법";}
-				else if(l1skills.getSkillId() >= 201 && l1skills.getSkillId() <= 224){leaf = "환술마법";}
-				else{leaf = "잘못된정보";}
-					ttl[i][1] = leaf;				   
-			}
-				
-		} catch (Exception e) {
-			e.getLocalizedMessage();
-		} finally {
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-			SQLUtil.close(con);
-		}
-		return ttl;
-	}
+    private String[][] skills(L1PcInstance pc) {
+        int[] ids = pc.CopyAcquiredSkills();
+        String[][] result = new String[Math.max(100, ids.length)][2];
+        CSkillDB definitions = CSkillDB.getInstance();
+        for (int i = 0; i < ids.length; i++) {
+            int id = ids[i];
+            L1Skills skill = definitions.getTemplate(id);
+            result[i][0] = skill == null ? String.valueOf(id) : skill.getName();
+            if (id >= 1 && id <= 80) result[i][1] = "일반마법";
+            else if (id >= 87 && id <= 91) result[i][1] = "기사마법";
+            else if (id >= 97 && id <= 111) result[i][1] = "흑정령마법";
+            else if (id >= 113 && id <= 120) result[i][1] = "군주마법";
+            else if (id >= 129 && id <= 176) result[i][1] = "정령마법";
+            else if (id >= 177 && id <= 200) result[i][1] = "용언마법";
+            else if (id >= 201 && id <= 224) result[i][1] = "환술마법";
+            else result[i][1] = "잘못된정보";
+        }
+        return result;
+    }
 
 
     private javax.swing.JLabel ac;

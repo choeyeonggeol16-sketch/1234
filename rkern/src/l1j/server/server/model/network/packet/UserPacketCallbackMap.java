@@ -1354,29 +1354,24 @@ public final class UserPacketCallbackMap {
         }
 
         int level1 = 0, level2 = 0, level3 = 0;
-        int level1Cost = 0, level2Cost = 0, level3Cost = 0;
         int offset = 3;
 
         for (int i = 0; i < count; i++, offset += 4) {
             final int sid = buffer.readInt(offset);
             if (sid > 24) {
-                handleBuySpell(client, 0, 0, 0, 1, 0L);
+                handleBuySpell(client, 0, 0, 0, 1);
                 return true;
             }
             if (sid >= 0 && sid <= 7) {
                 level1 |= 1 << sid;
-                level1Cost += 100;
             } else if (sid >= 8 && sid <= 15) {
                 level2 |= 1 << (sid - 8);
-                level2Cost += 400;
             } else if (sid >= 16 && sid <= 23) {
                 level3 |= 1 << (sid - 16);
-                level3Cost += 900;
             }
         }
 
-        final long packedCost = ((long) level1Cost) | ((long) level2Cost << 20) | ((long) level3Cost << 40);
-        handleBuySpell(client, level1, level2, level3, 0, packedCost);
+        handleBuySpell(client, level1, level2, level3, 0);
         return true;
     }
 
@@ -2483,60 +2478,25 @@ public final class UserPacketCallbackMap {
     
     
     static boolean decodeExchangeSpell(Disassemble buffer, CUserSocket client) {
-        final int payloadSize = buffer.remaining();
-        int count = 0;
+        int payloadSize = buffer.remaining();
+        if (payloadSize < 2) return true;
+        int count = buffer.readShort(1) & 0xFFFF;
+        if (count == 0 || count > 100 || payloadSize < 2 + count * Integer.BYTES) return true;
 
-        if (payloadSize >= 2) {
-            count = buffer.readShort(1) & 0xFFFF;
-        }
-
-        int sid0 = 0, sid1 = 0, sid2 = 0, sid3 = 0, sid4 = 0, sid5 = 0, sid6 = 0;
-        Object tailObject = null;
-
-        if (count > 0) {
-            final int limit = 1 + payloadSize;
-            int pos = 3;
-            final int directCount = Math.min(count, 7);
-
-            for (int i = 0; i < directCount; i++) {
-                int sid = 0;
-
-                if (limit - pos >= 4) {
-                    sid = buffer.readInt(pos);
-                    pos += 4;
-                }
-
-                switch (i) {
-                case 0: sid0 = sid; break;
-                case 1: sid1 = sid; break;
-                case 2: sid2 = sid; break;
-                case 3: sid3 = sid; break;
-                case 4: sid4 = sid; break;
-                case 5: sid5 = sid; break;
-                case 6: sid6 = sid; break;
-                }
+        int selection = 0;
+        for (int i = 0, offset = 3; i < count; i++, offset += Integer.BYTES) {
+            int sid = buffer.readInt(offset);
+            if (sid > 24) {
+                handleExchangeSpell(client, 0, true);
+                return true;
             }
-
-            if (count > 7 && pos < limit) {
-                final int maxTailBytes = (count - 7) * 4;
-                final int length = Math.min(limit - pos, maxTailBytes);
-
-                if (length > 0) {
-                    final byte[] tail = new byte[length];
-                    for (int i = 0; i < length; i++) {
-                        tail[i] = buffer.readByte(pos + i);
-                    }
-                    tailObject = tail;
-                }
-            }
+            if (sid >= 0 && sid < 24) selection |= 1 << sid;
         }
-
-        final long packed34 = ((long) sid3 << 32) | (sid4 & 0xFFFFFFFFL);
-        final long packed56 = ((long) sid5 << 32) | (sid6 & 0xFFFFFFFFL);
-
-        handleExchangeSpell(client, count, sid0, sid1, sid2, packed34, packed56, tailObject);
+        handleExchangeSpell(client, selection, false);
         return true;
     }
+
+
     
     
     private static final int CRAFT_PACKET_CHAT = 0x02;
@@ -3533,10 +3493,10 @@ public final class UserPacketCallbackMap {
         }
     }
 
-    static void handleBuySpell( CUserSocket client, int p0, int p1, int p2, int p3, long l0 ) {
+    static void handleBuySpell( CUserSocket client, int p0, int p1, int p2, int p3 ) {
         if (!client.isConnected()) return;
         try {
-            CS_BuySpell.handle(client, p0, p1, p2, p3, l0);
+            CS_BuySpell.handle(client, p0, p1, p2, p3);
         } catch (Throwable failure) {
             reportHandlerError(failure);
         }
@@ -4217,18 +4177,10 @@ public final class UserPacketCallbackMap {
         }
     }
 
-    static void handleExchangeSpell( CUserSocket client, int p0, int p1, int p2, int p3, long l0, long l1, Object o0 ) {
+    static void handleExchangeSpell(CUserSocket client, int selection, boolean invalidSid) {
         if (!client.isConnected()) return;
         try {
-            CS_ExchangeSpell.handle(
-                    client,
-                    p0,
-                    p1,
-                    p2,
-                    p3,
-                    l0,
-                    l1,
-                    o0);
+            CS_ExchangeSpell.handle(client, selection, invalidSid);
         } catch (Throwable failure) {
             reportHandlerError(failure);
         }

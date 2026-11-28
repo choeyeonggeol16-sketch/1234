@@ -31,7 +31,6 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
 import l1j.server.server.BuilderCmdHandler;
 import l1j.server.server.Opcodes;
-import l1j.server.server.SkillCheck;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.auth.captcha.Captcha;
 import l1j.server.server.datatables.CharBuffTable;
@@ -194,7 +193,6 @@ public class L1PcInstance extends L1Character {
 
 
     private final CYieldLock userStateLock = new CYieldLock();
-    private final CYieldLock masteryLock = new CYieldLock();
 
     public final void lockUserState() {
         userStateLock.lock();
@@ -202,14 +200,6 @@ public class L1PcInstance extends L1Character {
 
     public final void unlockUserState() {
         userStateLock.unlock();
-    }
-
-    private void lockMastery() {
-        masteryLock.lock();
-    }
-
-    private void unlockMastery() {
-        masteryLock.unlock();
     }
 
 	private long FishingShopBuyTime_1;
@@ -1673,43 +1663,6 @@ public class L1PcInstance extends L1Character {
 		return _pinkNameTime.getAndSet(timeValue);
 	}
 
-	public void setSkillMastery(int skillid) {
-        lockUserState();
-        try {
-            lockMastery();
-            try {
-                if (!skillList.contains(skillid)) skillList.add(skillid);
-            } finally {
-                unlockMastery();
-            }
-        } finally {
-            unlockUserState();
-        }
-	}
-
-	public void removeSkillMastery(int skillid) {
-        lockUserState();
-        try {
-            lockMastery();
-            try {
-                skillList.remove((Object) skillid);
-            } finally {
-                unlockMastery();
-            }
-        } finally {
-            unlockUserState();
-        }
-	}
-
-	public boolean isSkillMastery(int skillid) {
-        lockMastery();
-        try {
-            return skillList.contains(skillid);
-        } finally {
-            unlockMastery();
-        }
-	}
-
 	public void setHomnam(boolean flag) {
 		_isHomnam = flag;
 	}
@@ -2487,8 +2440,6 @@ public class L1PcInstance extends L1Character {
 		catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout buff persistence failed: " + getId(), e); }
 		try { clearSkillEffectTimer(); }
 		catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout skill timer cleanup failed: " + getId(), e); }
-		try { SkillCheck.getInstance().QuitDelSkill(this); }
-		catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout skill effect cleanup failed: " + getId(), e); }
 		try {
 			for (L1ItemInstance item : getInventory().getItems()) {
 				if (item == null)
@@ -6194,7 +6145,6 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 		SC_OwnCharStatus.send(this);
 	}
 
-	private ArrayList<Integer> skillList = new ArrayList<Integer>();
 
 	private int _clanMemberId;
 
@@ -7212,6 +7162,10 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 			return null;
 		return new ArrayList<PassiveInfo>(m_passives.values());
 	}
+
+    public void clearAcquiredPassives() {
+        m_passives = null;
+    }
 
 	public PassiveInfo getPassive(int passiveId) {
 		if (m_passives == null)

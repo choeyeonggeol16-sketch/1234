@@ -3,7 +3,7 @@ package l1j.server.server.model.world.effect;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.IdFactory;
 import l1j.server.server.datatables.CObjectDB;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1EffectInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
@@ -70,7 +70,7 @@ public class L1EffectSpawn {
 
     public void doSpawnFireWall(L1Character cha, int targetX, int targetY) {
         L1Npc firewall = CObjectDB.GetNPC(81157);
-        int duration = SkillsTable.getInstance().getTemplate(
+        int duration = CSkillDB.getInstance().getTemplate(
                 L1SkillId.FIRE_WALL).getBuffDuration();
 
         if (firewall == null) {

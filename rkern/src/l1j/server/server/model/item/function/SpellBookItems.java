@@ -1,11 +1,13 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.model.character.skill.acquire.CSkillBook;
+import l1j.server.server.model.character.skill.acquire.CSkillAcquireDB.Book;
 
 import l1j.server.server.model.network.core.sc.packet.SC_AddSkill;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 
@@ -72,27 +74,27 @@ public final class SpellBookItems {
     }
 
 	public static void SpellBook1(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSocket clientthread) {
-        SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.DARK_ELF);
+        CSkillBook.learn(pc, l1iteminstance, Book.DARK_ELF);
     }
 
 	public static void SpellBook2(L1PcInstance pc, L1ItemInstance l1iteminstance) {
-        SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.ELF);
+        CSkillBook.learn(pc, l1iteminstance, Book.ELF);
     }
 
 	public static void SpellBook3(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSocket clientthread) {
-        SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.KNIGHT);
+        CSkillBook.learn(pc, l1iteminstance, Book.KNIGHT);
     }
 
 	public static void SpellBook4(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSocket clientthread) {
-        SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.PRINCE);
+        CSkillBook.learn(pc, l1iteminstance, Book.PRINCE);
     }
 
 	public static void SpellBook5(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSocket clientthread) {
-        SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.DRAGON_KNIGHT);
+        CSkillBook.learn(pc, l1iteminstance, Book.DRAGON_KNIGHT);
     }
 
 	public static void SpellBook6(L1PcInstance pc, L1ItemInstance l1iteminstance, CUserSocket clientthread) {
-        SkillBookLearning.learn(pc, l1iteminstance, SkillBookLearning.Kind.ILLUSIONIST);
+        CSkillBook.learn(pc, l1iteminstance, Book.ILLUSIONIST);
     }
 
 }

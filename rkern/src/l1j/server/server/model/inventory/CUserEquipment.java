@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.skill.BraveSpeedEffects;
@@ -57,6 +56,7 @@ public final class CUserEquipment {
 	private int displayedSecondaryWeapon;
 
 	private long invisibleGearRemovedAtMs;
+	private volatile long equipmentSpellMask;
 
 	private static final List<CSetItem> EMPTY_ACTIVE_SETS = List.of();
 	private List<CSetItem> activeSets = EMPTY_ACTIVE_SETS;
@@ -212,6 +212,11 @@ public final class CUserEquipment {
 
     private void applyEquipment(CUserInventory inventory, L1ItemInstance item,
             boolean equipped, boolean loaded, boolean changingWeapon) {
+        applyEquipment(inventory, item, equipped, loaded, changingWeapon, _owner.getType());
+    }
+
+    private void applyEquipment(CUserInventory inventory, L1ItemInstance item,
+            boolean equipped, boolean loaded, boolean changingWeapon, int equipmentClass) {
         if (inventory.GetByServerID(item.getId()) != item || item.isEquipped() == equipped) return;
         final L1Item template = item.getItem();
         if (template == null) return;
@@ -245,7 +250,7 @@ public final class CUserEquipment {
             item.setEquipped(false);
             item.stopEquipmentTimer();
             inventory.SetEquippedCount(itemId, false);
-            unequipItem(item);
+            unequipItem(item, equipmentClass);
         }
         sendEquipmentChanged(inventory, item, loaded, changingWeapon, weapon);
     }
@@ -327,6 +332,18 @@ public final class CUserEquipment {
                 }
                 applyEquipment(inventory, item, true, true, false);
             }
+        } finally {
+            inventory.endEquipmentChange();
+        }
+    }
+
+    public void removeForClassChange(int previousClass) {
+        CUserInventory inventory = _owner.getInventory();
+        if (!inventory.tryBeginEquipmentChange())
+            throw new IllegalStateException("Class equipment cleanup busy");
+        try {
+            for (L1ItemInstance item : inventory.GetEquippedItems())
+                applyEquipment(inventory, item, false, false, true, previousClass);
         } finally {
             inventory.endEquipmentChange();
         }
@@ -676,19 +693,19 @@ public final class CUserEquipment {
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
         }
 
-        applyArmorSlotOptions(item, traits, enchant, 1);
+        applyArmorSlotOptions(item, traits, enchant, 1, _owner.getType());
     }
 
 	public ArrayList<L1ItemInstance> getArmors() {
 		return _armors;
 	}
 
-	private void removeWeapon(L1ItemInstance weapon) {
+	private void removeWeapon(L1ItemInstance weapon, int equipmentClass) {
         final L1Item item = weapon.getItem();
         final int type = item.getType();
         EquipmentEnchantOptions.applyWeaponOptions(_owner, item, weapon.getEnchantLevel(), -1, null);
 
-        if (_owner.hasSkillEffect(L1SkillId.이뮨투함블레이드) && suppliesWeaponImmunity(_owner.getType(), type)) {
+        if (_owner.hasSkillEffect(L1SkillId.이뮨투함블레이드) && suppliesWeaponImmunity(equipmentClass, type)) {
             _owner.removeSkillEffect(L1SkillId.이뮨투함블레이드);
         }
 
@@ -728,7 +745,7 @@ public final class CUserEquipment {
         };
     }
 
-    private void removeArmor(L1ItemInstance armor) {
+    private void removeArmor(L1ItemInstance armor, int equipmentClass) {
         final L1Item item = armor.getItem();
         final int itemId = item.getItemId();
         final EquipmentTraits traits = EquipmentTraits.forItem(itemId);
@@ -755,7 +772,7 @@ public final class CUserEquipment {
         if (traits.has(WATER_BREATHING)) refreshEvaAfterRemoval(armor);
 
         _armors.remove(armor);
-        applyArmorSlotOptions(item, traits, enchant, -1);
+        applyArmorSlotOptions(item, traits, enchant, -1, equipmentClass);
         if (blessingChangedSpMr) {
             try { SC_SPMR.send(_owner); }
             catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
@@ -771,8 +788,8 @@ public final class CUserEquipment {
         applyArmorStatBonus(item, sign);
     }
 
-    private void applyArmorSlotOptions(L1Item item, EquipmentTraits traits, int enchant, int sign) {
-        applyElixirRuneBonus(_owner, _owner.getType(), traits, sign, null);
+    private void applyArmorSlotOptions(L1Item item, EquipmentTraits traits, int enchant, int sign, int equipmentClass) {
+        applyElixirRuneBonus(_owner, equipmentClass, traits, sign, null);
         EquipmentEnchantOptions.applyArmorSlotOptions(_owner, item, enchant, sign, null);
         if (EquipmentEnchantOptions.accessoryHeal(item, enchant) != 0) refreshAccessoryHeal();
     }
@@ -800,7 +817,7 @@ public final class CUserEquipment {
 			throw new IllegalStateException("Weapon equip was submitted without a free slot");
 		}
 
-		applyStatBonus(equipment, item, 1);
+		applyStatBonus(equipment, item, 1, _owner.getType());
 		applyRecoveryStats(item, 1);
 		if (item.isHasteItem()) {
 			_owner.addHasteItemEquipped(1);
@@ -816,8 +833,6 @@ public final class CUserEquipment {
 		if (traits.has(CHARGED_POLYMORPH) && _owner.hasSkillEffect(L1SkillId.STATUS_BRAVE)) {
 			BraveSpeedEffects.cancelTimer(_owner, L1SkillId.STATUS_BRAVE);
 		}
-		showMagicHelmSpells(equipment);
-
 		if (type == 1) {
 			setWeapon(equipment);
 			validateSetItem(item.getItemId(), true, false, false);
@@ -826,7 +841,8 @@ public final class CUserEquipment {
 			try { SC_SPMR.send(_owner); }
 			catch (RuntimeException notice) { equipmentNoticeFailed(notice); }
 		}
-		onEquipmentChanged(equipment, item, true);
+		showMagicHelmSpells(equipment);
+		onEquipmentChanged(equipment, item, true, _owner.getType());
         if (type == 1 && traits.morph() != 0 && equipment.isEquipped()) {
             L1PolyMorph.doPoly(_owner, traits.morph(), 0, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
         }
@@ -845,6 +861,10 @@ public final class CUserEquipment {
 	}
 
 	void unequipItem(L1ItemInstance equipment) {
+        unequipItem(equipment, _owner.getType());
+    }
+
+    private void unequipItem(L1ItemInstance equipment, int equipmentClass) {
 		final L1Item item = equipment.getItem();
 		final int type = item.getType2();
 		if (type == 0) return;
@@ -853,7 +873,7 @@ public final class CUserEquipment {
 				&& _owner.hasSkillEffect(L1SkillId.BLOW_ATTACK)) {
 			_owner.removeSkillEffect(L1SkillId.BLOW_ATTACK);
 		}
-		applyStatBonus(equipment, item, -1);
+		applyStatBonus(equipment, item, -1, equipmentClass);
 		applyRecoveryStats(item, -1);
 		if (item.isHasteItem()) {
 			_owner.addHasteItemEquipped(-1);
@@ -869,13 +889,13 @@ public final class CUserEquipment {
 		retireMagicHelmSpells(equipment);
 
 		if (type == 1) {
-			removeWeapon(equipment);
+			removeWeapon(equipment, equipmentClass);
 			_owner.remove_elf_second_brave();
 			validateSetItem(item.getItemId(), false, false, false);
 		} else if (type == 2) {
-			removeArmor(equipment);
+			removeArmor(equipment, equipmentClass);
 		}
-		onEquipmentChanged(equipment, item, false);
+		onEquipmentChanged(equipment, item, false, equipmentClass);
 		validateSetItem(item.getItemId(), false, false, true);
 		if (!equipment.isEquipped()) updateSetItemDisplay(equipment, false);
 	}
@@ -885,7 +905,7 @@ public final class CUserEquipment {
         if (template.get_addmpr() != 0) _owner.addMpr(sign * template.get_addmpr());
     }
 
-	private void applyStatBonus(L1ItemInstance equipment, L1Item item, int sign) {
+	private void applyStatBonus(L1ItemInstance equipment, L1Item item, int sign, int equipmentClass) {
 		ItemStat.BLESS_CONSUMO.apply(_owner, sign * item.get_addeinhasadper());
 		ItemStat.MAX_HP.apply(_owner, sign * item.get_addhp());
 		ItemStat.MAX_MP.apply(_owner, sign * item.get_addmp());
@@ -893,7 +913,7 @@ public final class CUserEquipment {
 		_owner.add_melee_critical_rate(sign * item.get_melee_critical_probability());
 
 		int magicResistance = equipment.getMr();
-		if (_owner.isElf()) magicResistance += EquipmentTraits.forItem(item.getItemId()).elfMr();
+		if (equipmentClass == 2) magicResistance += EquipmentTraits.forItem(item.getItemId()).elfMr();
 		final int spellPower = item.get_addsp();
 		if (magicResistance != 0) ItemStat.MR.apply(_owner, sign * magicResistance);
 		if (spellPower != 0) ItemStat.SP.apply(_owner, sign * spellPower);
@@ -1167,23 +1187,32 @@ public final class CUserEquipment {
 		ItemStat.MAGIC_HIT.apply(_owner, sign * item.getMagicHitup());
 	}
 
-    private void onEquipmentChanged(L1ItemInstance equipment, L1Item item, boolean equipped) {
-        applyRegisteredStatBonus(equipment, item, equipped ? 1 : -1);
+    private void onEquipmentChanged(L1ItemInstance equipment, L1Item item, boolean equipped, int equipmentClass) {
+        applyRegisteredStatBonus(equipment, item, equipped ? 1 : -1, equipmentClass);
         ItemBonusHooks.onEquipChanged(_owner, equipment, equipped);
     }
 
-	private void applyRegisteredStatBonus(L1ItemInstance equipment, L1Item item, int sign) {
+	private void applyRegisteredStatBonus(L1ItemInstance equipment, L1Item item, int sign, int equipmentClass) {
 		final ItemEffectRegistry.Def definition = ItemEffectRegistry.get(item.getItemId());
-		if (definition != null) definition.apply(_owner, _owner.getType(), equipment.getEnchantLevel(), sign);
+		if (definition != null) definition.apply(_owner, equipmentClass, equipment.getEnchantLevel(), sign);
 	}
 
 	private static int spellMask(long spells, int level) {
 		return (int) (spells >>> (level * Byte.SIZE)) & 0xff;
 	}
 
+    public boolean HasGrantedSkill(int skillId) {
+        return skillId > 0 && skillId <= Long.SIZE && (equipmentSpellMask & (1L << (skillId - 1))) != 0;
+    }
+
+    void clearGrantedSkills() {
+        equipmentSpellMask = 0;
+    }
+
 	private void showMagicHelmSpells(L1ItemInstance item) {
 		final long spells = EquipmentTraits.forItem(item.getItemId()).spells();
 		if (spells == 0L) return;
+		equipmentSpellMask |= spells;
 		try { SC_AddSkill.send(_owner, spellMask(spells, 0), spellMask(spells, 1), spellMask(spells, 2),
 				spellMask(spells, 3), spellMask(spells, 4), spellMask(spells, 5), spellMask(spells, 6),
 				0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); }
@@ -1193,16 +1222,18 @@ public final class CUserEquipment {
 	private void retireMagicHelmSpells(L1ItemInstance removed) {
 		long spells = EquipmentTraits.forItem(removed.getItemId()).spells();
 		if (spells == 0L) return;
+        long remainingSources = 0L;
 		for (int i = 0; i < _armors.size(); i++) {
 			final L1ItemInstance armor = _armors.get(i);
-			if (armor != removed && armor.isEquipped()) spells &= ~EquipmentTraits.forItem(armor.getItemId()).spells();
+			if (armor != removed && armor.isEquipped()) remainingSources |= EquipmentTraits.forItem(armor.getItemId()).spells();
 		}
+        equipmentSpellMask = remainingSources;
+        spells &= ~remainingSources;
 
-		final SkillsTable learned = SkillsTable.getInstance();
 		while (spells != 0L) {
 			final long spell = Long.lowestOneBit(spells);
 			spells ^= spell;
-			if (learned.spellCheck(_owner.getId(), Long.numberOfTrailingZeros(spell) + 1)) continue;
+			if (_owner.HaveSkill(Long.numberOfTrailingZeros(spell) + 1)) continue;
 			try { SC_DelSkill.send(_owner, spellMask(spell, 0), spellMask(spell, 1), spellMask(spell, 2),
 					spellMask(spell, 3), spellMask(spell, 4), spellMask(spell, 5), spellMask(spell, 6),
 					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); }

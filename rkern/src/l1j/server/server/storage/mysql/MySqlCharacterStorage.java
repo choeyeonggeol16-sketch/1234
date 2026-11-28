@@ -318,7 +318,7 @@ public class MySqlCharacterStorage implements CharacterStorage {
                     new l1j.server.server.storage.cached.CTransaction.Mutation[]{con->{
                 l1j.server.server.storage.cached.CTransaction.requireTransactionalTables(con,
                     "cached_transaction_receipts","characters","character_items","character_buddys","character_buff",
-                    "character_config","character_quests","character_level_gifts","character_skills","character_teleport");
+                    "character_config","character_quests","character_level_gifts","character_skills","passive_user_info","character_teleport");
                 try(PreparedStatement ps=con.prepareStatement("SELECT objid FROM characters WHERE account_name=? AND char_name=? FOR UPDATE")) {
                     ps.setString(1,accountName);ps.setString(2,charName);
                     try(ResultSet rows=ps.executeQuery()) {
@@ -343,6 +343,8 @@ public class MySqlCharacterStorage implements CharacterStorage {
                     ps.setInt(1,characterId);
                     try(ResultSet rows=ps.executeQuery()){if(rows.next())throw new SQLException("Claim pending credits before deleting character");}
                 }
+                CSkillAcquireStorage.deleteAll(con, characterId);
+                CSkillAcquireStorage.deleteAllPassives(con, characterId);
                 String[] queries = {
                         "DELETE FROM character_buddys WHERE char_id = ?",
                         "DELETE FROM character_buff WHERE char_obj_id = ?",
@@ -350,7 +352,6 @@ public class MySqlCharacterStorage implements CharacterStorage {
                         "DELETE FROM character_items WHERE char_id = ?",
                         "DELETE FROM character_quests WHERE char_id = ?",
                         "DELETE FROM character_level_gifts WHERE char_id = ?",
-                        "DELETE FROM character_skills WHERE char_obj_id = ?",
                         "DELETE FROM character_teleport WHERE char_id = ?",
                         "DELETE FROM characters WHERE objid = ?"
                     };

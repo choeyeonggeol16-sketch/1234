@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.mysql.CSkillAcquireStorage;
 import l1j.server.server.model.item.collection.CollectionCharInfo;
 import l1j.server.server.model.item.collection.CollectionItem;
 import l1j.server.server.model.item.collection.CollectionObject;
@@ -111,72 +112,24 @@ public class CollectionSystemLoader {
 		}
 	}
 	
-	private void setSkills(Connection con, CollectionObject obj){
-		PreparedStatement 	pstm	= null;
-		ResultSet 			rs		= null;
-		ArrayDeque<CollectionSpell> spQ	= null;
-		CollectionSpell			sp		= null;
-		int					rows	= 0;
-		try{
-			pstm	= con.prepareStatement("select * from character_skills where char_obj_id=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			pstm.setInt(1, obj.charId);
-			rs		= pstm.executeQuery();
-			rows	= calcRows(rs);
-			if(rows > 0){
-				spQ = new ArrayDeque<CollectionSpell>(rows);
-				while(rs.next()){
-					sp	= CollectionSpellLoader.getInstance().get(rs.getInt("skill_id"));
-					if(sp == null)
-						continue;
-					spQ.offer(sp);
-				}
-			}
-			obj.spPck  = SC_WAREHOUSE_ITEM_LIST_NOTI.create_ct_sp_info(spQ).encode();
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally{
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-		}
-	}
-	
-	private void setSkills(Connection con, ArrayList<CollectionObject> list){
-		PreparedStatement 	pstm	= null;
-		ResultSet 			rs		= null;
-		CollectionObject			obj		= null;
-		ArrayDeque<CollectionSpell> spQ	= null;
-		CollectionSpell			sp		= null;
-		int					size	= list.size();
-		int					rows	= 0;
-		try{
-			pstm		= con.prepareStatement("select * from character_skills where char_obj_id=?", ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-			for(int i=0; i<size; i++){
-				obj		= list.get(i);
-				pstm.setInt(1, obj.charId);
-				rs		= pstm.executeQuery();
-				rows	= calcRows(rs);
-				spQ = null;
-				if(rows > 0){
-					spQ	= new ArrayDeque<CollectionSpell>(rows);
-					while(rs.next()){
-						sp	= CollectionSpellLoader.getInstance().get(rs.getInt("skill_id"));
-						if(sp == null)
-							continue;
-						spQ.offer(sp);
-					}
-				}
-				obj.spPck  = SC_WAREHOUSE_ITEM_LIST_NOTI.create_ct_sp_info(spQ).encode();
-				SQLUtil.close(rs);
-				pstm.clearParameters();
-			}
-		}catch(Exception e){
-			e.printStackTrace();
-		}finally{
-			SQLUtil.close(rs);
-			SQLUtil.close(pstm);
-		}
-	}
-	
+    private void setSkills(Connection con, CollectionObject obj) {
+        try {
+            int[] ids = CSkillAcquireStorage.load(con, obj.charId);
+            ArrayDeque<CollectionSpell> spells = ids.length == 0 ? null : new ArrayDeque<>(ids.length);
+            for (int id : ids) {
+                CollectionSpell spell = CollectionSpellLoader.getInstance().get(id);
+                if (spell != null) spells.offer(spell);
+            }
+            obj.spPck = SC_WAREHOUSE_ITEM_LIST_NOTI.create_ct_sp_info(spells).encode();
+        } catch (SQLException failure) {
+            failure.printStackTrace();
+        }
+    }
+
+    private void setSkills(Connection con, ArrayList<CollectionObject> list) {
+        for (CollectionObject obj : list) setSkills(con, obj);
+    }
+
 	private ArrayDeque<CollectionItem> createItemQ(ResultSet rs) throws SQLException{
 		ArrayDeque<CollectionItem> 	itemQ 	= null;
 		CollectionItem				item	= null;

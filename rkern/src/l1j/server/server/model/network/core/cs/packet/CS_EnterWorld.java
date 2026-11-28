@@ -18,13 +18,13 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.npc.spawn.boss.CBossNpcMaker;
 import l1j.server.server.authd.CAccountContainer;
 import l1j.server.server.BuilderCmdHandler;
-import l1j.server.server.SkillCheck;
 import l1j.server.server.datatables.CharacterSlotItemTable;
 import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.storage.CharacterStorage.LoginVitals;
 import l1j.server.server.datatables.ExpTable;
 import l1j.server.server.datatables.GetBackRestartTable;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.acquire.CSkillAcquisition;
+import l1j.server.server.storage.mysql.CSkillAcquireStorage;
 import l1j.server.server.datatables.SpamTable;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
@@ -114,7 +114,6 @@ import l1j.server.server.storage.CharactersItemStorage;
 import l1j.server.server.templates.BookmarkSlot;
 import l1j.server.server.templates.L1GetBackRestart;
 import l1j.server.server.templates.CItemBookmark;
-import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.CheckInitStat;
 import l1j.server.swing.chocco;
 public final class CS_EnterWorld {
@@ -169,7 +168,7 @@ public final class CS_EnterWorld {
         List<List<L1ItemInstance>> warehouseItems;
         SC_ATTENDANCE_USER_DATA_EXTEND.LoginSnapshot attendance;
         int[] skills;
-        List<Integer> mastery;
+        int[] acquiredSkills;
         List<BuffInfo> buffs;
         List<ExcludeRow> excludes;
         boolean unreadMail;
@@ -382,9 +381,9 @@ public final class CS_EnterWorld {
     private static void readLoginSkillsAndInbox(EnterData data) throws SQLException {
         // Serial reads on one checkout, with the same autocommit and order.
         final int charId = data.pc.getId();
-        data.mastery = new ArrayList<>();
         try (Connection con = DatabaseFactory.getInstance().getConnection()) {
-            data.skills = loadSkills(con, charId, data.mastery);
+            data.acquiredSkills = CSkillAcquireStorage.load(con, charId);
+            data.skills = CSkillAcquisition.skillListPacket(data.acquiredSkills);
             data.buffs = loadBuff(con, charId);
             data.unreadMail = hasUnreadMail(con, data.pc.getName());
             data.excludes = readExcludeList(con, charId);
@@ -410,6 +409,7 @@ public final class CS_EnterWorld {
             applyEnterLocation(pc);
             l1j.server.server.model.network.core.session.DominationHybrid.applyLoginDestination(client, pc);
             // A detached login SELECT may predate a committed offline oust.
+            pc.RestoreAcquiredSkills(data.acquiredSkills);
             // Validate before world publication, under the same short pledge
             // monitor as offline receipt admission. A stale image must reload.
             final L1Clan loginClan = CWorld.getInstance().getClan(pc.getClanid());
@@ -592,21 +592,10 @@ public final class CS_EnterWorld {
         if (data.characterConfig != null) SC_CharacterConfig.send(pc, data.characterConfig);
         CharacterSlotItemTable.getInstance().applyCharSlots(pc, data.slotItems);
         KdaLoader.getInstance().install(pc, false);
-        int[] skillList = data.skills;
-        if (skillList == null) skillList = new int[30];
-        pc.lockUserState();
-        try {
-            for (int i = 0, n = data.mastery.size(); i < n; i++) {
-                pc.setSkillMastery(data.mastery.get(i));
-            }
-        } finally {
-            pc.unlockUserState();
-        }
-        SkillCheck.getInstance().AddSkill(pc.getId(), data.mastery);
         PassiveUserLoader.applyLoaded(pc, data.passiveIds);
         DungeonTimeProgressLoader.applySnapshot(pc, data.dungeonProgress);
         BQSCharacterDataLoader.applySnapshot(pc, data.bqs);
-        sendSkillPacket(pc, skillList);
+        sendSkillPacket(pc, data.skills);
         CopyMapObservable.getInstance().resetPosition(pc);
         BookmarkSlot.ApplySnapshot(pc, data.bookmarks);
         SC_BookMarkLoad.send(pc);
@@ -1072,34 +1061,6 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
             }
         }
     }
-
-	private static int[] loadSkills(Connection con, int charId, List<Integer> mastery) throws SQLException {
-		int[] skillList = new int[30];
-
-		String sql = "SELECT skill_id FROM character_skills WHERE char_obj_id = ?";
-		try (PreparedStatement pstm = con.prepareStatement(sql)) {
-			pstm.setInt(1, charId);
-			try (ResultSet rs = pstm.executeQuery()) {
-
-				while (rs.next()) {
-					int skillId = rs.getInt("skill_id");
-					L1Skills l1skills = SkillsTable.getInstance().getTemplate(skillId);
-
-					if (l1skills != null && l1skills.getSkillLevel() > 0 && l1skills.getSkillLevel() <= 29) {
-						if (skillId == 234) {
-							skillList[l1skills.getSkillLevel()] |= l1skills.getId();
-						} else {
-							skillList[l1skills.getSkillLevel() - 1] |= l1skills.getId();
-						}
-					}
-
-					mastery.add(skillId);
-				}
-			}
-		}
-
-		return skillList;
-	}
 
 	private static void sendSkillPacket(L1PcInstance pc, int[] skillList) {
 		SC_AddSkill.send(pc, skillList[0], skillList[1], skillList[2], skillList[3], skillList[4],

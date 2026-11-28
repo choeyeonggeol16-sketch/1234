@@ -7,7 +7,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.SHAPE_CHANGE;
 
 import java.util.Random;
 import l1j.server.server.datatables.PolyTable;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;

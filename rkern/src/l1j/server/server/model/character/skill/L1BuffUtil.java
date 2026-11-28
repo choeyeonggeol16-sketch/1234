@@ -6,7 +6,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import java.util.Collection;
 
 import l1j.server.server.model.world.CWorldWork;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
@@ -132,7 +132,7 @@ public class L1BuffUtil {
 
 					L1SkillUse.cast(target, skillId, targetId, x, y, null, durationSec, L1SkillUse.TYPE_LOGIN);
 
-					final L1Skills skill = SkillsTable.getInstance().getTemplate(skillId);
+					final L1Skills skill = CSkillDB.getInstance().getTemplate(skillId);
 					if (skill != null) {
 						SC_PacketBox.send(target, SC_PacketBox.BUFFICON, skill.getCastGfx(), durationSec);
 					}
@@ -230,7 +230,7 @@ public class L1BuffUtil {
 			target.setBuffnoch(1);
 			try {
 				if (target.noPlayerRobot) {
-					final L1Skills skill = SkillsTable.getInstance().getTemplate(eachSkillId);
+					final L1Skills skill = CSkillDB.getInstance().getTemplate(eachSkillId);
 					if (skill != null) {
 						SC_SkillSound.broadcast(target, target.getId(), skill.getCastGfx());
 					}
@@ -317,7 +317,7 @@ public class L1BuffUtil {
 	private static void sendRobotBuffSounds(L1PcInstance target, int[] buffList) {
 		final int objId = target.getId();
 		for (int i = 0; i < buffList.length; i++) {
-			final L1Skills skill = SkillsTable.getInstance().getTemplate(buffList[i]);
+			final L1Skills skill = CSkillDB.getInstance().getTemplate(buffList[i]);
 			if (skill == null) continue;
 
 			SC_SkillSound.broadcast(target, objId, skill.getCastGfx());

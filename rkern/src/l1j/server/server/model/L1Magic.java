@@ -4,7 +4,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.*;
 
 
 import l1j.server.Config;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.datatables.UserProtectMonsterTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -531,7 +531,7 @@ public class L1Magic {
 
 		if (probability >= rnd) { // 마법실패시에도 미쓰 뜨게
 			if (_calcType == PC_PC) {
-			L1Skills skill = SkillsTable.getInstance().getTemplate(skillId);
+			L1Skills skill = CSkillDB.getInstance().getTemplate(skillId);
 			if ((_targetPc.hasSkillEffect(L1SkillId.매직실드1) &&_targetPc.hasSkillEffect(L1SkillId.매직실드2))  && (skillId == L1SkillId.CANCELLATION || skillId == L1SkillId.CURSE_BLIND
 					|| skillId == L1SkillId.WEAPON_BREAK || skillId == L1SkillId.CURSE_PARALYZE || skillId == L1SkillId.DARKNESS || skillId == L1SkillId.WEAKNESS || skillId == L1SkillId.SHAPE_CHANGE
 					|| skillId == L1SkillId.FOG_OF_SLEEPING || skillId == L1SkillId.DECAY_POTION || skillId == L1SkillId.DEATH_HEAL || skillId == L1SkillId.STRIKER_GALE
@@ -655,7 +655,7 @@ public class L1Magic {
 	}
 
 	private int calcProbability(int skillId) {
-		L1Skills l1skills = SkillsTable.getInstance().getTemplate(skillId);
+		L1Skills l1skills = CSkillDB.getInstance().getTemplate(skillId);
 		int attackLevel = 0;
 		int defenseLevel = 0;
 		int probability = 0;
@@ -1852,7 +1852,7 @@ public class L1Magic {
 	public int calcPcFireWallDamage() {
 		int dmg = 0;
 
-		L1Skills l1skills = SkillsTable.getInstance().getTemplate(FIRE_WALL);
+		L1Skills l1skills = CSkillDB.getInstance().getTemplate(FIRE_WALL);
 		dmg = calcAttrDefence(l1skills.getDamageValue(), L1Skills.ATTR_FIRE);
 
 		if (_targetPc.hasSkillEffect(ABSOLUTE_BARRIER)) {
@@ -1880,7 +1880,7 @@ public class L1Magic {
 	public int calcNpcFireWallDamage() {
 		int dmg = 0;
 
-		L1Skills l1skills = SkillsTable.getInstance().getTemplate(FIRE_WALL);
+		L1Skills l1skills = CSkillDB.getInstance().getTemplate(FIRE_WALL);
 		dmg = calcAttrDefence(l1skills.getDamageValue(), L1Skills.ATTR_FIRE);
 
 		if (_targetNpc.hasSkillEffect(ICE_LANCE)) {
@@ -2448,7 +2448,7 @@ public class L1Magic {
 
 	/** 플레이어->플레이어 에게 마법 대미지 산출 **/
 	private int calcMagicDiceDamage(int skillId) {
-		L1Skills l1skills = SkillsTable.getInstance().getTemplate(skillId);
+		L1Skills l1skills = CSkillDB.getInstance().getTemplate(skillId);
 		int dice = l1skills.getDamageDice();
 		int diceCount = l1skills.getDamageDiceCount();
 		int value = l1skills.getDamageValue();
@@ -2576,7 +2576,7 @@ public class L1Magic {
 	}
 
 	public int calcHealing(int skillId) { // 힐 회복량 neige
-		L1Skills l1skills = SkillsTable.getInstance().getTemplate(skillId);
+		L1Skills l1skills = CSkillDB.getInstance().getTemplate(skillId);
 		int dice = l1skills.getDamageDice();
 		int value = l1skills.getDamageValue();
 		int magicDamage = 0;

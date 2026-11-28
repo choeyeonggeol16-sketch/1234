@@ -12,7 +12,7 @@ import static l1j.server.server.model.character.skill.L1SkillId.TURN_UNDEAD;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
@@ -1476,7 +1476,7 @@ public class L1WeaponSkill {
 
 		if (cha.hasSkillEffect(COUNTER_MAGIC)) {
 			cha.removeSkillEffect(COUNTER_MAGIC);
-			int castgfx = SkillsTable.getInstance().getTemplate(COUNTER_MAGIC).getCastGfx();
+			int castgfx = CSkillDB.getInstance().getTemplate(COUNTER_MAGIC).getCastGfx();
 			SC_SkillSound.broadcast(cha, cha.getId(), 10702);
 			
 			if (cha instanceof L1PcInstance) {

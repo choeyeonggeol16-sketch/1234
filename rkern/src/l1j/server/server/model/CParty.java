@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 
 import l1j.server.Config;
 import l1j.server.server.Controller.AuraController;
-import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -210,7 +209,7 @@ public class CParty {
     }
 
     private void trackCrown(L1PcInstance pc, Roster added) {
-        if (pc.isCrown() && SkillsTable.getInstance().spellCheck(pc.getId(), 121)
+        if (pc.isCrown() && pc.HaveSkill(121)
                 && stillMember(added, pc)) AuraController.getInstance().addMember(pc);
     }
 

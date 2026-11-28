@@ -451,6 +451,7 @@ public class CUserInventory extends CInventory {
         super.clearItems();
         _itemCountMap.clear();
         _equippedCountMap.clear();
+        _owner.getEquipment().clearGrantedSkills();
         _owner.getEquipment().clearEquipmentWindow();
     }
 

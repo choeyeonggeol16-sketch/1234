@@ -104,6 +104,14 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
     // ==================================================================
 
     /** Globally unique item IDs: never replace a conflicting owner's row. */
+    public static void clearEquippedForClassChange(Connection con, int charId) throws SQLException {
+        try (PreparedStatement update = con.prepareStatement(
+                "UPDATE character_items SET is_equipped=0 WHERE char_id=? AND is_equipped<>0")) {
+            update.setInt(1, charId);
+            update.executeUpdate();
+        }
+    }
+
     private static final String STORE_SQL =
         "INSERT INTO character_items (id, item_id, char_id, item_name, count, is_equipped, "
         + "enchantlvl, is_id, durability, charge_count, remaining_time, last_used, bless, "

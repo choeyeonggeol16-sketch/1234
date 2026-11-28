@@ -10,7 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Character;
@@ -277,7 +277,7 @@ public class OnEffectThread {
     protected static boolean isCounterMagic(L1PcInstance pc) {
         if (!pc.hasSkillEffect(L1SkillId.COUNTER_MAGIC)) return false;
         pc.removeSkillEffect(L1SkillId.COUNTER_MAGIC);
-        final int cast = SkillsTable.getInstance().getTemplate(L1SkillId.COUNTER_MAGIC).getCastGfx();
+        final int cast = CSkillDB.getInstance().getTemplate(L1SkillId.COUNTER_MAGIC).getCastGfx();
         SC_OnlyEffect.send(pc, pc.getId(), cast);
         SC_OnlyEffect.broadcast(pc, pc.getId(), cast);
         return true;

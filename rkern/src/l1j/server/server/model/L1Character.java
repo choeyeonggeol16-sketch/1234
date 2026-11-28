@@ -3,6 +3,7 @@ package l1j.server.server.model;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +55,90 @@ import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.inventory.L1PolyMorph;
 public class L1Character extends L1Object {
 	private static final long serialVersionUID = 1L;
+    private static final int[] NO_ACQUIRED_SKILLS = {};
+    private static final AtomicReferenceFieldUpdater<L1Character, int[]> ACQUIRED_SKILLS =
+            AtomicReferenceFieldUpdater.newUpdater(L1Character.class, int[].class, "acquiredSkills");
+
+    // Immutable, sorted snapshots let casts read without allocating or taking the user lock.
+    private volatile int[] acquiredSkills = NO_ACQUIRED_SKILLS;
+
+    public final boolean HaveSkill(int skillId) {
+        return Arrays.binarySearch(acquiredSkills, skillId) >= 0;
+    }
+
+    /** L1 assigns one id per learnable skill, with no per-character upgrade level. */
+    public final int GetAcquiredSkillLevel(int skillId) {
+        return HaveSkill(skillId) ? 1 : 0;
+    }
+
+    public final boolean AcquireSkill(int skillId) {
+        if (skillId <= 0) return false;
+        int[] current;
+        int[] updated;
+        do {
+            current = acquiredSkills;
+            int found = Arrays.binarySearch(current, skillId);
+            if (found >= 0) return false;
+            int index = -found - 1;
+            updated = new int[current.length + 1];
+            System.arraycopy(current, 0, updated, 0, index);
+            updated[index] = skillId;
+            System.arraycopy(current, index, updated, index + 1, current.length - index);
+        } while (!ACQUIRED_SKILLS.compareAndSet(this, current, updated));
+        return true;
+    }
+
+    public final void AcquireSkills(int[] skillIds) {
+        int[] current;
+        int[] updated;
+        do {
+            current = acquiredSkills;
+            updated = Arrays.copyOf(current, current.length + skillIds.length);
+            System.arraycopy(skillIds, 0, updated, current.length, skillIds.length);
+            updated = normalizeAcquiredSkills(updated);
+        } while (!ACQUIRED_SKILLS.compareAndSet(this, current, updated));
+    }
+
+    public final int[] CopyAcquiredSkills() {
+        return acquiredSkills.clone();
+    }
+
+    public final boolean DeleteAcquireSkill(int skillId) {
+        int[] current;
+        int[] updated;
+        do {
+            current = acquiredSkills;
+            int index = Arrays.binarySearch(current, skillId);
+            if (index < 0) return false;
+            updated = current.length == 1 ? NO_ACQUIRED_SKILLS : new int[current.length - 1];
+            System.arraycopy(current, 0, updated, 0, index);
+            System.arraycopy(current, index + 1, updated, index, current.length - index - 1);
+        } while (!ACQUIRED_SKILLS.compareAndSet(this, current, updated));
+        return true;
+    }
+
+    /** Install a complete persisted snapshot on the owner during login or class change. */
+    public final void RestoreAcquiredSkills(int[] skillIds) {
+        if (skillIds.length == 0) {
+            acquiredSkills = NO_ACQUIRED_SKILLS;
+            return;
+        }
+        acquiredSkills = normalizeAcquiredSkills(skillIds.clone());
+    }
+
+    private static int[] normalizeAcquiredSkills(int[] sorted) {
+        Arrays.sort(sorted);
+        int count = 0;
+        for (int skillId : sorted) {
+            if (count == 0 || sorted[count - 1] != skillId) sorted[count++] = skillId;
+        }
+        return count == sorted.length ? sorted : Arrays.copyOf(sorted, count);
+    }
+
+    public final void DeleteAllAcquireSkills() {
+        acquiredSkills = NO_ACQUIRED_SKILLS;
+    }
+
 	// 캐릭터 기본
 	private String _name;
 	private String _title;

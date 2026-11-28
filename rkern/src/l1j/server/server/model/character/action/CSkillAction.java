@@ -1,6 +1,6 @@
 package l1j.server.server.model.character.action;
 
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CWorld;
@@ -112,7 +112,7 @@ public final class CSkillAction extends CNewAction {
         }
         
         // 스킬을 배우지 않았는데 사용하는 경우
-        if(!owner.isSkillMastery(skillId)) {
+        if (!owner.HaveSkill(skillId) && !owner.getEquipment().HasGrantedSkill(skillId)) {
         	return false;
         }
  
@@ -124,7 +124,7 @@ public final class CSkillAction extends CNewAction {
             return false;
         }
 
-        final L1Skills skill = SkillsTable.getInstance().getTemplate(skillId);
+        final L1Skills skill = CSkillDB.getInstance().getTemplate(skillId);
         if (skill == null) {
             return false;
         }

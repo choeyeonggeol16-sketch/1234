@@ -70,7 +70,7 @@ import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.datatables.ReportTable;
 import l1j.server.server.datatables.ResolventTable;
 import l1j.server.server.model.shop.ShopTable;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.datatables.CNpcMakerDB;
 import l1j.server.server.datatables.UBSpawnTable;
 import l1j.server.server.datatables.UBTable;
@@ -230,7 +230,7 @@ public class GameServer {
 		ItemSkillModelLoader.getInstance();
 		CNpcMakerDB.getInstance();
 		MobGroupTable.getInstance();
-		SkillsTable.getInstance();
+		CSkillDB.getInstance();
 		PolyTable.getInstance();
 		CObjectDB.LoadItem().initRace();
 		DropTable.getInstance();

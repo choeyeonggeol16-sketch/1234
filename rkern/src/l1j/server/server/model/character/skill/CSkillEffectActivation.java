@@ -10,7 +10,7 @@ import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.datatables.PolyTable;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -505,13 +505,13 @@ public final class CSkillEffectActivation {
 		final int polyId = SkillUseHelper.pickRandomPolyId();
 
 		if (cha instanceof L1PcInstance pc) {
-			final L1Skills skillTemp = SkillsTable.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
+			final L1Skills skillTemp = CSkillDB.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
 			return submitContextBuff(pc, L1SkillId.SHAPE_CHANGE, skillTemp.getBuffDuration(),
 					polyId, caster != null ? caster.getId() : 0, null)
 					? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 		} else if (cha instanceof L1MonsterInstance) {
 			final L1MonsterInstance mon = (L1MonsterInstance) cha;
-			final L1Skills skillTemp = SkillsTable.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
+			final L1Skills skillTemp = CSkillDB.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
 			L1PolyMorph.doPoly(mon, polyId, skillTemp.getBuffDuration(), L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
 		}
 
@@ -1237,7 +1237,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	private static final int PARTY_BUFF_RANGE = 18;
 
 	private static int skillBuffDurationSecFromTemplate(int skillId, int fallbackSec) {
-		final L1Skills template = SkillsTable.getInstance().getTemplate(skillId);
+		final L1Skills template = CSkillDB.getInstance().getTemplate(skillId);
 		return template != null && template.getBuffDuration() > 0 ? template.getBuffDuration() : fallbackSec;
 	}
 
@@ -2809,7 +2809,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 		if (d > 0) return d;
 
 		try {
-			final L1Skills t = SkillsTable.getInstance().getTemplate(skillId);
+			final L1Skills t = CSkillDB.getInstance().getTemplate(skillId);
 			if (t != null && t.getBuffDuration() > 0) return t.getBuffDuration();
 		} catch (Throwable ignore) {
 		}

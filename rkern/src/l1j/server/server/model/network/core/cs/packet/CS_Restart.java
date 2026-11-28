@@ -1,7 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.ActionCodes;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Getback;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CParty;
@@ -173,7 +173,7 @@ public final class CS_Restart {
             }
 
             final L1Skills skillTemplate =
-                    SkillsTable.getInstance().getTemplate(skillId);
+                    CSkillDB.getInstance().getTemplate(skillId);
 
             if (skillTemplate == null) {
                 continue;

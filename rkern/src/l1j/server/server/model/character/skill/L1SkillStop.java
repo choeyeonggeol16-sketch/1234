@@ -1,6 +1,6 @@
 package l1j.server.server.model.character.skill;
 
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -41,7 +41,7 @@ public final class L1SkillStop {
 			return;
 		}
 
-		L1Skills skills = SkillsTable.getInstance().getTemplate(skillId);
+		L1Skills skills = CSkillDB.getInstance().getTemplate(skillId);
 		if (skills == null) {
 			return;
 		}

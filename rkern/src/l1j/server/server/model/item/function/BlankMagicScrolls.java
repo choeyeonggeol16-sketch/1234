@@ -5,7 +5,7 @@ import l1j.server.server.model.network.core.cs.packet.User;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -34,7 +34,7 @@ public final class BlankMagicScrolls {
             return;
         }
         if (pc.getInventory().GetByServerID(scroll.getId()) != scroll || scroll.isEquipped()) return;
-        final L1Skills skill = SkillsTable.getInstance().getTemplate(skillIndex + 1);
+        final L1Skills skill = CSkillDB.getInstance().getTemplate(skillIndex + 1);
         if (skill == null) {
             SC_ServerMessage.send(pc, 79);
             return;

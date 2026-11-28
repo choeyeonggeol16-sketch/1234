@@ -7,6 +7,7 @@ import l1j.server.server.model.character.skill.helper.SkillTargetListBuilder;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.templates.L1Skills;
+import l1j.server.server.model.character.skill.SkillDefinitionFixture;
 
 public final class WorldSkillAreaRegression {
     public static void main(String[] args) throws Exception {
@@ -80,7 +81,8 @@ public final class WorldSkillAreaRegression {
 
     private static final class Use extends L1SkillUse {
         final L1Character caster, target;
-        final L1Skills template = new L1Skills();
+        final L1Skills template = SkillDefinitionFixture.definition(java.util.Map.of(
+                "target", "none", "type", L1Skills.TYPE_ATTACK, "area", -1, "ranged", 100));
         final List<L1Character> hits = new ArrayList<>();
         final int id;
         Runnable nested;
@@ -89,10 +91,6 @@ public final class WorldSkillAreaRegression {
             this.caster = caster;
             this.target = target;
             this.id = id;
-            template.setTarget("none");
-            template.setType(L1Skills.TYPE_ATTACK);
-            template.setArea(-1);
-            template.setRanged(100);
         }
         @Override public int tlType() { return TYPE_NORMAL; }
         @Override public int tlSkillId() { return id; }

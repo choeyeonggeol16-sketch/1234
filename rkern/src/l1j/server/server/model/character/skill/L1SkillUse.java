@@ -2,7 +2,7 @@ package l1j.server.server.model.character.skill;
 
 import java.util.Random;
 
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -233,7 +233,7 @@ public class L1SkillUse {
 	}
 
 	public boolean initSkill(int skillid, int x, int y, int time, int type) {
-		_skill = SkillsTable.getInstance().getTemplate(skillid);
+		_skill = CSkillDB.getInstance().getTemplate(skillid);
 		_skillId = skillid;
 		_targetX = x;
 		_targetY = y;

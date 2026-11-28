@@ -19,6 +19,7 @@ import l1j.server.Config;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.Opcodes;
 import l1j.server.server.datatables.ExpTable;
+import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.companion.basic.buff.CompanionBuffInfo;
@@ -77,6 +78,8 @@ public final class StatResetCandleRegression {
             try {
                 for (String table : TABLES)
                     ddl.execute("CREATE TABLE " + schema + "." + table + " LIKE `" + args[2] + "`." + table);
+                ddl.execute("INSERT INTO " + schema + ".skills SELECT * FROM `" + args[2]
+                        + "`.skills WHERE skill_id=44");
                 var config = new HikariConfig();
                 config.setJdbcUrl(args[0]);
                 config.setCatalog(schema);
@@ -103,6 +106,8 @@ public final class StatResetCandleRegression {
         for (Runnable load : List.<Runnable>of(CompanionClassInfo::do_load, CompanionFriendShipBonus::do_load,
                 CompanionBuffInfo::do_load, CompanionPotionInfo::do_load)) load.run();
         CPacketFilter.getInstance().load();
+        L1WorldMap.getInstance().addMap(map(1, 32, 32, 8, true));
+        L1WorldMap.getInstance().addMap(map(2, 32, 32, 8, false));
         L1WorldMap.getInstance().addMap(map(RESET_MAP, 32704, 32792, 96, true));
         require(cache.flushAll(5_000), "CacheD probe drained");
         var address = new InetSocketAddress("127.0.0.1", 0);
@@ -147,9 +152,9 @@ public final class StatResetCandleRegression {
         on(peer.socket, () -> {
             level(peer.pc, 54);
             StatReset.useNpcCandle(peer.pc);
-            peer.pc.setMap(map(1, 32, 32, 8, false));
+            CWorld.getInstance().relocateVisibleObject(peer.pc, 34, 34, 2);
             click(peer);
-            peer.pc.setMap(map(1, 32, 32, 8, true));
+            CWorld.getInstance().relocateVisibleObject(peer.pc, 34, 34, 1);
             peer.pc.setHighLevel(55);
             click(peer);
         });
@@ -228,7 +233,8 @@ public final class StatResetCandleRegression {
             require(peer.pc.getMapId() == RESET_MAP && !peer.pc.get_teleport() && (npc
                     ? Math.abs(x - 32723) <= 10 && Math.abs(y - 32815) <= 10 && peer.pc.getHeading() == 3
                     : x >= 32723 && x < 32733 && y >= 32851 && y < 32861 && peer.pc.getHeading() == 3),
-                    "preserved physical entry destination and heading");
+                    "preserved " + (npc ? "NPC" : "item") + " entry destination and heading: "
+                            + x + "," + y + " map=" + peer.pc.getMapId() + " heading=" + peer.pc.getHeading());
         });
     }
 
@@ -295,12 +301,13 @@ public final class StatResetCandleRegression {
                 level(player, atLevel);
                 player.setClassId(L1PcInstance.CLASSID_PRINCE);
                 player.setType(0);
-                player.setMap(map(1, 32, 32, 8, safe));
+                player.setMap(L1WorldMap.getInstance().getMap((short) (safe ? 1 : 2)));
                 player.setX(34);
                 player.setY(34);
                 player.setHeading(3);
                 player.setMaxHp(30);
                 player.setCurrentHp(10);
+                CWorld.getInstance().addVisibleObject(player);
                 player.getInventory().loadItems(List.of(item));
                 cache.registerLoadedItemOwner(player.getId(), item.getId());
                 published.complete(player);

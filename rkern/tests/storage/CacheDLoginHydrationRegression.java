@@ -1,5 +1,4 @@
 import com.zaxxer.hikari.HikariDataSource;
-import gnu.trove.map.TIntObjectMap;
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
 import java.sql.Connection;
@@ -11,12 +10,11 @@ import java.util.List;
 import java.util.Map;
 
 import l1j.server.DatabaseFactory;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.cs.packet.CS_EnterWorld;
 import l1j.server.server.templates.CItemBookmark;
-import l1j.server.server.templates.L1Skills;
 
 /** Runs the detached login readers against a counting JDBC fixture. */
 public final class CacheDLoginHydrationRegression {
@@ -53,7 +51,8 @@ public final class CacheDLoginHydrationRegression {
                     final int[] current = {-1};
                     return proxy(ResultSet.class, (read, field) -> switch (read) {
                         case "next" -> ++current[0] < rows.size();
-                        case "getInt", "getShort", "getString" -> rows.get(current[0]).get(field[0]);
+                        case "getInt" -> rows.get(current[0]).getOrDefault(field[0], 0);
+                        case "getShort", "getString" -> rows.get(current[0]).get(field[0]);
                         default -> null;
                     });
                 }
@@ -74,7 +73,9 @@ public final class CacheDLoginHydrationRegression {
                         });
                 return rows;
             }
-            if (sql.equals("SELECT * FROM skills")) return List.of();
+            if (sql.equals("SELECT * FROM skills"))
+                return List.of(Map.of("skill_id", 234, "name", "fixture spell", "skill_level", 3, "id", 2));
+            if (sql.startsWith("SELECT item_id,name FROM etcitem")) return List.of();
             if (sql.contains("FROM character_skills")) {
                 check(bindings.equals(List.of(55)), "Wrong skill owner");
                 return List.of(Map.of("skill_id", 234), Map.of("skill_id", 235));
@@ -168,14 +169,8 @@ public final class CacheDLoginHydrationRegression {
         fixture.failLastBatch = false;
     }
 
-    @SuppressWarnings("unchecked")
     private static void testProfile(Fixture fixture) throws Exception {
-        final SkillsTable skills = SkillsTable.getInstance();
-        final L1Skills learned = new L1Skills();
-        learned.setSkillId(234);
-        learned.setSkillLevel(3);
-        learned.setId(2);
-        ((TIntObjectMap<L1Skills>) field(SkillsTable.class, "_skills").get(skills)).put(234, learned);
+        CSkillDB.getInstance();
         fixture.resetCounters();
 
         final Class<?> dataClass = Class.forName(CS_EnterWorld.class.getName() + "$EnterData");
@@ -194,7 +189,7 @@ public final class CacheDLoginHydrationRegression {
         check(fixture.reads.get(0).contains("character_skills") && fixture.reads.get(1).contains("character_buff")
                 && fixture.reads.get(2).contains("letter") && fixture.reads.get(3).contains("character_exclude"),
                 "Profile read sequence changed");
-        check(field(dataClass, "mastery").get(data).equals(List.of(234, 235)), "Skill IDs lost");
+        check(java.util.Arrays.equals((int[]) field(dataClass, "acquiredSkills").get(data), new int[] {234, 235}), "Skill IDs lost");
         check(((int[]) field(dataClass, "skills").get(data))[3] == 2, "Login skill layout changed");
         check(field(dataClass, "unreadMail").getBoolean(data), "Unread notification lost");
         check(((List<?>) field(dataClass, "buffs").get(data)).size() == 1

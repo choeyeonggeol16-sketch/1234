@@ -8,7 +8,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.SHAPE_CHANGE;
 
 import l1j.server.server.datatables.PolyTable;
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -111,7 +111,7 @@ final class TargetPolymorphEffects {
 					SC_ServerMessage.send(pc, 181);
 				}
 			} else {
-				L1Skills skillTemp = SkillsTable.getInstance().getTemplate(SHAPE_CHANGE);
+				L1Skills skillTemp = CSkillDB.getInstance().getTemplate(SHAPE_CHANGE);
 				L1PolyMorph.doPoly(pc, polyId, skillTemp.getBuffDuration(), L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
 				if (attacker.getId() != pc.getId()) {
 					SC_ServerMessage.send(pc, 241, attacker.getName()); // 누구가
@@ -125,7 +125,7 @@ final class TargetPolymorphEffects {
 				int npcId = mob.getNpcTemplate().get_npcId();
 				if (npcId != 45338 && npcId != 45370 && npcId != 45456 && npcId != 45464 && npcId != 45473
 						&& npcId != 45488 && npcId != 45497 && npcId != 45516 && npcId != 45529 && npcId != 45458) {
-					L1Skills skillTemp = SkillsTable.getInstance().getTemplate(SHAPE_CHANGE);
+					L1Skills skillTemp = CSkillDB.getInstance().getTemplate(SHAPE_CHANGE);
 					L1PolyMorph.doPoly(mob, polyId, skillTemp.getBuffDuration(), L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
 				}
 			}

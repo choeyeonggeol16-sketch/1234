@@ -1,5 +1,6 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.model.character.skill.acquire.CSkillBook;
 
 import static l1j.server.server.model.character.skill.L1SkillId.EARTH_BIND;
 import static l1j.server.server.model.character.skill.L1SkillId.ICE_LANCE;
@@ -34,7 +35,7 @@ import static l1j.server.server.model.item.function.TowerCharmCraftingItems.*;
 import static l1j.server.server.model.item.function.TowerTeleportAmulets.*;
 import static l1j.server.server.model.item.function.TransformationItems.*;
 
-import l1j.server.server.datatables.SkillsTable;
+import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -43,8 +44,8 @@ import l1j.server.server.templates.L1Skills;
 public final class WarriorSkillBookItems {
     private WarriorSkillBookItems() {}
 	public static void 전사스킬(L1PcInstance pc, L1ItemInstance item, boolean ispassibe) {
-		final SkillsTable table = SkillsTable.getInstance();
-		L1Skills skill = table.getTemplateByItem(item.getItemId());
+		final CSkillDB table = CSkillDB.getInstance();
+		L1Skills skill = table.acquireDB().findWarriorBook(item.getItemId());
 		// Missing skill definitions must not destroy the corresponding book.
 		if (skill == null) {
 			SC_SystemMessage.send(pc, "습득할 수 있는 스킬을 찾지 못했습니다.");
@@ -57,12 +58,12 @@ public final class WarriorSkillBookItems {
             return;
         }
         final int skillId = skill.getSkillId();
-        if (pc.isSkillMastery(skillId)) {
+        if (pc.HaveSkill(skillId)) {
             SC_SystemMessage.send(pc, "이미 배운 마법입니다.");
             return;
         }
         int[] levels = new int[29];
         levels[skillLevel - 1] = id;
-        SkillBookLearning.commitLearning(pc, item, skillId, skill.getName(), levels, 224);
+        CSkillBook.commitLearning(pc, item, skill, levels, 224);
 	}
 }

@@ -35,6 +35,10 @@ public final class SC_AddSkill {
     }
 
     public static boolean send(L1PcInstance pc, int[] levels) {
+        return pc != null && send(pc, levels, pc.getElfAttr());
+    }
+
+    public static boolean send(L1PcInstance pc, int[] levels, int elf) {
         if (pc == null) return false;
         final CUserSocket client = pc.getNetConnection();
         if (client == null || !client.isConnected()) return false;
@@ -42,7 +46,6 @@ public final class SC_AddSkill {
         if (connection == null || !connection.isClientConnected()) return false;
         final int count = levels == null ? 0 : levels.length;
         if (count > Integer.MAX_VALUE - 7) return false;
-        final int elf = pc.getElfAttr();
         final int elfWire = elf == 1 ? 4 : elf == 2 ? 1 : elf == 4 ? 2 : elf == 8 ? 3 : 0;
         final CIOFrame frame = connection.beginDirectFrame(7 + count);
         if (frame == null) return false;

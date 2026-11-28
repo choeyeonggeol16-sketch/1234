@@ -24,7 +24,7 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.character.animation.loader.CSpriteTimingTable;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.core.SkillDelayPolicy;
-import l1j.server.server.templates.L1Skills;
+import l1j.server.server.model.character.skill.SkillDefinitionFixture;
 
 public final class SpriteTimingRegression {
     private static final int DEFAULT = CSpriteTimingTable.DEFAULT_SPRITE_ID;
@@ -84,12 +84,10 @@ public final class SpriteTimingRegression {
         check(actor.getCurrentSpriteInterval(EActionCodes.walk) == (long)(500.0 * 1.33), "expiry and slow use live state");
         actor.slow = false;
         check(actor.getCurrentSpriteInterval(EActionCodes.attack) == 800L, "unmodified attack interval");
-        var spell = new L1Skills();
-        spell.setTarget("attack");
-        spell.setSkillId(15);
+        var spell = SkillDefinitionFixture.definition(java.util.Map.of("target", "attack", "skill_id", 15));
         Config.SPELL_NETWORK_TOLERANCE = 50;
         check(SkillDelayPolicy.calcGateMs(actor, spell) == 550, "directed spell interval");
-        spell.setSkillId(18);
+        spell = SkillDefinitionFixture.definition(java.util.Map.of("target", "attack", "skill_id", 18));
         check(SkillDelayPolicy.calcGateMs(actor, spell) == 300, "skill 18 uses non-directed interval");
         actor.haste = true;
         check(actor.getCurrentSpriteInterval(EActionCodes.attack) == (long)(800.0 * (1.0 / 1.33))
