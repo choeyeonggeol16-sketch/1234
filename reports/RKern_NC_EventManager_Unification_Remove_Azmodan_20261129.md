@@ -168,3 +168,25 @@ CCastleSiegeManager 및 기존 공성 상태/시간/DB는 최근 변경을 보�
 - [시간 지정 NPC 대사 개편](https://github.com/choeyeonggeol16-sketch/1234/blob/608042e96e07777bd7f68057e2d6c3d84276b4d1/reports/RKern_NC_NPC_Timed_Chat_Event_Refactor_20261129.md)
 
 이번 보고서는 위 별도 개편을 덮어쓰지 않는다. 실제 운영 설정, 전체 repo 참조, NC 경주/경기/상점/랭킹의 세부 대응 호출, DB 전체 schema 및 실게임 검증은 구현 전후 확인해야 한다. NC 코드에서 확인한 이름을 우선하고 없는 이름을 원본 복원으로 주장하지 않는다. 보고서만 커밋하며 production 코드/DB는 변경하지 않는다.
+
+## 11. 필수 명명 규칙 — NC 원본 이름 사용 (사용자 추가 지시)
+
+**이름 변경은 선택사항이 아니다. 실제 NC에서 확인된 동일 책임의 클래스·이벤트 타입·핵심 메서드명을 그대로 사용한다.** Java 패키지는 model.world.event 및 각 기존 도메인 전용 패키지로 구성한다. 모든 이벤트를 CEventManager.java 하나에 밀어 넣지 않는다.
+
+| 현행 책임/이름 | 목표 명칭 및 처리 |
+|---|---|
+| MinuteScheduler / AbstractDateScheduler / DateSchedulerLoader | CEventManager로 통합 후 모두 삭제 |
+| AbstractDateAcceptor 및 공통 시간제 이벤트 상태 | CEvent, TimePeriodInfo의 확인된 책임에 통합 |
+| 월드 이벤트 정의 및 상태 | CEvent_World, GAME_EVENT::ET_WORLD에 대응하는 Java enum 타입 |
+| 시간제 사냥터 운영/상태 전환 | CFieldCycleSystem, CFieldCycle |
+| 시간제 NPC 텔레포트 조건 | CEvent_CoretimeTeleport의 시각/요일 조건 참고. L1의 개방/강제 귀환 책임은 CFieldCycle에 유지. 실제 책임이 다른 NC 클래스를 무조건 이름만 붙이지 않는다. |
+| ShipTimeController | CShipController, CShipAction (기존 L1 선박 상태 전환의 실제 역할에만 적용) |
+| BugRaceController | CMonRaceDB, CMonRaceData (확인된 경주 DB/데이터 책임). 전체 경주 실행 클래스의 정확한 원본 이름은 추가 분석 후 적용 |
+| DogFightLoader / L1UltimateBattle의 경기 일정·상태 | CEventMatchMgr, CEventMatch의 대응 책임을 확인한 후 적용 |
+| ServerMacroLoader / CAnnounceTimer | CAnnounceTimer, CReservationAnnounceTimer의 실제 공지 책임에 통합. 공지 외 매크로 기능은 실제 기능 보존 후 대응 명칭 확인 |
+| DominanceTimeController / 기존 보스 예약 | CReservationNPCSpawnTimer의 예약 책임 참고, 기존 CBossNpcMaker/스폰 실행 구조 유지. 동일 책임을 두 개로 만들지 않는다. |
+| OneTimeController / Azmodan / AzmodanSystem | 명칭 변경 대상 아님. 완전 삭제 |
+
+CEventManager의 Init, GetEvent, SetEventEnable, Reload, ReloadAll, TimerExpired 및 CEvent의 Load, Init, InEventTime, InMyTick, DoTickAction, IsAllDone, ShouldBeRegistered, GetEventType은 원본에서 확인된 명칭이다. 실제 역할을 유지하며 해당 실행 진입점에 적용한다. L1 전용 동작까지 억지로 L2와 동일하게 변경하지 않는다. CGameTime, CServerTimer, CIO, CacheD, 이미 이관한 도메인 구현은 유지한다.
+
+구현 완료 시 구형 이름의 모든 import/생성/호출/GM reload/설정/테스트 참조를 제거하고, 같은 기능을 실행하는 레거시 Controller/호환 wrapper를 남기지 않는다. 원본에 존재하지 않는 L1 전용 책임은 이름을 임의로 NC 원본이라고 설명하지 말고, 실제 대응 원본을 추가 조사한 뒤 NC 스타일의 L1 적응 명칭으로 명확하게 구분한다. 최종 변경 보고서에는 원본 파일/줄과 기존→최종 클래스명 대응표를 포함한다.
