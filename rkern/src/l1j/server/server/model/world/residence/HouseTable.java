@@ -100,10 +100,9 @@ public final class HouseTable {
     }
 
     private static Calendar timestampToCalendar(Timestamp ts) {
+        if (ts == null) return null;
         Calendar cal = Calendar.getInstance(TZ);
-        if (ts != null) {
-            cal.setTimeInMillis(ts.getTime());
-        }
+        cal.setTimeInMillis(ts.getTime());
         return cal;
     }
 

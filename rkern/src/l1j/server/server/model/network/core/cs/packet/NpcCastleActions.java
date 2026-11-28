@@ -350,25 +350,18 @@ final class NpcCastleActions {
 
 	static String[] makeHouseTaxStrings(L1PcInstance pc, L1NpcInstance npc) {
 		String name = npc.getNpcTemplate().get_name();
-		String[] result;
-		result = new String[] { name, "2000", "1", "1", "00" };
 		L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
-		if (clan != null) {
-			int houseId = clan.getHouseId();
-			if (houseId != 0) {
-				L1House house = HouseTable.getInstance().getHouseTable(houseId);
-				int keeperId = house.getKeeperId();
-				if (npc.getNpcTemplate().get_npcId() == keeperId) {
-					Calendar cal = house.getTaxDeadline();
-					int month = cal.get(Calendar.MONTH) + 1;
-					int day = cal.get(Calendar.DATE);
-					int hour = cal.get(Calendar.HOUR_OF_DAY);
-					result = new String[] { name, "2000", String.valueOf(month), String.valueOf(day),
-							String.valueOf(hour) };
+		if (clan != null && clan.getHouseId() != 0) {
+			L1House house = HouseTable.getInstance().getHouseTable(clan.getHouseId());
+			if (house != null && npc.getNpcTemplate().get_npcId() == house.getKeeperId()) {
+				Calendar cal = house.getTaxDeadline();
+				if (cal != null) {
+					return new String[] { name, "2000", String.valueOf(cal.get(Calendar.MONTH) + 1),
+							String.valueOf(cal.get(Calendar.DATE)), String.valueOf(cal.get(Calendar.HOUR_OF_DAY)) };
 				}
 			}
 		}
-		return result;
+		return new String[] { name, "2000", "1", "1", "00" };
 	}
 
 	static String[] makeWarTimeStrings(int castleId) {		

@@ -1,9 +1,12 @@
 package l1j.server.server.model.world.residence;
 
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.TreeSet;
+
+import l1j.server.Config;
 
 public final class ResidenceDeadlineRegression {
     public static void main(String[] args) throws Exception {
@@ -51,7 +54,15 @@ public final class ResidenceDeadlineRegression {
         readyAt.setAccessible(true);
         check((long) readyAt.invoke(queue.first()) > past.getTimeInMillis()
                 && row.invoke(queue.first()) == replacement, "catch up overdue rows before future rows");
-        System.out.println("PASS residence strict minute, catch-up, renewal, retirement and reload identity");
+        Config.TIME_ZONE = "Asia/Seoul";
+        final var readDeadline = HouseTable.class.getDeclaredMethod("timestampToCalendar", Timestamp.class);
+        readDeadline.setAccessible(true);
+        final var undatedHouse = new L1House();
+        final var nullDeadline = (Calendar) readDeadline.invoke(null, (Object) null);
+        final int pendingCount = queue.size();
+        add.invoke(scheduler, tax, 124, undatedHouse, nullDeadline);
+        check(queue.size() == pendingCount, "SQL NULL creates an endless foreclosure retry");
+        System.out.println("PASS residence strict minute, catch-up, renewal, retirement, reload identity and null tax deadline");
     }
 
     private static Calendar deadline(long millis) {
