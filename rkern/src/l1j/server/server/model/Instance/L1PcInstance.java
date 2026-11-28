@@ -6924,13 +6924,22 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 		}
 	}
 
-	private volatile SC_ATTENDANCE_USER_DATA_EXTEND _attendance_data;
+    private static final java.util.concurrent.atomic.AtomicReferenceFieldUpdater<L1PcInstance, SC_ATTENDANCE_USER_DATA_EXTEND>
+            ATTENDANCE_DATA = java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater(
+                    L1PcInstance.class, SC_ATTENDANCE_USER_DATA_EXTEND.class, "_attendance_data");
+    private volatile SC_ATTENDANCE_USER_DATA_EXTEND _attendance_data;
 
-	public void setAttendanceData(SC_ATTENDANCE_USER_DATA_EXTEND attendance_data) {
-		final SC_ATTENDANCE_USER_DATA_EXTEND previous = _attendance_data;
-		_attendance_data = attendance_data;
-		if (previous != null && previous != attendance_data) AttendanceScheduler.getInstance().unregister(this, previous);
-	}
+    public void setAttendanceData(SC_ATTENDANCE_USER_DATA_EXTEND replacement) {
+        final var previous = ATTENDANCE_DATA.getAndSet(this, replacement);
+        if (previous != null && previous != replacement) AttendanceScheduler.getInstance().unregister(this, previous);
+    }
+
+    public boolean compareAttendanceData(SC_ATTENDANCE_USER_DATA_EXTEND previous,
+            SC_ATTENDANCE_USER_DATA_EXTEND replacement) {
+        if (!ATTENDANCE_DATA.compareAndSet(this, previous, replacement)) return false;
+        if (previous != null && previous != replacement) AttendanceScheduler.getInstance().unregister(this, previous);
+        return true;
+    }
 
 	public SC_ATTENDANCE_USER_DATA_EXTEND getAttendanceData() {
 		return _attendance_data;

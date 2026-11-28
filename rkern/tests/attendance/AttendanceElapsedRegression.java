@@ -14,8 +14,7 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.UserAttendance
 
 public final class AttendanceElapsedRegression {
     public static void main(String[] args) throws Exception {
-        AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND = 60;
-        AttendanceLoadManager.ATTEN_DAILY_MAX_COUNT = 1;
+        AttendanceLoadManager.publishSettings(new AttendanceLoadManager.Settings(1800, 86400, 1, 1, 60));
         long midnight = Instant.parse("2026-11-29T15:00:00Z").toEpochMilli();
         check(AttendanceScheduler.nextResetMillis(midnight - 250, 86_400) == midnight, "KST boundary");
         check(AttendanceScheduler.nextResetMillis(midnight, 86_400) == midnight + 86_400_000L,
@@ -39,6 +38,7 @@ public final class AttendanceElapsedRegression {
         cafe.set_resultCode(UserAttendanceTimeStatus.ATTENDANCE_NORMAL);
         check(cafe.secondsUntilCompletion() == 43 && cafe.creditEligibleTime(43), "resume eligible cafe");
         delayedRollover(midnight);
+        settingsReanchor();
         System.out.println("PASS attendance threshold, cap, KST reset, missed periods and cafe eligibility");
     }
 
@@ -93,6 +93,37 @@ public final class AttendanceElapsedRegression {
         credit.invoke(session, sample, false);
         check(normal.get_attendanceTime() == 15 && normal.get_groupData().get(0).get_time() == 15,
                 "uncommitted progress from missed days cannot spill into the current day");
+    }
+
+    private static void settingsReanchor() throws Exception {
+        final var ctor = AttendanceScheduler.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        final var scheduler = ctor.newInstance();
+        final var window = AttendanceScheduler.class.getDeclaredField("window");
+        window.setAccessible(true);
+        final var running = AttendanceScheduler.class.getDeclaredField("running");
+        running.setAccessible(true);
+        final long wall = System.currentTimeMillis();
+        final long nano = System.nanoTime();
+        final var old = new AttendanceScheduler.Window(wall + 28_800_000L, nano + TimeUnit.HOURS.toNanos(8),
+                86_400_000L, null);
+        window.set(scheduler, old);
+        running.setBoolean(scheduler, true);
+        final var shorter = new AttendanceLoadManager.Settings(1800, 1800, 2, 1, 30);
+        check(scheduler.reconfigure(shorter), "accept settings reload");
+        final var next = (AttendanceScheduler.Window) window.get(scheduler);
+        check(next.opened() == old.opened() && next.day() < old.day() && next.intervalMillis() == 1_800_000L,
+                "shorter setting reanchors next boundary without a fake reset");
+        try {
+            new AttendanceLoadManager.Settings(1800, 0, 2, 1, 30);
+            throw new AssertionError("nonpositive reset period accepted");
+        } catch (IllegalArgumentException expected) {
+            check(AttendanceLoadManager.settings() == shorter, "invalid reload preserves active settings");
+        }
+        final var longer = new AttendanceLoadManager.Settings(1800, 86400, 2, 1, 45);
+        check(scheduler.reconfigure(longer), "accept larger period");
+        final var last = (AttendanceScheduler.Window) window.get(scheduler);
+        check(last.day() >= next.day() && last.opened() == next.opened(), "longer period stays in the current day");
     }
 
     private static UserAttendanceDataGroup group(AttendanceGroupType type) {

@@ -4,6 +4,7 @@ import java.util.Calendar;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +25,7 @@ public final class AttendanceScheduler implements CTimeListener {
     private final Set<Session> retries = ConcurrentHashMap.newKeySet();
     private volatile Window window;
     private volatile boolean running;
+    private final ReentrantLock calendarWork = new ReentrantLock();
     private boolean dayQueued;
     private boolean retryQueued;
 
@@ -61,7 +63,7 @@ public final class AttendanceScheduler implements CTimeListener {
     }
 
     private static Window nextWindow(long wall, long nano) {
-        final int resetSeconds = AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND;
+        final int resetSeconds = AttendanceLoadManager.settings().resetSeconds();
         final long day = nextResetMillis(wall, resetSeconds);
         return new Window(day, nano + TimeUnit.MILLISECONDS.toNanos(day - wall), resetSeconds * 1000L, null);
     }
@@ -78,7 +80,7 @@ public final class AttendanceScheduler implements CTimeListener {
 
     @Override
     public synchronized void onSecondChanged(CDateTime time) {
-        if (!running) return;
+        if (!running || AttendanceLoadManager.isResetting()) return;
         final Window expected = window;
         if (!dayQueued && (AttendanceLoadManager.attendanceDayMillis() == 0L
                 || time.getSeconds() * 1000L >= expected.day())) {
@@ -88,17 +90,17 @@ public final class AttendanceScheduler implements CTimeListener {
     }
 
     private void advanceDay(Window expected) {
+        calendarWork.lock();
         try {
-            if (!running || window != expected) return;
+            if (!running || window != expected || AttendanceLoadManager.isResetting()) return;
             if (AttendanceLoadManager.attendanceDayMillis() == 0L) {
                 AttendanceLoadManager.loadAttendanceStartupCalendar();
             }
             final Boundary due = expected.latestDue(System.currentTimeMillis(), System.nanoTime());
             if (due == null) return;
-            if (AttendanceLoadManager.attendanceDayMillis() < due.day()) {
-                AttendanceLoadManager.updateServerStartupInfo(due.day());
-            }
-            final long interval = AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND * 1000L;
+            if (AttendanceLoadManager.attendanceDayMillis() < due.day()
+                    && !AttendanceLoadManager.updateServerStartupInfo(due.day(), AttendanceLoadManager.generation())) return;
+            final long interval = AttendanceLoadManager.settings().resetSeconds() * 1000L;
             final long period = interval > 0 ? interval : expected.intervalMillis();
             final long day = due.day() + period;
             final Window next = new Window(day, System.nanoTime()
@@ -112,6 +114,49 @@ public final class AttendanceScheduler implements CTimeListener {
             LOG.log(Level.WARNING, "Attendance day update failed; retrying", failure);
         } finally {
             synchronized (this) { dayQueued = false; }
+            calendarWork.unlock();
+        }
+    }
+
+    boolean reconfigure(AttendanceLoadManager.Settings replacement) {
+        calendarWork.lock();
+        try {
+            if (AttendanceLoadManager.isResetting()) return false;
+            Window previous = window;
+            if (running && previous.latestDue(System.currentTimeMillis(), System.nanoTime()) != null) {
+                advanceDay(previous);
+                if (window == previous) return false;
+                previous = window;
+            }
+            final long wall = System.currentTimeMillis();
+            final long nano = System.nanoTime();
+            if (running) sessions.forEach((account, session) -> {
+                synchronized (session.data) {
+                    if (session.current()) session.credit(nano, false);
+                }
+            });
+            synchronized (this) {
+                if (AttendanceLoadManager.isResetting()) return false;
+                AttendanceLoadManager.publishSettings(replacement);
+                if (running && window == previous) {
+                    final long day = nextResetMillis(Math.max(wall, AttendanceLoadManager.attendanceDayMillis()),
+                            replacement.resetSeconds());
+                    window = new Window(day, nano + TimeUnit.MILLISECONDS.toNanos(day - wall),
+                            replacement.resetSeconds() * 1000L, previous.opened());
+                }
+            }
+            sessions.forEach((account, session) -> {
+                synchronized (session.data) {
+                    if (session.current()) session.data.applyCurrentSettings();
+                }
+            });
+            return true;
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Attendance settings reload failed", failure);
+            return false;
+        } finally {
+            calendarWork.unlock();
+            refreshConfiguration();
         }
     }
 
@@ -131,7 +176,8 @@ public final class AttendanceScheduler implements CTimeListener {
         final String account = pc.getAccountName();
         if (!running || account == null || account.isEmpty()) return false;
         synchronized (data) {
-            if (!running || pc.getAttendanceData() != data || pc.isLogoutStarted()) return false;
+            if (!running || !AttendanceLoadManager.accepts(data.generation())
+                    || pc.getAttendanceData() != data || pc.isLogoutStarted()) return false;
             final Session session = new Session(account, pc, data);
             final Session previous = sessions.put(account, session);
             if (previous != null) {
@@ -177,7 +223,9 @@ public final class AttendanceScheduler implements CTimeListener {
     }
 
     private void refresh(Session session, boolean saving) {
+        if (AttendanceLoadManager.isResetting()) return;
         synchronized (session.data) {
+            if (AttendanceLoadManager.isResetting()) return;
             if (!session.current()) {
                 sessions.remove(session.account, session);
                 retries.remove(session);
@@ -238,6 +286,7 @@ public final class AttendanceScheduler implements CTimeListener {
         }
 
         private void accrue(long now, Boundary due) {
+            if (now < checkpoint) return;
             if (due != null && (afterBoundary == null || afterBoundary.day() < due.day())) {
                 afterBoundary = due;
                 afterNormal = afterCafe = 0L;
@@ -260,6 +309,7 @@ public final class AttendanceScheduler implements CTimeListener {
 
         void credit(long now, boolean saving) {
             final Window latest = window;
+            if (period != latest && period.opened() == latest.opened()) period = latest;
             final boolean published = period != latest;
             final Boundary due = published ? latest.opened()
                     : (now >= period.cutoffNanos() || saving ? period.latestDue(System.currentTimeMillis(), now) : null);

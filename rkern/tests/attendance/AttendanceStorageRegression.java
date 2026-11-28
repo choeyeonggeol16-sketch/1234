@@ -44,6 +44,8 @@ public final class AttendanceStorageRegression {
                     field.setAccessible(true);
                     field.set(null, pool);
                     try {
+                        AttendanceLoadManager.publishSettings(new AttendanceLoadManager.Settings(1800, 86400, 1, 1, 60));
+                        AttendanceLoadManager.loadAttendanceStartupCalendar();
                         exercise(admin);
                         durableRollover(admin);
                     } finally {
@@ -55,12 +57,11 @@ public final class AttendanceStorageRegression {
                 ddl.executeUpdate("DROP DATABASE " + schema);
             }
         }
-        System.out.println("PASS attendance durable progress, rollback, claim dedup, stale replay and missed KST days");
+        System.out.println("PASS attendance durable progress, rollback, claim dedup, stale replay, missed KST days and reset generation");
     }
 
     private static void exercise(Connection admin) throws Exception {
-        AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND = 60;
-        AttendanceLoadManager.ATTEN_DAILY_MAX_COUNT = 1;
+        final long generation = AttendanceLoadManager.generation();
         final String account = "schedule_fixture";
         final long day = 1_795_795_200_000L;
         final var packet = SC_ATTENDANCE_USER_DATA_EXTEND.newInstance();
@@ -80,14 +81,14 @@ public final class AttendanceStorageRegression {
         }
 
         final var save = SC_ATTENDANCE_USER_DATA_EXTEND.class.getDeclaredMethod("saveSnapshot",
-                String.class, byte[].class, String.class, long.class);
+                String.class, byte[].class, String.class, long.class, long.class);
         save.setAccessible(true);
         check(!group.creditEligibleTime(12), "first partial snapshot");
         final byte[] stale = packet.bodyBytes();
         final String partialIndices = packet.createIndices();
         check(!group.creditEligibleTime(25), "newer partial snapshot");
-        save.invoke(null, account, packet.bodyBytes(), partialIndices, day);
-        save.invoke(null, account, stale, partialIndices, day);
+        save.invoke(null, account, packet.bodyBytes(), partialIndices, day, generation);
+        save.invoke(null, account, stale, partialIndices, day, generation);
         final var saved = SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(account);
         final var decoded = SC_ATTENDANCE_USER_DATA_EXTEND.newInstance();
         decoded.readFrom(saved.data);
@@ -98,36 +99,66 @@ public final class AttendanceStorageRegression {
         check(group.creditEligibleTime(23), "first threshold");
         final byte[] completed = packet.bodyBytes();
         final String indices = packet.createIndices();
-        save.invoke(null, account, completed, indices, day);
+        save.invoke(null, account, completed, indices, day, generation);
 
         admin.setAutoCommit(false);
-        check(SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, account, AttendanceGroupType.NORMAL, 0),
+        check(SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, account, AttendanceGroupType.NORMAL, 0, generation),
                 "complete slot is claimable");
         admin.rollback();
-        check(SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, account, AttendanceGroupType.NORMAL, 0),
+        check(SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, account, AttendanceGroupType.NORMAL, 0, generation),
                 "rollback preserves claim eligibility");
         admin.commit();
         admin.setAutoCommit(true);
 
-        save.invoke(null, account, completed, indices, day);
-        check(!SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, account, AttendanceGroupType.NORMAL, 0),
+        save.invoke(null, account, completed, indices, day, generation);
+        admin.setAutoCommit(false);
+        check(!SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, account, AttendanceGroupType.NORMAL, 0, generation),
                 "snapshot replay cannot resurrect a claimed slot");
+        admin.commit();
+        admin.setAutoCommit(true);
         group.onUpdateDay(false);
         check(!group.creditEligibleTime(7), "new day has distinct progress");
-        save.invoke(null, account, packet.bodyBytes(), packet.createIndices(), day + 86_400_000L);
-        save.invoke(null, account, completed, indices, day);
+        save.invoke(null, account, packet.bodyBytes(), packet.createIndices(), day + 86_400_000L, generation);
+        save.invoke(null, account, completed, indices, day, generation);
         final var next = SC_ATTENDANCE_USER_DATA_EXTEND.newInstance();
         next.readFrom(SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(account).data);
         final var nextGroup = AttendanceRewardClaims.findGroup(next, AttendanceGroupType.NORMAL);
         check(nextGroup.get_attendanceTime() == 7
                 && nextGroup.get_groupData().get(0).get_state() == UserAttendanceState.CLEAR,
                 "prior-day replay cannot roll back the new day");
+
+        final var initial = SC_ATTENDANCE_USER_DATA_EXTEND.class.getDeclaredMethod("saveInitialSnapshot",
+                String.class, byte[].class, String.class, long.class, long.class);
+        initial.setAccessible(true);
+        admin.setAutoCommit(false);
+        AttendanceEpoch.stageReset(admin, generation, generation + 1000L, day);
+        admin.rollback();
+        check(SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(account).present, "rollback preserves the old generation");
+        AttendanceEpoch.stageReset(admin, generation, generation + 1000L, day);
+        admin.commit();
+        initial.invoke(null, account, completed, indices, day, generation);
+        check(!SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(account).present, "old delayed INSERT cannot resurrect a row");
+        initial.invoke(null, account, stale, partialIndices, day, generation + 1000L);
+        save.invoke(null, account, completed, indices, day, generation);
+        initial.invoke(null, "new_claim", completed, indices, day, generation + 1000L);
+        check(!SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, "new_claim",
+                AttendanceGroupType.NORMAL, 0, generation), "old claim cannot modify a new generation");
+        check(SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(admin, "new_claim",
+                AttendanceGroupType.NORMAL, 0, generation + 1000L), "new generation can claim the same completed slot");
+        admin.commit();
+        admin.setAutoCommit(true);
+        check(java.util.Arrays.equals(stale, SC_ATTENDANCE_USER_DATA_EXTEND.readLoginSnapshot(account).data),
+                "old save cannot overwrite a same-day new account row");
+        // Restore the durable generation independently of the scheduler fixture below.
+        try (var update = admin.prepareStatement("UPDATE attendance_startup SET startup_info=? WHERE id=2")) {
+            update.setTimestamp(1, new Timestamp(generation));
+            update.executeUpdate();
+        }
     }
 
     private static void durableRollover(Connection admin) throws Exception {
         final int daySeconds = 86_400;
         final long dayMillis = TimeUnit.SECONDS.toMillis(daySeconds);
-        AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND = daySeconds;
         final long wall = System.currentTimeMillis();
         final long today = AttendanceScheduler.nextResetMillis(wall, daySeconds) - dayMillis;
         final long missed = today - 2 * dayMillis;

@@ -30,7 +30,7 @@ public final class AttendanceRewardClaims {
         final var data = pc.getAttendanceData();
         final String account = pc.getAccountName();
         final var reward = type.getBonus(index);
-        if (data == null || account == null || account.isEmpty() || reward == null) return;
+        if (data == null || !AttendanceLoadManager.accepts(data.generation()) || account == null || account.isEmpty() || reward == null) return;
 
         // Read the mutable state while holding the same monitor as the timer.
         final boolean complete;
@@ -56,14 +56,14 @@ public final class AttendanceRewardClaims {
                     return;
                 }
             }
-            tx.requireTables("attendance_userinfo");
+            tx.requireTables("attendance_userinfo", "attendance_startup");
             tx.sql(con -> {
-                if (!SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(con, account, type, index))
+                if (!SC_ATTENDANCE_USER_DATA_EXTEND.stageRewardClaim(con, account, type, index, data.generation()))
                     throw new SQLException("Attendance reward is no longer claimable");
             });
             tx.onFailure(() -> pc.sendPackets(RETRY));
             tx.commitAfterInventoryRelease(() -> publish(pc, data, type, index), () -> {
-                if (pc.getAttendanceData() != data) return;
+                if (pc.getAttendanceData() != data || !AttendanceLoadManager.accepts(data.generation())) return;
                 SC_ATTENDANCE_DATA_UPDATE_EXTEND.sendFields(pc, index + 1, UserAttendanceState.CLEAR, type);
                 if (sendAck)
                     SC_ATTENDANCE_REWARD_ACK.sendFields(pc, index + 1, type.toInt(), UserAttendanceState.CLEAR);
@@ -77,7 +77,7 @@ public final class AttendanceRewardClaims {
     private static void publish(L1PcInstance pc, SC_ATTENDANCE_USER_DATA_EXTEND data,
                                 AttendanceGroupType type, int index) {
         synchronized (data) {
-            if (pc.getAttendanceData() != data) return;
+            if (pc.getAttendanceData() != data || !AttendanceLoadManager.accepts(data.generation())) return;
             final var group = findGroup(data, type);
             final var slot = findSlot(group, index);
             if (slot != null) markClaimed(group, slot);

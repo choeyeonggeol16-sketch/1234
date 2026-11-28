@@ -26,9 +26,9 @@ public class UserAttendanceDataGroup {
         UserAttendanceDataGroup dGroup = new UserAttendanceDataGroup();
         dGroup._groupType = gType;
         dGroup._attendanceTime = 0;
-        dGroup._totalAttendanceTime = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
+        dGroup._totalAttendanceTime = AttendanceLoadManager.settings().requirement();
         dGroup._recvedRewardCount = 0;
-        dGroup._totalRewardCount = AttendanceLoadManager.ATTEN_DAILY_MAX_COUNT;
+        dGroup._totalRewardCount = AttendanceLoadManager.settings().dailyMax();
         dGroup._currentAttendanceIndex = 0;
         int totalBonusCount = gType.getBonusSize();
         for(int i=0; i<totalBonusCount; ++i)
@@ -65,9 +65,9 @@ public class UserAttendanceDataGroup {
         if (_currentAttendanceIndex >= _groupData.size()) return updateFinishedStatus();
 
         _attendanceTime = 0;
-        _totalAttendanceTime = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
+        _totalAttendanceTime = AttendanceLoadManager.settings().requirement();
         _recvedRewardCount = 0;
-        _totalRewardCount = AttendanceLoadManager.ATTEN_DAILY_MAX_COUNT;
+        _totalRewardCount = AttendanceLoadManager.settings().dailyMax();
         _groupData.get(_currentAttendanceIndex).set_time(0);
         _resultCode = _groupType == AttendanceGroupType.PC_CAFE && !isPcCafe
                 ? UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME
@@ -75,8 +75,18 @@ public class UserAttendanceDataGroup {
         return true;
     }
 
+    public void applyCurrentSettings() {
+        final var settings = AttendanceLoadManager.settings();
+        _totalAttendanceTime = settings.requirement();
+        if (_resultCode != UserAttendanceTimeStatus.ATTENDANCE_NORMAL
+                && _resultCode != UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME) return;
+        _totalRewardCount = settings.dailyMax();
+        if (_recvedRewardCount >= _totalRewardCount)
+            _resultCode = UserAttendanceTimeStatus.ATTENDANCE_NO_MORE_TIME;
+    }
+
     public int secondsUntilCompletion() {
-        final int threshold = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
+        final int threshold = AttendanceLoadManager.settings().requirement();
         if (_resultCode != UserAttendanceTimeStatus.ATTENDANCE_NORMAL || threshold <= 0
                 || _totalRewardCount <= 0 || _currentAttendanceIndex < 0
                 || _currentAttendanceIndex >= _groupData.size()
@@ -101,7 +111,7 @@ public class UserAttendanceDataGroup {
 
     public boolean onUpdateTime(int seconds) {
         if (secondsUntilCompletion() < 0 || seconds <= 0) return false;
-        final int threshold = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
+        final int threshold = AttendanceLoadManager.settings().requirement();
 
         boolean completedAny = false;
         while (seconds > 0) {

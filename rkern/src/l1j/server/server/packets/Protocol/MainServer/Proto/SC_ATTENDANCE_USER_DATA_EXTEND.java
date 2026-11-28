@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
+import l1j.server.server.model.Attendance.AttendanceEpoch;
 import l1j.server.server.model.Attendance.AttendanceRewardClaims;
 import l1j.server.server.model.Attendance.AttendanceScheduler;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -37,11 +38,12 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
     // ────────────── 전송 ──────────────
 
     public static void send(L1PcInstance pc) {
-        if (pc == null) return;
+        if (pc == null || AttendanceLoadManager.isResetting()) return;
         final SC_ATTENDANCE_USER_DATA_EXTEND data = pc.getAttendanceData();
         if (data != null) {
+            if (!AttendanceLoadManager.accepts(data.generation)) return;
             AttendanceScheduler.getInstance().settle(pc);
-            Proto.send(pc, data);
+            if (AttendanceLoadManager.accepts(data.generation) && pc.getAttendanceData() == data) Proto.send(pc, data);
             return;
         }
         // A packet sender runs on a game/CIO owner. Never synchronously
@@ -60,7 +62,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
                                 || !account.equals(pc.getAccountName())) return;
                         if (pc.getAttendanceData() == null) applyLoginSnapshot(pc, loaded);
                         final SC_ATTENDANCE_USER_DATA_EXTEND current = pc.getAttendanceData();
-                        if (current != null) Proto.send(pc, current);
+                        if (current != null && AttendanceLoadManager.accepts(current.generation)) Proto.send(pc, current);
                     })) {
                         java.util.logging.Logger.getLogger(SC_ATTENDANCE_USER_DATA_EXTEND.class.getName())
                                 .warning("Attendance snapshot callback rejected: " + account);
@@ -90,14 +92,16 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         final long day = attendanceDay;
         if (day <= 0L) return;
         final String indices = createIndices();
+        final long expected = generation;
         CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(account),
-                () -> saveSnapshot(account, bytes, indices, day));
+                () -> saveSnapshot(account, bytes, indices, day, expected));
     }
 
     /** Stage exactly one claim on the caller's inventory receipt connection. */
     public static boolean stageRewardClaim(Connection con, String account, AttendanceGroupType type,
-            int indexZeroBased) throws SQLException {
-        final LoginSnapshot saved = readSnapshot(con, account, true);
+            int indexZeroBased, long expected) throws SQLException {
+        if (expected == 0L || AttendanceEpoch.lockShared(con) != expected) return false;
+        final LoginSnapshot saved = readSnapshot(con, account, true, expected);
         if (!saved.present || saved.data == null) return false;
         final SC_ATTENDANCE_USER_DATA_EXTEND data = decodeSnapshot(saved.data);
         final UserAttendanceDataGroup group = AttendanceRewardClaims.findGroup(data, type);
@@ -113,11 +117,15 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         return true;
     }
 
-    private static void saveSnapshot(String account, byte[] bytes, String indices, long day) {
+    private static void saveSnapshot(String account, byte[] bytes, String indices, long day, long expected) {
         try (Connection con = DatabaseFactory.getInstance().getConnection()) {
             con.setAutoCommit(false);
             try {
-                final LoginSnapshot saved = readSnapshot(con, account, true);
+                if (expected == 0L || AttendanceEpoch.lockShared(con) != expected) {
+                    con.rollback();
+                    return;
+                }
+                final LoginSnapshot saved = readSnapshot(con, account, true, expected);
                 final long savedDay = saved.dayMillis();
                 // Only the first login creates a row. A queued snapshot cannot
                 // recreate data that an administrator explicitly cleared.
@@ -222,12 +230,14 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         public final byte[] data;
         public final String indices;
         public final Timestamp calendar;
+        final long generation;
 
-        LoginSnapshot(boolean present, byte[] data, String indices, Timestamp calendar) {
+        LoginSnapshot(boolean present, byte[] data, String indices, Timestamp calendar, long generation) {
             this.present = present;
             this.data = data;
             this.indices = indices;
             this.calendar = calendar;
+            this.generation = generation;
         }
 
         private long dayMillis() {
@@ -239,19 +249,28 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         return millis / 1000L * 1000L;
     }
 
-    private static LoginSnapshot readSnapshot(Connection con, String account, boolean lock) throws SQLException {
+    private static LoginSnapshot readSnapshot(Connection con, String account, boolean lock, long expected) throws SQLException {
         try (PreparedStatement ps = con.prepareStatement(READ_SNAPSHOT + (lock ? " FOR UPDATE" : " LIMIT 1"))) {
             ps.setString(1, account);
             try (ResultSet rs = ps.executeQuery()) {
-                if (!rs.next()) return new LoginSnapshot(false, null, null, null);
-                return new LoginSnapshot(true, rs.getBytes(1), rs.getString(2), rs.getTimestamp(3));
+                if (!rs.next()) return new LoginSnapshot(false, null, null, null, expected);
+                return new LoginSnapshot(true, rs.getBytes(1), rs.getString(2), rs.getTimestamp(3), expected);
             }
         }
     }
 
     public static LoginSnapshot readLoginSnapshot(String account) {
         try (Connection con = DatabaseFactory.getInstance().getConnection()) {
-            return readSnapshot(con, account, false);
+            con.setAutoCommit(false);
+            try {
+                final long expected = AttendanceEpoch.lockShared(con);
+                final LoginSnapshot snapshot = readSnapshot(con, account, false, expected);
+                con.commit();
+                return snapshot;
+            } catch (SQLException | RuntimeException failure) {
+                try { con.rollback(); } catch (SQLException rollback) { failure.addSuppressed(rollback); }
+                throw failure;
+            }
         } catch (SQLException failure) {
             throw new IllegalStateException("Attendance DB load failed: " + account, failure);
         }
@@ -275,30 +294,45 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         final String indices = createIndices();
         final long day = attendanceDay;
         if (day <= 0L) return;
-        CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(account), () -> {
-            try (Connection con = DatabaseFactory.getInstance().getConnection();
-                 PreparedStatement ps = con.prepareStatement(
-                         "INSERT INTO attendance_userinfo (account, attendance_data, attendance_indices, attendance_calendar) "
-                         + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE account=VALUES(account)")) {
-                ps.setString(1, account);
-                ps.setBytes(2, bytes);
-                ps.setString(3, indices);
-                ps.setTimestamp(4, new Timestamp(day));
-                ps.executeUpdate();
-            } catch (SQLException failure) {
-                throw new IllegalStateException("Attendance DB initial insert failed: " + account, failure);
+        final long expected = generation;
+        CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(account),
+                () -> saveInitialSnapshot(account, bytes, indices, day, expected));
+    }
+
+    private static void saveInitialSnapshot(String account, byte[] bytes, String indices, long day, long expected) {
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            con.setAutoCommit(false);
+            try {
+                if (expected != 0L && AttendanceEpoch.lockShared(con) == expected) {
+                    try (PreparedStatement ps = con.prepareStatement(
+                            "INSERT INTO attendance_userinfo (account, attendance_data, attendance_indices, attendance_calendar) "
+                            + "VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE account=VALUES(account)")) {
+                        ps.setString(1, account);
+                        ps.setBytes(2, bytes);
+                        ps.setString(3, indices);
+                        ps.setTimestamp(4, new Timestamp(day));
+                        ps.executeUpdate();
+                    }
+                }
+                con.commit();
+            } catch (SQLException | RuntimeException failure) {
+                try { con.rollback(); } catch (SQLException rollback) { failure.addSuppressed(rollback); }
+                throw failure;
             }
-        });
+        } catch (SQLException failure) {
+            throw new IllegalStateException("Attendance DB initial insert failed: " + account, failure);
+        }
     }
 
     public static void applyLoginSnapshot(L1PcInstance pc, LoginSnapshot snapshot) {
-        if (snapshot == null || pc == null) return;
+        if (snapshot == null || pc == null || !AttendanceLoadManager.accepts(snapshot.generation)) return;
         final SC_ATTENDANCE_USER_DATA_EXTEND userData = decodeSnapshot(snapshot.data);
         final long savedDay = snapshot.dayMillis();
         final long currentDay = atSecond(AttendanceLoadManager.attendanceDayMillis());
         if (savedDay <= 0L && currentDay <= 0L) return;
         final boolean needsGroups = userData._groups == null;
         final boolean cafe = pc.PC방_버프;
+        userData.generation = snapshot.generation;
         userData.attendanceDay = Math.max(savedDay, currentDay);
         if (needsGroups) {
             for (AttendanceGroupType group : AttendanceGroupType.values()) {
@@ -310,10 +344,16 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
             for (UserAttendanceDataGroup group : userData._groups)
                 AttendanceRewardClaims.reconcileGroupStatus(group);
         }
+        userData.applyCurrentSettings();
         userData.set_userFlag(cafe ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL);
         if (savedDay > 0L && savedDay < currentDay && !needsGroups) userData.advanceDay(cafe);
         synchronized (userData) {
-            pc.setAttendanceData(userData);
+            if (!AttendanceLoadManager.accepts(userData.generation) || pc.isLogoutStarted()
+                    || pc.is무인상점() || !pc.compareAttendanceData(null, userData)) return;
+            if (!AttendanceLoadManager.accepts(userData.generation)) {
+                pc.compareAttendanceData(userData, null);
+                return;
+            }
             userData.initialSnapshotPending = !snapshot.present;
             userData.elapsedSnapshotPending = snapshot.present && (needsGroups || savedDay < currentDay);
             if (!AttendanceScheduler.getInstance().register(pc, userData)) userData.publishElapsedSnapshot(pc);
@@ -357,7 +397,12 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         final byte[] snapshot = bodyBytes();
         queueSnapshot(pc.getAccountName(), snapshot);
         elapsedSnapshotPending = false;
-        Proto.sendBody(pc, ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND, snapshot);
+        if (AttendanceLoadManager.accepts(generation) && pc.getAttendanceData() == this)
+            Proto.sendBody(pc, ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND, snapshot);
+    }
+
+    public synchronized void applyCurrentSettings() {
+        if (_groups != null) for (UserAttendanceDataGroup group : _groups) group.applyCurrentSettings();
     }
 
     public synchronized int secondsUntilCompletion(boolean cafe) {
@@ -391,6 +436,9 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
     private AttendanceUserFlag _userFlag;
     private ArrayList<AttendanceGroupType> _active_group;
     private long attendanceDay;
+    private long generation;
+
+    public long generation() { return generation; }
 
     private SC_ATTENDANCE_USER_DATA_EXTEND() {}
 
@@ -415,7 +463,8 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         final UserAttendanceDataGroup dGroup = AttendanceRewardClaims.findGroup(this, AttendanceGroupType.PC_CAFE);
         if (dGroup == null || val == null
                 || dGroup.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_ALL_CLEAR
-                || dGroup.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE) return;
+                || dGroup.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_ALL_COMPLETE
+                || dGroup.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_NO_MORE_TIME) return;
         if (val == AttendanceUserFlag.USER_FLAG_NORMAL) {
             dGroup.set_resultCode(UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME);
         } else {

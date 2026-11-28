@@ -33,11 +33,12 @@ public final class SC_ATTENDANCE_BONUS_INFO_EXTEND extends ProtoPacket {
 
     /** 로더 설정값으로 캐시 구축. 서버 시작/리로드 시 호출 */
     public static void load(){
+        final var settings = AttendanceLoadManager.settings();
         _cached = new SC_ATTENDANCE_BONUS_INFO_EXTEND(
-                AttendanceLoadManager.ATTEN_CHECK_INTERVAL,
-                AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND,
-                AttendanceLoadManager.ATTEN_DAILY_MAX_COUNT + 1,   
-                AttendanceLoadManager.ATTEN_WEEKEND_MAX_COUNT,
+                settings.checkInterval(),
+                settings.resetSeconds(),
+                settings.dailyMax() + 1,
+                settings.weekendMax(),
                 AttendanceGroupType.values().length
                 ).encode();
     }

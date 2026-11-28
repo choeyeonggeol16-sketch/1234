@@ -1,16 +1,18 @@
 package l1j.server.server.model.Attendance;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import l1j.server.DatabaseFactory;
+import l1j.server.Config;
+import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.cached.CTransaction;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CWorld;
@@ -25,7 +27,6 @@ import l1j.server.server.shared.PropertyReader;
 import l1j.server.server.shared.command.Command;
 import l1j.server.server.shared.command.CommandArgs;
 import l1j.server.server.shared.exception.CommandArgsIndexException;
-import l1j.server.server.utils.SQLUtil;
 
 public class AttendanceLoadManager implements Command{
 	private static final Logger LOG = Logger.getLogger(AttendanceLoadManager.class.getName());
@@ -36,42 +37,119 @@ public class AttendanceLoadManager implements Command{
 		return _instance;
 	}
 	
-	public static void loadAttendanceStartupCalendar() {
-		final Timestamp stored;
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-				 PreparedStatement statement = con.prepareStatement(
-						 "SELECT startup_info FROM attendance_startup WHERE id=1");
-				 ResultSet rows = statement.executeQuery()) {
-			stored = rows.next() ? rows.getTimestamp(1) : null;
-		} catch (SQLException error) {
-			throw new IllegalStateException("Attendance startup day read failed", error);
-		}
+    private static final int RESET_OWNER = CacheD.accountOrderKey("$attendance-reset");
+    private static final int RESET_AUXILIARY = CacheD.accountOrderKey("$attendance-reset-calendar");
+    private static volatile long generation;
+    private static volatile boolean resetting;
 
-		final Calendar current = CGameTime.getRealTimeCalendar();
-		final long now = current.getTimeInMillis();
-		if (stored != null) {
-			current.setTimeInMillis(wholeSecond(stored.getTime()));
-			ATTEN_STARTUP_CALENDAR = current;
-			if (now - current.getTimeInMillis() < ATTEN_RESET_PERIOD_SECOND * 1000L) return;
-		}
-		updateServerStartupInfo(now);
-	}
+    public static boolean isResetting() { return resetting; }
+    public static long generation() { return generation; }
+    public static boolean accepts(long expected) {
+        return expected != 0L && !resetting && generation == expected;
+    }
 
-	static void updateServerStartupInfo(long dayMillis) {
-		final Calendar day = CGameTime.getRealTimeCalendar();
-		day.setTimeInMillis(wholeSecond(dayMillis));
-		final Timestamp time = new Timestamp(day.getTimeInMillis());
-		try (Connection con = DatabaseFactory.getInstance().getConnection();
-				 PreparedStatement statement = con.prepareStatement(
-						 "INSERT INTO attendance_startup (id, startup_info) VALUES (1, ?) "
-								 + "ON DUPLICATE KEY UPDATE startup_info=VALUES(startup_info)")) {
-			statement.setTimestamp(1, time);
-			statement.executeUpdate();
-		} catch (SQLException error) {
-			throw new IllegalStateException("Attendance startup day save failed", error);
-		}
-		ATTEN_STARTUP_CALENDAR = day;
-	}
+    public static void loadAttendanceStartupCalendar() {
+        final long expected;
+        final long stored;
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            CTransaction.requireTransactionalTables(con, "attendance_startup", "attendance_userinfo");
+            AttendanceEpoch.ensure(con);
+            con.setAutoCommit(false);
+            expected = AttendanceEpoch.lockShared(con);
+            stored = AttendanceEpoch.readDay(con);
+            con.commit();
+        } catch (SQLException failure) {
+            throw new IllegalStateException("Attendance startup data load failed", failure);
+        }
+        synchronized (AttendanceLoadManager.class) {
+            if (resetting || (generation != 0L && generation != expected)) return;
+            generation = expected;
+            if (stored != 0L) publishDay(stored);
+        }
+        final long now = System.currentTimeMillis();
+        if (stored == 0L || now - stored >= settings.resetSeconds() * 1000L) {
+            updateServerStartupInfo(now, expected);
+        }
+    }
+
+    static boolean updateServerStartupInfo(long dayMillis, long expected) {
+        if (!accepts(expected)) return false;
+        try (Connection con = DatabaseFactory.getInstance().getConnection()) {
+            con.setAutoCommit(false);
+            try {
+                if (AttendanceEpoch.lockShared(con) != expected) {
+                    con.rollback();
+                    return false;
+                }
+                AttendanceEpoch.writeDay(con, wholeSecond(dayMillis));
+                con.commit();
+            } catch (SQLException | RuntimeException failure) {
+                try { con.rollback(); } catch (SQLException rollback) { failure.addSuppressed(rollback); }
+                throw failure;
+            }
+        } catch (SQLException failure) {
+            throw new IllegalStateException("Attendance startup day save failed", failure);
+        }
+        synchronized (AttendanceLoadManager.class) {
+            if (!accepts(expected)) return false;
+            publishDay(dayMillis);
+        }
+        return true;
+    }
+
+    private static void publishDay(long millis) {
+        final Calendar day = CGameTime.getRealTimeCalendar();
+        day.setTimeInMillis(wholeSecond(millis));
+        ATTEN_STARTUP_CALENDAR = day;
+    }
+
+    public static synchronized boolean requestReset(Consumer<Boolean> completion) {
+        final long before = generation;
+        if (!accepts(before)) return false;
+        final long after = before + 1000L;
+        final long day = wholeSecond(System.currentTimeMillis());
+        final CWorld world = CWorld.getInstance();
+        resetting = true;
+        try (var move = CacheD.beginEconomyMove(RESET_OWNER, RESET_AUXILIARY)) {
+            move.stageWarehouseSql(con -> AttendanceEpoch.stageReset(con, before, after, day));
+            move.onError(failure -> {
+                if (!(failure instanceof CTransaction.OutcomeUnknownException)
+                        && !(failure instanceof CacheD.CommittedReplayException)) {
+                    resetting = false;
+                    CWorldWork.tryExecute(AttendanceScheduler.getInstance()::refreshConfiguration);
+                }
+                LOG.log(Level.WARNING, "Attendance reset failed", failure);
+                completion.accept(false);
+            });
+            move.commit(() -> CIOThreadCallback.getInstance().completeWorldMutation(world,
+                    () -> publishReset(world, after, day), failure -> move.finishOwnerApply(failure,
+                            outcome -> completion.accept(outcome == null))));
+            return true;
+        } catch (RuntimeException failure) {
+            resetting = false;
+            LOG.log(Level.WARNING, "Attendance reset admission failed", failure);
+            return false;
+        }
+    }
+
+    private static void publishReset(CWorld world, long after, long day) {
+        final AttendanceScheduler scheduler = AttendanceScheduler.getInstance();
+        scheduler.dispose();
+        world.getAllPlayerStream().forEach(pc -> pc.setAttendanceData(null));
+        synchronized (AttendanceLoadManager.class) {
+            generation = after;
+            publishDay(day);
+            if (Config.USE_ATTENDANCE_SYSTEM) scheduler.run();
+            resetting = false;
+        }
+        if (!Config.USE_ATTENDANCE_SYSTEM) return;
+        world.getAllPlayerStream().filter(pc -> !pc.is무인상점() && !pc.isLogoutStarted() && pc.getLevel() >= 50)
+                .forEach(pc -> {
+                    SC_ATTENDANCE_BONUS_INFO_EXTEND.send(pc);
+                    SC_ATTENDANCE_BONUS_GROUP_INFO.send(pc);
+                    SC_ATTENDANCE_USER_DATA_EXTEND.send(pc);
+                });
+    }
 
 	private static long wholeSecond(long millis) {
 		return Math.floorDiv(millis, 1000L) * 1000L;
@@ -86,13 +164,20 @@ public class AttendanceLoadManager implements Command{
 	}
 	
 	public static volatile Calendar ATTEN_STARTUP_CALENDAR;
-	public static volatile int ATTEN_CHECK_INTERVAL;
-	public static volatile int ATTEN_RESET_PERIOD_SECOND;
-	public static volatile int ATTEN_DAILY_MAX_COUNT;
-	public static volatile int ATTEN_WEEKEND_MAX_COUNT;
-	public static volatile int ATTEN_TOTAL_TIMESECOND;
+    public record Settings(int checkInterval, int resetSeconds, int dailyMax, int weekendMax, int requirement) {
+        public Settings {
+            if (checkInterval <= 0 || resetSeconds <= 0 || dailyMax < 0 || weekendMax < 0 || requirement <= 0)
+                throw new IllegalArgumentException("Invalid attendance settings");
+        }
+    }
+
+    private static volatile Settings settings = new Settings(1800, 86400, 1, 1, 3600);
+    public static Settings settings() { return settings; }
+    static void publishSettings(Settings replacement) { settings = replacement; }
+
 	public void load(){
-		loadConfig();
+		publishSettings(readConfig());
+		SC_ATTENDANCE_BONUS_INFO_EXTEND.load();
 		loadBonusGroup();
 		try {
 			loadAttendanceStartupCalendar();
@@ -106,16 +191,16 @@ public class AttendanceLoadManager implements Command{
 		SC_ATTENDANCE_BONUS_GROUP_INFO.load();
 	}
 	
-	public void loadConfig(){
-		PropertyReader reader = new PropertyReader("./config/mj_attendance.properties");
-		ATTEN_CHECK_INTERVAL = reader.readInt("checkInterval", "1800");
-		ATTEN_RESET_PERIOD_SECOND = reader.readInt("resetPeriodSecond", "86400");
-		ATTEN_DAILY_MAX_COUNT = reader.readInt("dailyMaxCount", "1");
-		ATTEN_WEEKEND_MAX_COUNT = reader.readInt("weekendMaxCount", "1");
-		ATTEN_TOTAL_TIMESECOND = reader.readInt("totalAttendanceTimeSecond", "3600");
-		reader.dispose();
-		SC_ATTENDANCE_BONUS_INFO_EXTEND.load();
-	}
+    private Settings readConfig() {
+        PropertyReader reader = new PropertyReader("./config/mj_attendance.properties");
+        try {
+            return new Settings(reader.readInt("checkInterval", "1800"), reader.readInt("resetPeriodSecond", "86400"),
+                    reader.readInt("dailyMaxCount", "1"), reader.readInt("weekendMaxCount", "1"),
+                    reader.readInt("totalAttendanceTimeSecond", "3600"));
+        } finally {
+            reader.dispose();
+        }
+    }
 
 	@Override
 	public void execute(CommandArgs args) {
@@ -141,9 +226,16 @@ public class AttendanceLoadManager implements Command{
 		try{
 			switch(args.nextInt()){
 			case 1:
-				loadConfig();
-				AttendanceScheduler.getInstance().refreshConfiguration();
-				args.notify("출석체크 컨픽 리로드가 완료되었습니다.");
+                final Settings replacement = readConfig();
+                final L1PcInstance gm = args.getOwner();
+                if (!CWorldWork.tryExecute(() -> {
+                    if (AttendanceScheduler.getInstance().reconfigure(replacement)) {
+                        SC_ATTENDANCE_BONUS_INFO_EXTEND.load();
+                        gm.sendPackets("출석체크 컨픽 리로드가 완료되었습니다.");
+                    } else {
+                        gm.sendPackets("출석체크 설정을 적용하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+                    }
+                })) args.notify("출석체크 설정 리로드를 접수할 수 없습니다.");
 				break;
 			case 2:
 				loadBonusGroup();
@@ -222,55 +314,14 @@ public class AttendanceLoadManager implements Command{
 				}
 				break;
 			}
-			case 3:{
-				args.notify("2초 후 모든 출석체크 정보가 초기화됩니다.");
-				AttendanceScheduler.getInstance().dispose();
-				CWorldWork.scheduleRequired(new Runnable(){
-					@Override
-					public void run(){
-						CWorld.getInstance().getAllPlayerStream()
-						.filter((L1PcInstance pc) -> pc != null && pc.getAttendanceData() != null)
-						.forEach((L1PcInstance pc) ->{
-							try{
-								pc.setAttendanceData(null);
-							}catch(Exception e){
-								e.printStackTrace();
-							}
-						});
-						
-						Connection con = null;
-						PreparedStatement pstm = null;
-						try{
-							con = DatabaseFactory.getInstance().getConnection();
-							pstm = con.prepareStatement("truncate table attendance_startup");
-							pstm.executeUpdate();
-							SQLUtil.close(pstm);
-							pstm = con.prepareStatement("truncate table attendance_userinfo");
-							pstm.executeUpdate();
-						}catch(Exception e){
-							e.printStackTrace();
-						}finally{
-							SQLUtil.close(pstm, con);
-						}
-						try{
-							load();
-							CWorld.getInstance().getAllPlayerStream()
-							.filter((L1PcInstance pc) -> pc != null && !pc.is무인상점())
-							.forEach((L1PcInstance pc) ->{
-								try{
-									SC_ATTENDANCE_BONUS_INFO_EXTEND.send(pc);
-									SC_ATTENDANCE_BONUS_GROUP_INFO.send(pc);
-									SC_ATTENDANCE_USER_DATA_EXTEND.send(pc);
-								}catch(Exception e){
-									e.printStackTrace();
-								}
-							});
-
-						}catch(Exception e){}
-					}
-				}, 2000L);
-				break;
-			}
+            case 3: {
+                final L1PcInstance gm = args.getOwner();
+                if (!requestReset(success -> gm.sendPackets(success
+                        ? "모든 출석체크 정보를 초기화했습니다." : "출석체크 초기화 처리에 실패했습니다."))) {
+                    args.notify("출석체크 초기화를 접수할 수 없습니다.");
+                }
+                break;
+            }
 			}
 		}catch(Exception e){
 			args.notify(".출석체크 2");

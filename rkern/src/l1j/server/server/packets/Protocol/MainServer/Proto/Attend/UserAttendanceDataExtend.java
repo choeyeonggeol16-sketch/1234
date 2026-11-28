@@ -60,8 +60,8 @@ public class UserAttendanceDataExtend {
 			return false;
 
 		int updateTime = _time + second;
-		if(updateTime >= AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND){
-			updateTime = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
+		if(updateTime >= AttendanceLoadManager.settings().requirement()){
+			updateTime = AttendanceLoadManager.settings().requirement();
 			_state = UserAttendanceState.COMPLETE;
 		}
 		_time = updateTime;
