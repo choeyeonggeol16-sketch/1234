@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.RandomAccess;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.inventory.CUserEquipment;
-import l1j.server.server.model.inventory.L1PolyMorph;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.inventory.EquipRules;
@@ -297,16 +297,7 @@ public final class SwapSlotItems {
 
     /** 변신 상태에서 장착 가능 여부 (무기/방어구 모두 체크) */
     private static boolean canEquipWithPoly(L1ItemInstance item, int spriteId) {
-    	if (item.getItem() == null) return true;
-    	final int type2 = item.getItem().getType2();
-    	switch (type2) {
-    	case 1: // 무기
-    		return L1PolyMorph.isEquipableWeapon(spriteId, item.getItem().getType());
-    	case 2: // 방어구
-    		return L1PolyMorph.isEquipableArmor(spriteId, item.getItem().getType());
-    	default:
-    		return true;
-    	}
+        return CTransform.CanUseItem(spriteId, item.getItem());
     }
 
     private IntIdList getList(int slotNum) {

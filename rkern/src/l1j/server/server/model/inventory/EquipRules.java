@@ -1,5 +1,6 @@
 package l1j.server.server.model.inventory;
 
+import l1j.server.server.model.character.transform.CTransform;
 import java.util.List;
 
 import l1j.server.server.model.Instance.L1ItemInstance;
@@ -57,14 +58,13 @@ public final class EquipRules {
             final int maxLevel = item.getItem().getMaxLevel();
             if ((minLevel > 0 && level < minLevel)
                     || (maxLevel > 0 && level > maxLevel)) return false;
+            if (!CTransform.CanUseItem(sprite, item.getItem())) return false;
             final int type = item.getItem().getType2();
             if (type == 1) {
-                if (!L1PolyMorph.isEquipableWeapon(sprite, item.getItem().getType())
-                        || ++weapons > 2) return false;
+                if (++weapons > 2) return false;
                 if (primary == null) primary = item;
                 else secondary = item;
             } else if (type == 2) {
-                if (!L1PolyMorph.isEquipableArmor(sprite, item.getItem().getType())) return false;
                 if (item.getItem().getType() == 7) shield = true;
                 if (item.getItem().getType() == 13) guarder = true;
             } else {
@@ -103,7 +103,7 @@ public final class EquipRules {
                 }
             }
         }
-        if (!L1PolyMorph.isEquipableArmor(pc.getCurrentSpriteId(), type))
+        if (!CTransform.CanUseItem(pc.getCurrentSpriteId(), armor.getItem()))
             return EquipResult.fail(null);
 
         final String earringName = type == 12 ? armor.getName().replace("축복받은 ", "") : null;
@@ -163,7 +163,7 @@ public final class EquipRules {
     public static EquipResult canEquipWeaponBasic(L1PcInstance pc, CUserInventory inv, L1ItemInstance weapon) {
         if (pc == null || inv == null || weapon == null || weapon.getItem() == null) return EquipResult.fail(null);
 
-        if (!L1PolyMorph.isEquipableWeapon(pc.getCurrentSpriteId(), weapon.getItem().getType())) {
+        if (!CTransform.CanUseItem(pc.getCurrentSpriteId(), weapon.getItem())) {
             return EquipResult.fail(null);
         }
 

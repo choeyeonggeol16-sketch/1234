@@ -1,5 +1,6 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.model.character.transform.TransformType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -11,7 +12,7 @@ import l1j.server.server.Account;
 import l1j.server.server.datatables.CFriendsDb;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.model.character.transform.CTransformDB;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.CFriends;
@@ -23,7 +24,7 @@ import l1j.server.server.model.inventory.CTrade;
 import l1j.server.server.model.L1HauntedHouse;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.inventory.L1PolyMorph;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.TileOccupancy.TileOccupancy;
@@ -266,46 +267,20 @@ public final class CS_Attr {
             }
             return;
 		case 180:
-			boolean ring = false;
-			if (name != null && name.startsWith("maple")) {
-				name = name.replace("maple ", "");
-			}
-
-			if (name != null && name.equalsIgnoreCase("ranking class polymorph")) {
-				if (pc.getRankLevel() < 3)
-					return;
-				switch (pc.getType()) {
-				case 0: name = pc.get_sex() == 0 ? "rangking prince male" : "rangking prince female"; break;
-				case 1: name = pc.get_sex() == 0 ? "rangking knight male" : "rangking knight female"; break;
-				case 2: name = pc.get_sex() == 0 ? "rangking elf male" : "rangking elf female"; break;
-				case 3: name = pc.get_sex() == 0 ? "rangking wizard male" : "rangking wizard female"; break;
-				case 4: name = pc.get_sex() == 0 ? "rangking darkelf male" : "rangking darkelf female"; break;
-				case 5: name = pc.get_sex() == 0 ? "rangking dragonknight male" : "rangking dragonknight female"; break;
-				case 6: name = pc.get_sex() == 0 ? "rangking illusionist male" : "rangking illusionist female"; break;
-				case 7: name = pc.get_sex() == 0 ? "rangking warrior male" : "rangking warrior female"; break;
-				}
-			}
-
-			if (name != null && name.length() > 0) {
-				L1PolyMorph poly = PolyTable.getInstance().getTemplate(name);
-				if (poly != null || name.equals("")) {
-					if (name.equals("")) {
-						int spriteId = pc.getCurrentSpriteId();
-						if (spriteId == 6034 || spriteId == 6035) {
-						} else {
-							if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
-								pc.removeSkillEffect(L1SkillId.POLY_RING_MASTER);
-							}
-							pc.removeSkillEffect(L1SkillId.SHAPE_CHANGE);
-						}
-					} else if (poly.getMinLevel() <= pc.getLevel() || pc.isGm()) {
-						if (pc.isPolyRingMaster()) {
-							ring = true;
-						}
-						L1PolyMorph.doPoly(pc, poly.getPolyId(), 7200, L1PolyMorph.MORPH_BY_ITEMMAGIC, ring);
-					}
-				}
-			}
+            if (name == null) return;
+            if (name.startsWith("maple ")) name = name.substring("maple ".length());
+            if (name.equalsIgnoreCase("ranking class polymorph")) {
+                if (pc.getRankLevel() < 3) return;
+                name = CTransformDB.resolveClassName(pc, name);
+            }
+            if (name.isEmpty()) {
+                int current = pc.getCurrentSpriteId();
+                if (current != 6034 && current != 6035) pc.CancelTransform();
+            } else {
+                CTransform form = CTransformDB.getInstance().find(name);
+                if (form != null && (form.getMinLevel() <= pc.getLevel() || pc.isGm()))
+                    pc.Transform(form.getPolyId(), 7200, TransformType.ITEM_MAGIC, pc.isPolyRingMaster());
+            }
 			break;
 		case 97:
             CReplyChecker.FinishWaitingReplyByReplier(pc, msgIdx, c);
@@ -548,7 +523,7 @@ public final class CS_Attr {
 								0,
 								L1SkillUse.TYPE_LOGIN);
 						
-						L1PolyMorph.doPoly(pc, 6284, 600, L1PolyMorph.MORPH_BY_LOGIN, false);
+						pc.Transform(6284, 600, TransformType.LOGIN, false);
 						pc.start_teleport(32722, 32830, 5140, 2, 169, true, false);
 					}
 				}

@@ -162,7 +162,8 @@ public class PrivateStoreTest {
         final CCreatureController controller=new CCreatureController(this);
         final Map<Integer,Object> dolls=new HashMap<>();
         final int id; int map=800,x=1,y=1,sprite=10,상점변신,stamp=1,notices;
-        int shopActions, shopBroadcasts, shapes, idleActions, undoPoly, curePoison, backsteps;
+        int shopActions, shopBroadcasts, shapes, idleActions, transformCancellations, curePoison, backsteps;
+        void CancelTransform(){sprite=10;transformCancellations++;}
         String account; boolean gm; boolean isGm(){return gm;}
         boolean dead,ghost,teleport,logout,pending,invis,fishing,nonAction,heldByControl,failPresentation;
         Object trade; Companion companion;
@@ -245,9 +246,24 @@ public class PrivateStoreTest {
             return true;
         }
     }
-    static class L1PolyMorph {
-        static void undoPoly(L1PcInstance pc){pc.sprite=10;pc.undoPoly++;}
-        static void undoPolyPrivateShop(L1PcInstance pc){pc.sprite=10;}
+    static class CTransformForModeChange {
+        static int FindShopSprite(int i) {
+            int[] sprites={11479,11483,11480,11485,11482,11486,11481,11484};
+            return i>=1 && i<=sprites.length ? sprites[i-1] : 0;
+        }
+        static void SetTransformData(L1PcInstance pc,int sprite) {
+            pc.상점변신=sprite;
+            if(sprite!=0) pc.setCurrentSprite(sprite);
+            SC_ChangeShape.send(pc,pc.getId(),pc.sprite,70);
+            SC_ChangeShape.broadcast(pc,pc.getId(),pc.sprite,70);
+            long visual=SC_CharVisualUpdate.pack(pc);
+            SC_CharVisualUpdate.sendPacked(pc,visual);
+            SC_CharVisualUpdate.broadcastPacked(pc,visual);
+        }
+        static void CancelTransform(L1PcInstance pc){
+            pc.상점변신=0;
+            pc.sprite=10;
+        }
     }
     static class FishingTimeController {
         static FishingTimeController getInstance(){return new FishingTimeController();}
@@ -484,12 +500,12 @@ public class PrivateStoreTest {
         ui(pc,0x12,11,5,1);check(pc.isPrivateShop()&&pc.sprite==11483&&pc.inv.depth==0,"UI open");
         int openedVersion = pc.getPrivateShopVersion();
         var published = pc.getSellings();
-        int opensBefore = DynamicShopStorage.writes, visualsBefore = pc.shopActions, morphsBefore = pc.undoPoly;
+        int opensBefore = DynamicShopStorage.writes, visualsBefore = pc.shopActions, morphsBefore = pc.transformCancellations;
         DynamicShopStorage.reject=true;
         ui(pc,0x12,11,6,1);
         check(pc.isPrivateShop() && pc.getSellings() == published && pc.getPrivateShopVersion() == openedVersion,
                 "rejected re-open retains old publication");
-        check(DynamicShopStorage.writes==opensBefore&&pc.shopActions==visualsBefore&&pc.undoPoly==morphsBefore,
+        check(DynamicShopStorage.writes==opensBefore&&pc.shopActions==visualsBefore&&pc.transformCancellations==morphsBefore,
                 "rejected replacement sends no new action and preserves existing morph");
         DynamicShopStorage.reject=false;
         ui(pc,0x12,11,7,2);

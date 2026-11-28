@@ -7,6 +7,7 @@
 
 package l1j.server.server.model;
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_GameList;
 
@@ -26,7 +27,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_NpcChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.inventory.L1PolyMorph;
 
 @SuppressWarnings("unchecked")
 public class L1Racing implements Runnable
@@ -335,7 +335,7 @@ public class L1Racing implements Runnable
             final var etcShared = openGameBroadcast(SC_EtcPacket.nativeWriter());
             try {
 for(L1PcInstance pc : toArray(일반)){
-			L1PolyMorph.doPoly(pc, 5065, 1000,L1PolyMorph.MORPH_BY_NPC, false); //아기 진돗
+			pc.Transform(5065, 1000,TransformType.NPC, false); //아기 진돗
 			sendGameNotice(startShared,pc);
 			sendGameNotice(rapShared,pc);
             try {

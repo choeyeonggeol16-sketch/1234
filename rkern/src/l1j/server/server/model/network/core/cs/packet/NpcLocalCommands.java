@@ -1,5 +1,7 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.model.character.transform.TransformType;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.item.Card.command.NeigeCard;
 import l1j.server.server.model.item.Card.command.NeigeCard2;
@@ -10,7 +12,6 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.npc.action.ActionControlHandler;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
@@ -45,10 +46,6 @@ final class NpcLocalCommands {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return true;
 				}
-				if (!pc.getInventory().DeleteItemInInventory(875640379, 1)) {
-                    SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
-                    return true;
-                }
 			}
 			NeigeNormal.Normal(pc, s);
 			return true;
@@ -68,10 +65,6 @@ final class NpcLocalCommands {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return true;
 				}
-				if (!pc.getInventory().DeleteItemInInventory(875640379, 1)) {
-                    SC_ChatPacket.sendDirect(pc, pc, "\\aG변신주문서가 부족합니다.");
-                    return true;
-                }
 			}
 			NeigeLow.Low(pc, s);
 			return true;
@@ -112,10 +105,8 @@ final class NpcLocalCommands {
 		L1PcInstance pc = clientthread.getActiveChar();
 
 		if (pc == null) return;
-		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
-                && pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, 100)) {
-
-			L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_NPC, false);
+		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)) {
+            CTransform.TransformWithCost(pc, polyId, 1800, TransformType.NPC, false, L1ItemId.ADENA, 100, null);
 		} else {
 			SC_ServerMessage.send(pc, 337, "$4");
 		}
@@ -125,10 +116,8 @@ final class NpcLocalCommands {
 		L1PcInstance pc = clientthread.getActiveChar();
 
 		if (pc == null) return;
-		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
-                && pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, 100)) {
-
-			L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_KEPLISHA, false);
+		if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)) {
+            CTransform.TransformWithCost(pc, polyId, 1800, TransformType.KEPLISHA, false, L1ItemId.ADENA, 100, null);
 		} else {
 			SC_ServerMessage.send(pc, 337, "$4");
 		}
@@ -234,9 +223,8 @@ final class NpcLocalCommands {
             pc.sendPackets("레벨83 이상인 용사에게는 해줄수가 없소!");
             return false;
         }
-        if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)
-                && pc.getInventory().DeleteItemInInventory(L1ItemId.ADENA, 100)) {
-            L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_NPC, false);
+        if (pc.getInventory().HaveItemByClassId(L1ItemId.ADENA, 100)) {
+            CTransform.TransformWithCost(pc, polyId, 1800, TransformType.NPC, false, L1ItemId.ADENA, 100, null);
         } else {
             SC_ServerMessage.send(pc, 189);
         }

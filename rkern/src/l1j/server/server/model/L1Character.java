@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import l1j.server.Config;
+import l1j.server.server.model.character.transform.CTransform;
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.ai.core.PathNodeWorld;
@@ -52,7 +54,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SPECIAL_RESISTANCE_NOTI;
 import l1j.server.server.utils.eKind;
 import l1j.server.server.model.inventory.CInventory;
-import l1j.server.server.model.inventory.L1PolyMorph;
 public class L1Character extends L1Object {
 	private static final long serialVersionUID = 1L;
     private static final int[] NO_ACQUIRED_SKILLS = {};
@@ -697,7 +698,7 @@ public class L1Character extends L1Object {
 	    setCurrentHp(hp);
 	    setDead(false);
 	    setStatus(0);
-	    L1PolyMorph.undoPoly(this);
+	    this.CancelTransform();
 
 	    for (L1PcInstance pc :
 	            CWorld.getInstance().getRecognizePlayer(this)) {
@@ -1034,6 +1035,24 @@ public class L1Character extends L1Object {
 					.ensureCharacterSkillHeartbeatFromOwner(this);
 		}
 	}
+
+    /** NPC transform applies neither its timer nor its sprite when deadline admission fails. */
+    public final boolean replaceNpcTransformEffectFromOwner(int timeMillis) {
+        if (!(this instanceof L1NpcInstance npc)) return false;
+        SkillEffectContainer effects = skillEffects(true);
+        if (timeMillis > 0) {
+            int generation = effects.reserveTransformHeartbeat();
+            if (generation != 0
+                    && !CIOThreadCallback.getInstance().tryScheduleTransformHeartbeat(npc, generation)) {
+                effects.releaseHeartbeat(generation);
+                return false;
+            }
+        } else {
+            effects.remove(L1SkillId.SHAPE_CHANGE, false);
+        }
+        effects.put(L1SkillId.SHAPE_CHANGE, timeMillis);
+        return true;
+    }
 
 	public void skillEffectRemoveFromOwner(int skillId, boolean stop) {
 		final SkillEffectContainer effects = skillEffects(false);
@@ -2460,6 +2479,37 @@ public class L1Character extends L1Object {
 	public void sendPackets(CServerPacket sbp) {
 
 	}
+
+    // High bits identify a transition even when the same model is reapplied.
+    private volatile long transformKey;
+    private boolean changingTransform;
+
+    public final long getTransformKey() { return transformKey; }
+    public final int getTransformId() { return (int) transformKey; }
+
+    public final void publishTransform(int sprite) {
+        transformKey = ((transformKey + (1L << 32)) & 0xffffffff00000000L) | Integer.toUnsignedLong(sprite);
+    }
+
+    public final boolean beginTransformChange() {
+        if (changingTransform) return false;
+        changingTransform = true;
+        return true;
+    }
+
+    public final void endTransformChange() { changingTransform = false; }
+
+    public final boolean Transform(int sprite, int seconds, TransformType cause, boolean ring) {
+        return Transform(sprite, seconds, cause, ring, null);
+    }
+
+    public final boolean Transform(int sprite, int seconds, TransformType cause, boolean ring, Object equipmentSource) {
+        return CTransform.SetTransformData(this, sprite, seconds, cause, ring, equipmentSource);
+    }
+
+    public final void CancelTransform() {
+        CTransform.CancelTransform(this);
+    }
 
 	private static final AtomicReferenceFieldUpdater<L1Character, CSpriteTiming> SPRITE_TIMING =
 			AtomicReferenceFieldUpdater.newUpdater(L1Character.class, CSpriteTiming.class, "currentSpriteTiming");

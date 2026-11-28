@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.character.action.listener.ActionListener;
 import l1j.server.server.model.map.L1Map;
 import l1j.server.server.model.map.L1WorldMap;
@@ -162,7 +161,7 @@ public class TeleporterActionListener extends NpcActionListener{
 		GamePoint pt = passables.get(GameRandom.next(passables.size()));
 		pc.start_teleport(pt.x, pt.y, pt.mapId, pc.getHeading(), 169, true, false);
 		if(pt.mapId == 5490) {
-			L1PolyMorph.undoPoly(pc);
+			pc.CancelTransform();
 		}
 /*		int range_x = GameRandom.next(get_range());
 		if(GameRandom.isBoolean())

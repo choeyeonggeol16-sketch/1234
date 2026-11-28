@@ -1,9 +1,9 @@
 package l1j.server.server.model.character.skill.core;
 
-import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.model.character.transform.CTransformDB;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.inventory.L1PolyMorph;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -66,7 +66,7 @@ public enum SkillUsabilityPolicy {
 			if (ControlSkillEffects.blocksCast(pc)) return false;
 
 			// 변신 상태 스킬 사용 가능 여부
-			final L1PolyMorph poly = PolyTable.getInstance().getTemplate(pc.getCurrentSpriteId());
+			final CTransform poly = CTransformDB.getInstance().find(pc.getCurrentSpriteId());
 			if (poly != null && !poly.canUseSkill()) {
 				SC_ServerMessage.send(pc, 285);
 				return false;

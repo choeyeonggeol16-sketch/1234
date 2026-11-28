@@ -2,14 +2,13 @@ package l1j.server.server.model.item.function;
 
 
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.SHAPE_CHANGE;
 
 import java.util.Random;
-import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -67,12 +66,16 @@ import static l1j.server.server.model.item.function.CreatureItemActions.*;
 final class PolymorphPotionEffects {
     private PolymorphPotionEffects() {}
 
-	public static void usePolyPotion(L1PcInstance pc, int itemId) {
-		int polyId = 0;
-		if ((pc.getLevel() >= 83)) {
-			pc.sendPackets("해당 아이템은 82 레벨까지만 사용 가능합니다.");
-			return;
-		}
+    public static void usePolyPotion(L1PcInstance pc, int itemId) {
+        if (pc.getLevel() >= 83) {
+            pc.sendPackets("해당 아이템은 82 레벨까지만 사용 가능합니다.");
+            return;
+        }
+        pc.Transform(selectSprite(pc, itemId), 1800, TransformType.ITEM_MAGIC, false);
+    }
+
+    static int selectSprite(L1PcInstance pc, int itemId) {
+        int polyId = 0;
 		if (itemId == 41143) {
 			polyId = 6086;
 		} else if (itemId == 41144) {
@@ -143,7 +146,6 @@ final class PolymorphPotionEffects {
 					polyId = 18402;
 			
 	}
-		L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
-	//	L1NeigeBugCheck.shapechange(pc);
-	}
+        return polyId;
+    }
 }

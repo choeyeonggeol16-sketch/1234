@@ -1,10 +1,10 @@
 package l1j.server.server.model.npc.ai.action;
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Location;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.CWorld;
 
 import java.util.ArrayList;
@@ -285,11 +285,9 @@ public final class CSkillAction2 {
                 pc.getInventory().takeoffEquip(945);
             }
 
-            L1PolyMorph.doPoly(
-                    pc,
-                    polyId,
+            pc.Transform(polyId,
                     1800,
-                    L1PolyMorph.MORPH_BY_NPC,
+                    TransformType.NPC,
                     false);
 
             usePoly = true;

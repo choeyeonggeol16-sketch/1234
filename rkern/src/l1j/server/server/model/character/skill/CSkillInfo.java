@@ -289,7 +289,7 @@ public final class CSkillInfo {
         registerContextual(RINDVIOR_SILENCE, CSkillEffectActivation::castRindviorSilence, CSkillEffectActivation::startRindviorSilence);
         // Dedicated control casts: target PC state/visuals must execute on that
         // target's existing 32-slot controller FIFO. NPC admission remains on NpcServer.
-        registerContextual(SHAPE_CHANGE, CSkillEffectActivation::onShapeChange, CSkillEffectActivation::startShapeChangeFromOwner);
+        registerContextual(SHAPE_CHANGE, CSkillEffectActivation::onShapeChange, CSkillEffectActivation::PumpStartTransformSkill);
         registerContextual(TOMAHAWK, CSkillEffectActivation::onTomahawk, CSkillEffectActivation::startTomahawkFromOwner);
         registerContextual(POWERRIP, CSkillEffectActivation::onPowerRip, CSkillEffectActivation::startPowerRipFromOwner);
         registerContextual(DESPERADO, CSkillEffectActivation::onDesperado, CSkillEffectActivation::startDesperadoFromOwner);

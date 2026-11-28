@@ -23,7 +23,7 @@ final class ItemActionService {
             SupplementalItemActions.use(client,pc,item,targetId);
             return;
         }
-        if(!ItemTargetDecoder.showSelection(pc,itemId)) return;
+        if(!ItemTargetDecoder.showSelection(pc,itemId,name)) return;
         if(!ItemActionAdmission.canUse(pc,item)) return;
         // Keep the diagnostic value/order without allocating a context (or scanning
         // the target inventory) for an item rejected by admission or handled by

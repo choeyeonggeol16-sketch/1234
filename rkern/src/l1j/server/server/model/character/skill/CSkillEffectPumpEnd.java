@@ -1,5 +1,6 @@
 package l1j.server.server.model.character.skill;
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus2;
@@ -13,8 +14,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_HpUpdate;
 import l1j.server.Config;
 import l1j.server.server.model.L1Character;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.model.L1Magic;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1NpcInstance;
@@ -788,17 +789,10 @@ public final class CSkillEffectPumpEnd {
 	}
 
 
-	private static StopResult offPolyRingMaster(L1Character cha, int skillId) {
-		if (cha instanceof L1PcInstance pc) {
-			// The skill was removed by its owner. Retire exactly this modifier source.
-			pc.removeSkillModifierFromOwner(skillId);
-			SC_HpUpdate.send(pc, pc.getCurrentHp(), pc.getMaxHp());
-			SC_MpUpdate.send(pc, pc.getCurrentMp(), pc.getMaxMp());
-			if (pc.isInParty()) pc.getParty().refreshPartyMemberStatus(pc);
-		}
-		L1PolyMorph.undoPoly(cha);
-		return StopResult.HANDLED;
-	}
+    private static StopResult offPolyRingMaster(L1Character cha, int skillId) {
+        CTransform.PumpEndTransformSkill(cha, skillId);
+        return StopResult.HANDLED;
+    }
 
 	private static StopResult offThunderGrab(L1Character cha, int skillId) {
 		// STATUS_FREEZE owns the actual bind lifetime.
@@ -1199,7 +1193,7 @@ public final class CSkillEffectPumpEnd {
 	}
 
 	private static StopResult offShapeChange(L1Character cha, int skillId) {
-		L1PolyMorph.undoPoly(cha);
+        CTransform.PumpEndTransformSkill(cha, skillId);
 		return StopResult.HANDLED;
 	}
 
@@ -2281,11 +2275,9 @@ public final class CSkillEffectPumpEnd {
 		// ring bonuses when only COUNTER_BARRIER is ending.
 		if (pc.getCurrentSpriteId() == 21169 && pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
 			int keepTime = pc.getSkillEffectTimeSec(L1SkillId.POLY_RING_MASTER);
-			L1PolyMorph.doPoly(
-					pc,
-					21140,
+			pc.Transform(21140,
 					keepTime,
-					L1PolyMorph.MORPH_BY_ITEMMAGIC,
+					TransformType.ITEM_MAGIC,
 					true);
 		}
 		return StopResult.HANDLED;

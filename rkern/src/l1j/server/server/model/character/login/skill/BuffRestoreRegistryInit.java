@@ -1,6 +1,6 @@
 package l1j.server.server.model.character.login.skill;
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.character.skill.CSkillInfo;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.passive.PassiveID;
@@ -52,8 +52,10 @@ public final class BuffRestoreRegistryInit {
 
         // ================= 3. SHAPE_CHANGE =================
         BuffRestoreRegistry.register(L1SkillId.SHAPE_CHANGE,
-                (pc, sid, polyId, rt, icon) ->
-            L1PolyMorph.doPoly(pc, polyId, rt, L1PolyMorph.MORPH_BY_ITEMMAGIC, false));
+                (pc, sid, polyId, rt, icon) -> {
+                    if (pc.Transform(polyId, rt, TransformType.LOGIN, false))
+                        l1j.server.server.model.network.core.sc.packet.SC_SkillIconGFX.send(pc, 35, -1, false);
+                });
 
         // ================= 4. STATUS_BRAVE / ELFBRAVE / HASTE =================
         BuffRestoreRegistry.register(L1SkillId.STATUS_BRAVE, (pc, sid, polyId, rt, icon) -> {
@@ -468,7 +470,7 @@ public final class BuffRestoreRegistryInit {
         // ================= 27. POLY_RING_MASTER =================
         BuffRestoreRegistry.register(L1SkillId.POLY_RING_MASTER,
                 (pc, sid, polyId, rt, icon) ->
-            L1PolyMorph.doPoly(pc, polyId, rt, L1PolyMorph.MORPH_BY_LOGIN, true));
+            pc.Transform(polyId, rt, TransformType.LOGIN, true));
 
         // ================= 28. 축복 계열 4종 =================
         BuffRestoreRegistry.register(L1SkillId.SIDE_OF_ME_BLESSING,

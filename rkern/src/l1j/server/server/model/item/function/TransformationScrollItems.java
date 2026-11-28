@@ -3,13 +3,12 @@ package l1j.server.server.model.item.function;
 import l1j.server.Config;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
+import l1j.server.server.model.character.transform.CTransform;
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowPolyList;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import static l1j.server.server.model.item.function.ItemReceiptOperations.UseDurableConsume;
-import static l1j.server.server.model.item.function.TransformationItems.useLevelPolyScroll;
-import static l1j.server.server.model.item.function.TransformationItems.usePolyPotion;
-import static l1j.server.server.model.item.function.TransformationItems.usePolyScroll;
 
 /** Item-specific action effects dispatched by item ID. */
 final class TransformationScrollItems {
@@ -18,14 +17,15 @@ final class TransformationScrollItems {
     static ItemActionResult handlePolyScroll(ItemActionContext use) {
         L1PcInstance pc = use.player();
         L1ItemInstance item = use.item();
-        int itemId = use.itemId();
-        String text = use.text();
-        if (usePolyScroll(pc, itemId, text)) {
-            pc.getInventory().DeleteItemAmount(item, 1);
-        } else {
+        PolymorphScrollEffects.Selection selection = PolymorphScrollEffects.select(pc, use.itemId(), use.text());
+        if (selection == null) {
             SC_ServerMessage.send(pc, 181);
+            return ItemActionResult.STOP;
         }
-        return ItemActionResult.COMPLETE;
+        UseDurableConsume(pc, item, () -> {
+            if (selection.apply(pc)) ItemActionCompletion.finishCommittedConsumable(pc, item);
+        });
+        return ItemActionResult.STOP;
     }
 
     static ItemActionResult handleEventPolyScroll(ItemActionContext use) {
@@ -49,17 +49,7 @@ final class TransformationScrollItems {
     }
 
     static ItemActionResult handleBlessedPolyScroll(ItemActionContext use) {
-        L1PcInstance pc = use.player();
-        L1ItemInstance item = use.item();
-        int itemId = use.itemId();
-        String text = use.text();
-        if (usePolyScroll(pc, itemId, text)) {
-            pc.getInventory().DeleteItemAmount(item, 1);
-        } else {
-            SC_ServerMessage.send(pc, 181);
-
-        }
-        return ItemActionResult.COMPLETE;
+        return handlePolyScroll(use);
     }
 
     static ItemActionResult handleTrainingPolyScroll(ItemActionContext use) {
@@ -78,7 +68,7 @@ final class TransformationScrollItems {
             pc.sendPackets("해당 아이템은 82 레벨까지만 사용 가능합니다.");
             return ItemActionResult.STOP;
         }
-        UseDurableConsume(pc, item, () -> { usePolyPotion(pc, itemId); ItemActionCompletion.finishCommittedConsumable(pc, item); });
+        consumeAndTransform(pc, item, PolymorphPotionEffects.selectSprite(pc, itemId));
         return ItemActionResult.STOP;
     }
 
@@ -86,7 +76,7 @@ final class TransformationScrollItems {
         L1PcInstance pc = use.player();
         L1ItemInstance item = use.item();
         int itemId = use.itemId();
-        UseDurableConsume(pc, item, () -> { useLevelPolyScroll(pc, itemId); ItemActionCompletion.finishCommittedConsumable(pc, item); });
+        consumeAndTransform(pc, item, LevelPolymorphScrollEffects.selectSprite(pc, itemId));
         return ItemActionResult.STOP;
     }
 
@@ -99,7 +89,19 @@ final class TransformationScrollItems {
         }
         final int itemId = use.itemId();
         final L1ItemInstance item = use.item();
-        UseDurableConsume(pc, item, () -> { usePolyPotion(pc, itemId); ItemActionCompletion.finishCommittedConsumable(pc, item); });
+        consumeAndTransform(pc, item, PolymorphPotionEffects.selectSprite(pc, itemId));
         return ItemActionResult.STOP;
     }
+
+    private static void consumeAndTransform(L1PcInstance pc, L1ItemInstance item, int sprite) {
+        if (!CTransform.CanTransform(pc, sprite, TransformType.ITEM_MAGIC, false)) {
+            SC_ServerMessage.send(pc, 181);
+            return;
+        }
+        UseDurableConsume(pc, item, () -> {
+            if (pc.Transform(sprite, 1800, TransformType.ITEM_MAGIC, false))
+                ItemActionCompletion.finishCommittedConsumable(pc, item);
+        });
+    }
+
 }

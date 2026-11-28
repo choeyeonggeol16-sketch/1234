@@ -2,7 +2,7 @@ package l1j.server.server.model.network.core.cs.packet;
 
 import l1j.server.server.datatables.CObjectDB;
 import l1j.server.server.model.network.core.sc.packet.SC_CloseList;
-import l1j.server.server.model.inventory.L1PolyMorph;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1SummonInstance;
@@ -19,10 +19,9 @@ final class NpcPlayerMenuHandler {
         if (isAsciiNumber(command, 0)) {
             summonMonster(target, command);
         } else if (target.isMagicItem()) {
-            L1PolyMorph.MagicBookPoly(target, command, 1200);
-            target.setMagicItem(false);
+            CTransform.TransformFromBook(target, command, 1200);
         } else {
-            L1PolyMorph.handleCommands(target, command);
+            CTransform.handleCommands(target, command);
         }
     }
 

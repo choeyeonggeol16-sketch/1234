@@ -1,5 +1,6 @@
 package l1j.server.server.model.Instance;
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.model.quest.CQuestSystem;
 
 import l1j.server.server.model.character.action.CAttackAction;
@@ -18,7 +19,6 @@ import l1j.server.server.datatables.TownTable;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.npc.dialog.L1NpcTalkData;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1TownLocation;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.L1SkillId;
@@ -379,7 +379,7 @@ public class L1MerchantInstance extends L1NpcInstance {
 				if (player.getInventory().HaveItemByClassId(40308, 200000)) {
 					player.getInventory().DeleteItemInInventory(40308, 200000);
 					if (Config.POLY_EVENT1) {
-						L1PolyMorph.doPoly(player, 7925, 600, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
+						player.Transform(7925, 600, TransformType.ITEM_MAGIC, false);
 					}
 					L1SkillUse.cast(
 							player,

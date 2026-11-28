@@ -1,14 +1,13 @@
 package l1j.server.server.model.network.core.cs.packet;
 
+import l1j.server.server.model.character.transform.CTransformForModeChange;
 import java.util.ArrayList;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.Controller.FishingTimeController;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.character.skill.L1SkillId;
-import l1j.server.server.model.network.core.sc.packet.SC_ChangeShape;
 import l1j.server.server.model.network.core.sc.packet.SC_CharVisualUpdate;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
 import l1j.server.server.model.network.core.sc.packet.SC_Disconnect;
@@ -534,10 +533,7 @@ public final class User {
         if (actionUi) {
             // Same ActionUI morph semantics as before; after accepted list and
             // under the reentrant gate, never against a rejected registration.
-            L1PolyMorph.undoPoly(pc);
-            pc.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE);
-            if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER))
-                pc.removeSkillEffect(L1SkillId.POLY_RING_MASTER);
+            pc.CancelTransform();
         }
         final CUserSocket client = session;
 
@@ -548,15 +544,7 @@ public final class User {
         SC_DoActionShop.send(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
         SC_DoActionShop.broadcast(pc, pc.getId(), ActionCodes.ACTION_Shop, chat);
 
-        pc.상점변신 = poly;
-        pc.setCurrentSprite(poly);
-
-        SC_ChangeShape.send(pc, pc.getId(), poly, 70);
-        SC_ChangeShape.broadcast(pc, pc.getId(), poly, 70);
-
-        final long visual = SC_CharVisualUpdate.pack(pc);
-        SC_CharVisualUpdate.sendPacked(pc, visual);
-        SC_CharVisualUpdate.broadcastPacked(pc, visual);
+        CTransformForModeChange.SetTransformData(pc, poly);
 
         SC_WorldPutObject.broadcastPc(pc);
         pc.curePoison();
@@ -568,9 +556,8 @@ public final class User {
 
     private static void QuitPrivateStore(L1PcInstance pc) {
         if (!RemovePrivateStoreList(pc)) return;
-        pc.상점변신 = 0;
         sendIdle(pc);
-        L1PolyMorph.undoPolyPrivateShop(pc);
+        CTransformForModeChange.CancelTransform(pc);
     }
 
     private static boolean PublishPrivateStoreList(L1PcInstance pc, CUserSocket session, int stamp,
@@ -646,38 +633,34 @@ public final class User {
 
     private static int resolveShopPoly(String skin) {
         if (skin == null || skin.length() != 10 || !skin.regionMatches(true, 0, "tradezone", 0, 9)) return 0;
-        return switch (skin.charAt(9)) {
-            case '1' -> 11479; case '2' -> 11483; case '3' -> 11480; case '4' -> 11485;
-            case '5' -> 11482; case '6' -> 11486; case '7' -> 11481; case '8' -> 11484;
-            default -> 0;
-        };
+        return CTransformForModeChange.FindShopSprite(skin.charAt(9) - '0');
     }
 
     private static int resolveShopPoly(byte[] chat) {
 
         if (containsAscii(chat, "tradezone1")) {
-            return 11479;
+            return CTransformForModeChange.FindShopSprite(1);
         }
         if (containsAscii(chat, "tradezone2")) {
-            return 11483;
+            return CTransformForModeChange.FindShopSprite(2);
         }
         if (containsAscii(chat, "tradezone3")) {
-            return 11480;
+            return CTransformForModeChange.FindShopSprite(3);
         }
         if (containsAscii(chat, "tradezone4")) {
-            return 11485;
+            return CTransformForModeChange.FindShopSprite(4);
         }
         if (containsAscii(chat, "tradezone5")) {
-            return 11482;
+            return CTransformForModeChange.FindShopSprite(5);
         }
         if (containsAscii(chat, "tradezone6")) {
-            return 11486;
+            return CTransformForModeChange.FindShopSprite(6);
         }
         if (containsAscii(chat, "tradezone7")) {
-            return 11481;
+            return CTransformForModeChange.FindShopSprite(7);
         }
         if (containsAscii(chat, "tradezone8")) {
-            return 11484;
+            return CTransformForModeChange.FindShopSprite(8);
         }
         return 0;
     }

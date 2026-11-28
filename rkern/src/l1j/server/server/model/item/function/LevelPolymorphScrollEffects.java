@@ -1,14 +1,18 @@
 package l1j.server.server.model.item.function;
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.inventory.L1PolyMorph;
 
 /** Original useLevelPolyScroll item use implementation. */
 final class LevelPolymorphScrollEffects {
     private LevelPolymorphScrollEffects() {}
 
-	public static void useLevelPolyScroll(L1PcInstance pc, int itemId) {
-		int polyId = 0;
+    public static void useLevelPolyScroll(L1PcInstance pc, int itemId) {
+        pc.Transform(selectSprite(pc, itemId), 1800, TransformType.ITEM_MAGIC, false);
+    }
+
+    static int selectSprite(L1PcInstance pc, int itemId) {
+        int polyId = 0;
 		if (itemId == 210097) {
             polyId = selectLevel30(pc);
         } else if (itemId == 210098) {
@@ -28,8 +32,7 @@ final class LevelPolymorphScrollEffects {
         } else if (itemId == 210117) {
             polyId = selectLevel80(pc);
         }
-		L1PolyMorph.doPoly(pc, polyId, 1800, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
-	//	L1NeigeBugCheck.shapechange(pc);
+        return polyId;
 	}
 
     // Original form-selection branches preserved in the same item-use domain.

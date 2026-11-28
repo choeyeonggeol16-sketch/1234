@@ -1,8 +1,9 @@
 package l1j.server.server.model.item.Card;
 
+import l1j.server.server.model.character.transform.TransformType;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.Account;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
@@ -64,23 +65,11 @@ public class L1CardMythClass {
             return;
         }
 
-        // 4. 실행 (소모 및 변신)
-        pc.getInventory().DeleteItemInInventory(POLY_SCROLL_ID, 1);
-        executeMythPoly(pc, targetSprite);
-    }
-
-    /**
-     * 실제 변신 실행 및 패킷 전송
-     */
-    private static void executeMythPoly(L1PcInstance pc, int spriteId) {
-        // 변신 실행
-        L1PolyMorph.doPoly(pc, spriteId, POLY_DURATION, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
-        
-        // 버그 체크 및 사운드 출력
-      //  L1NeigeBugCheck.shapechange(pc);
-        
-        long ss = SC_SkillSound.pack(pc.getId(), 6082);
-        SC_SkillSound.sendPacked(pc, ss);
-        SC_SkillSound.broadcastPacked(pc, ss);
+        CTransform.TransformWithCost(pc, targetSprite, POLY_DURATION, TransformType.ITEM_MAGIC, true,
+                POLY_SCROLL_ID, 1, () -> {
+                    long sound = SC_SkillSound.pack(pc.getId(), 6082);
+                    SC_SkillSound.sendPacked(pc, sound);
+                    SC_SkillSound.broadcastPacked(pc, sound);
+                });
     }
 }

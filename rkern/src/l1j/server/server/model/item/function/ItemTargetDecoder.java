@@ -12,8 +12,8 @@ final class ItemTargetDecoder {
 
     static int modeOf(int itemId, int useType) {
         return switch(itemId) {
-            case 40088, 140088, 875640379 -> NONE;
-            case 40096, 210112, 900075 -> NAME;
+            case 40088, 875640379 -> NONE;
+            case 40096, 140088, 210112, 900075 -> NAME;
             case 77100, 77101, 77102, 77103, 77104, 77105, 77106, 77107, 77108, 77109,
                     77110, 77111, 77112, 77113, 77114, 77115, 77116, 77117, 77118, 77119 -> ITEM;
             case 300000, 40074, 40087, 724, 5991, 3000546, 3000547, 4100034,
@@ -59,8 +59,13 @@ final class ItemTargetDecoder {
         };
     }
 
-    static boolean showSelection(L1PcInstance pc, int itemId) {
-        if(itemId==40088 || itemId==140088 || itemId==875640379) {
+    static boolean showSelection(L1PcInstance pc, int itemId, String name) {
+        if (itemId == 140088) {
+            if (name != null) return true;
+            TransformationListItems.showNeigeSelection(pc);
+            return false;
+        }
+        if(itemId==40088 || itemId==875640379) {
             return TransformationListItems.showNeigeSelection(pc);
         }
         return true;

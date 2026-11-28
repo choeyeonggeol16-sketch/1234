@@ -340,7 +340,8 @@ public final class SkillEffectContainer {
                 matched[used++] = ((long) id << 32) | Math.max(0, durations[i]);
                 includeSprite |= id == firstSpriteEffect || id == secondSpriteEffect;
             }
-            final int sprite = includeSprite ? owner.getCurrentSpriteId() : 0;
+            final int transform = owner.getTransformId();
+            final int sprite = includeSprite ? (transform == 0 ? owner.getCurrentSpriteId() : transform) : 0;
             if (before != revision) continue;
             if (used == 0) return ActiveSnapshot.EMPTY;
             return new ActiveSnapshot(used == matched.length ? matched : java.util.Arrays.copyOf(matched, used), sprite);
@@ -482,6 +483,16 @@ public final class SkillEffectContainer {
 			return 0;
 		}
 
+        return armHeartbeat();
+    }
+
+    /** Reserve the existing heartbeat before publishing a finite transform. Owner only. */
+    public int reserveTransformHeartbeat() {
+        if (heartbeatArmed && timedCount > 0) return 0;
+        return armHeartbeat();
+    }
+
+    private int armHeartbeat() {
 		int next = heartbeatGeneration + 1;
 		if (next == 0) {
 			next = 1;

@@ -1,5 +1,7 @@
 package l1j.server.server.model.item.proc.model.attack;
 
+import l1j.server.server.model.character.transform.CTransformCombatData;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -53,7 +55,7 @@ public class Atk_WideAttack extends ItemSkillModel{
 			tars.add(c);
 		}
 		
-		SC_AreaAttackEffect.sendNoDirAndBroadcast(attacker, tars, eff_id, t_item.getItem().getType1() + 1);
+		SC_AreaAttackEffect.sendNoDirAndBroadcast(attacker, tars, eff_id, CTransformCombatData.weaponAction(attacker, t_item) + 1);
 		return result;
 	}
 

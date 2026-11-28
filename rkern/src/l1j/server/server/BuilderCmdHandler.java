@@ -1,5 +1,6 @@
 package l1j.server.server;
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.model.world.CWorldWork;
 
 import l1j.server.server.datatables.CObjectDB;
@@ -56,7 +57,6 @@ import l1j.server.server.model.rank.L1ClanRanking;
 import l1j.server.server.model.inventory.CInventory;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.arena.loader.CombatLoadManager;
 import l1j.server.server.model.character.combat.statistics.KdaLoadManager;
@@ -202,7 +202,7 @@ import l1j.server.server.datatables.NoDropItem;
 import l1j.server.server.datatables.NoShopAndWare;
 import l1j.server.server.model.shop.NpcCashShopSpawnTable;
 import l1j.server.server.model.npc.chat.NpcChatTable;
-import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.model.character.transform.CTransformDB;
 import l1j.server.server.datatables.ResolventTable;
 import l1j.server.server.datatables.UBTable;
 import l1j.server.server.datatables.UserProtectMonsterTable;
@@ -5725,7 +5725,7 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 				SC_ServerMessage.send(pc, 73, name); // \f1%0은 게임을 하고 있지 않습니다.
 			} else {
 				try {
-					L1PolyMorph.doPoly(tg, polyid, 604800, L1PolyMorph.MORPH_BY_GM, false);
+					tg.Transform(polyid, 604800, TransformType.GM, false);
 				} catch (Exception exception) {
 					SC_SystemMessage.send(pc, ".변신 [캐릭터명] [그래픽ID] 라고 입력해 주세요. ");
 				}
@@ -6279,8 +6279,19 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
 			DropItemTable.reload();
 			gm.sendPackets("drop_item 테이블이 리로드 되었습니다.");
 		} else if (arg.equalsIgnoreCase("변신")) {
-			PolyTable.reload();
-			gm.sendPackets("polymorphs 테이블이 리로드 되었습니다.");
+            CUserSocket session = gm.getNetConnection();
+            try {
+                CacheD.getInstance().submitDbJob(() -> {
+                    boolean reloaded = CTransformDB.reload();
+                    CIOThreadCallback.getInstance().completeSession(session, () -> {
+                        if (session.getActiveChar() == gm) SC_SystemMessage.send(gm, reloaded
+                                ? "polymorphs 테이블이 리로드 되었습니다."
+                                : "변신 정의 리로드에 실패했습니다. 기존 정의를 유지합니다.");
+                    });
+                });
+            } catch (java.util.concurrent.RejectedExecutionException rejected) {
+                SC_SystemMessage.send(gm, "변신 정의 리로드 요청을 처리하지 못했습니다.");
+            }
 		} else if (arg.equalsIgnoreCase("용해제1")) {
 			ResolventTable.reload();
 			gm.sendPackets("resolvent 테이블이 리로드 되었습니다.");

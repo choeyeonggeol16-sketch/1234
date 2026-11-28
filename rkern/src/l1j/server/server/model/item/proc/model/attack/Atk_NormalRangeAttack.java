@@ -1,5 +1,7 @@
 package l1j.server.server.model.item.proc.model.attack;
 
+import l1j.server.server.model.character.transform.CTransformCombatData;
+
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.item.proc.model.ItemSkillModel;
@@ -38,7 +40,7 @@ public class Atk_NormalRangeAttack extends ItemSkillModel{
 						eff_id,
 						attacker.getX(),
 						attacker.getY(),
-						t_item.getItem().getType1() + 1,
+						CTransformCombatData.weaponAction(attacker, t_item) + 1,
 						false);
 			} else {
 				SC_UseAttackSkill.broadcast(
@@ -47,7 +49,7 @@ public class Atk_NormalRangeAttack extends ItemSkillModel{
 						eff_id,
 						defender.getX(),
 						defender.getY(),
-						t_item.getItem().getType1() + 1,
+						CTransformCombatData.weaponAction(attacker, t_item) + 1,
 						false);
 			}
 		if(GameUtils.isUnbeatable(defender))

@@ -1,5 +1,6 @@
 package l1j.server.server.model.world.trap;
 
+import l1j.server.server.model.character.transform.TransformType;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_GameList;
 
@@ -9,7 +10,6 @@ import l1j.server.server.model.network.core.sc.packet.SC_GameRap;
 
 
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -166,122 +166,122 @@ public class L1PetRaceTrap extends L1Trap {
 			switch (chance) {
 				/**기본 펫 */
 				case 0: 
-					L1PolyMorph.doPoly(c, 4038,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(4038,30,TransformType.NPC, false);
 					
 					break;
 				case 1: 
-					L1PolyMorph.doPoly(c, 1540,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1540,30,TransformType.NPC, false);
 					
 					break;
 				case 2: 
-					L1PolyMorph.doPoly(c, 929,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(929,30,TransformType.NPC, false);
 					
 					break;
 				case 3: 
-					L1PolyMorph.doPoly(c, 934,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(934,30,TransformType.NPC, false);
 					
 					break;
 				case 4: 
-					L1PolyMorph.doPoly(c, 979,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(979,30,TransformType.NPC, false);
 					
 					break;
 				case 5: 
-					L1PolyMorph.doPoly(c, 3134,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3134,30,TransformType.NPC, false);
 					
 					break;
 				case 6: 
-					L1PolyMorph.doPoly(c, 3211,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3211,30,TransformType.NPC, false);
 					
 					break;
 				case 7: 
-					L1PolyMorph.doPoly(c, 3918,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3918,30,TransformType.NPC, false);
 					
 					break;
 				case 8: 
-					L1PolyMorph.doPoly(c, 938,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(938,30,TransformType.NPC, false);
 					
 					break;
 				case 9: 
-					L1PolyMorph.doPoly(c, 2145,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(2145,30,TransformType.NPC, false);
 					
 					break;
 				case 10: 
-					L1PolyMorph.doPoly(c, 1022,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1022,30,TransformType.NPC, false);
 					
 					break;
 				/** 빠른 펫*/
 				case 11: 
-					L1PolyMorph.doPoly(c, 4133,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(4133,30,TransformType.NPC, false);
 					break;
 				case 12: 
-					L1PolyMorph.doPoly(c, 3199,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3199,30,TransformType.NPC, false);
 					break;
 				case 13: 
-					L1PolyMorph.doPoly(c, 1052,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1052,30,TransformType.NPC, false);
 					break;
 				case 14: 
-					L1PolyMorph.doPoly(c, 3107,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3107,30,TransformType.NPC, false);
 					break;
 				case 15: 
-					L1PolyMorph.doPoly(c, 3132,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3132,30,TransformType.NPC, false);
 					break;
 				case 16: 
-					L1PolyMorph.doPoly(c, 3178,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3178,30,TransformType.NPC, false);
 					break;
 				case 17: 
-					L1PolyMorph.doPoly(c, 3184,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3184,30,TransformType.NPC, false);
 					break;
 				case 18: 
-					L1PolyMorph.doPoly(c, 3156,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3156,30,TransformType.NPC, false);
 					break;
 				/**느린펫*/	
 				case 19: 
-					L1PolyMorph.doPoly(c, 945,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(945,30,TransformType.NPC, false);
 					
 					break;
 				case 20: 
-					L1PolyMorph.doPoly(c, 1649,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1649,30,TransformType.NPC, false);
 					
 					break;
 				case 21: 
-					L1PolyMorph.doPoly(c, 55,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(55,30,TransformType.NPC, false);
 					
 					break;
 				case 22: 
-					L1PolyMorph.doPoly(c, 2541,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(2541,30,TransformType.NPC, false);
 					
 					break;
 				case 23: 
-					L1PolyMorph.doPoly(c, 1642,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1642,30,TransformType.NPC, false);
 					
 					break;
 				case 24: 
-					L1PolyMorph.doPoly(c, 4168,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(4168,30,TransformType.NPC, false);
 					
 					break;
 				case 25: 
-					L1PolyMorph.doPoly(c, 29,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(29,30,TransformType.NPC, false);
 					
 					break;
 				case 26: 
-					L1PolyMorph.doPoly(c, 3188,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3188,30,TransformType.NPC, false);
 					
 					break;
 				case 27: 
-					L1PolyMorph.doPoly(c, 3918,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3918,30,TransformType.NPC, false);
 					
 					break;
 				/**이벤트변신*/
 				case 28: 
-					L1PolyMorph.doPoly(c, 1245,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1245,30,TransformType.NPC, false);
 					
 					break;
 				case 29: 
-					L1PolyMorph.doPoly(c, 2001,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(2001,30,TransformType.NPC, false);
 					
 					break;
 				case 30: 
-					L1PolyMorph.doPoly(c, 1590,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1590,30,TransformType.NPC, false);
 					
 					break;
 			}
@@ -290,129 +290,129 @@ public class L1PetRaceTrap extends L1Trap {
 			switch (chance) {
 				/**기본 펫 */
 				case 0: 
-					L1PolyMorph.doPoly(c, 4038,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(4038,30,TransformType.NPC, false);
 					
 					break;
 				case 1: 
-					L1PolyMorph.doPoly(c, 1540,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1540,30,TransformType.NPC, false);
 					
 					break;
 				case 2: 
-					L1PolyMorph.doPoly(c, 929,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(929,30,TransformType.NPC, false);
 					
 					break;
 				case 3: 
-					L1PolyMorph.doPoly(c, 934,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(934,30,TransformType.NPC, false);
 					
 					break;
 				case 4: 
-					L1PolyMorph.doPoly(c, 979,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(979,30,TransformType.NPC, false);
 					
 					break;
 				case 5: 
-					L1PolyMorph.doPoly(c, 3134,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3134,30,TransformType.NPC, false);
 					
 					break;
 				case 6: 
-					L1PolyMorph.doPoly(c, 3211,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3211,30,TransformType.NPC, false);
 					
 					break;
 				case 7: 
-					L1PolyMorph.doPoly(c, 3918,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3918,30,TransformType.NPC, false);
 					
 					break;
 				case 8: 
-					L1PolyMorph.doPoly(c, 938,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(938,30,TransformType.NPC, false);
 					
 					break;
 				case 9: 
-					L1PolyMorph.doPoly(c, 2145,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(2145,30,TransformType.NPC, false);
 					
 					break;
 				case 10: 
-					L1PolyMorph.doPoly(c, 1022,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1022,30,TransformType.NPC, false);
 					
 					break;
 				/** 빠른 펫*/
 				case 11: 
-					L1PolyMorph.doPoly(c, 4133,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(4133,30,TransformType.NPC, false);
 					
 					break;
 				case 12: 
-					L1PolyMorph.doPoly(c, 3199,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3199,30,TransformType.NPC, false);
 					
 					break;
 				case 13: 
-					L1PolyMorph.doPoly(c, 1052,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1052,30,TransformType.NPC, false);
 					
 					break;
 				case 14: 
-					L1PolyMorph.doPoly(c, 3107,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3107,30,TransformType.NPC, false);
 					
 					break;
 				case 15: 
-					L1PolyMorph.doPoly(c, 3132,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3132,30,TransformType.NPC, false);
 					
 					break;
 				case 16: 
-					L1PolyMorph.doPoly(c, 3178,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3178,30,TransformType.NPC, false);
 					
 					break;
 				case 17: 
-					L1PolyMorph.doPoly(c, 3184,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3184,30,TransformType.NPC, false);
 					
 					break;
 				case 18: 
-					L1PolyMorph.doPoly(c, 3156,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3156,30,TransformType.NPC, false);
 					
 					break;
 				/**느린펫*/	
 				case 19: 
-					L1PolyMorph.doPoly(c, 945,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(945,30,TransformType.NPC, false);
 					
 					break;
 				case 20: 
-					L1PolyMorph.doPoly(c, 1649,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1649,30,TransformType.NPC, false);
 					
 					break;
 				case 21: 
-					L1PolyMorph.doPoly(c, 55,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(55,30,TransformType.NPC, false);
 					
 					break;
 				case 22: 
-					L1PolyMorph.doPoly(c, 2541,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(2541,30,TransformType.NPC, false);
 					break;
 				case 23: 
-					L1PolyMorph.doPoly(c, 1642,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1642,30,TransformType.NPC, false);
 					
 					break;
 				case 24: 
-					L1PolyMorph.doPoly(c, 4168,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(4168,30,TransformType.NPC, false);
 					
 					break;
 				case 25: 
-					L1PolyMorph.doPoly(c, 29,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(29,30,TransformType.NPC, false);
 					
 					break;
 				case 26: 
-					L1PolyMorph.doPoly(c, 3188,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3188,30,TransformType.NPC, false);
 					
 					break;
 				case 27: 
-					L1PolyMorph.doPoly(c, 3918,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(3918,30,TransformType.NPC, false);
 					
 					break;
 				/**이벤트변신*/
 				case 28: 
-					L1PolyMorph.doPoly(c, 1245,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1245,30,TransformType.NPC, false);
 					
 					break;
 				case 29: 
-					L1PolyMorph.doPoly(c, 2001,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(2001,30,TransformType.NPC, false);
 					
 					break;
 				case 30: 
-					L1PolyMorph.doPoly(c, 1590,30,L1PolyMorph.MORPH_BY_NPC, false); 
+					c.Transform(1590,30,TransformType.NPC, false);
 					
 					break;
 			}

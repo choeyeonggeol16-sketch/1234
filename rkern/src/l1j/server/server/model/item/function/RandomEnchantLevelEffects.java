@@ -7,10 +7,8 @@ import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import static l1j.server.server.model.character.skill.L1SkillId.SHAPE_CHANGE;
 
-import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.L1Character;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.Instance.L1ItemInstance;
 import l1j.server.server.model.Instance.L1MonsterInstance;
 import l1j.server.server.model.Instance.L1PcInstance;

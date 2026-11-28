@@ -1142,6 +1142,8 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 
 	private static void processBuff(L1PcInstance pc, List<BuffInfo> buffList) {
 	    int[] icon = new int[39];
+	    BuffInfo shape = null;
+	    BuffInfo ring = null;
 
 	    BuffRestoreRegistryInit.init();
 	    for (BuffInfo buffInfo : buffList) {
@@ -1152,6 +1154,14 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 	        // a stale -1 or an overflowing millisecond conversion must not resurrect
 	        // an invalid row as a permanent status on this character.
 	        if (skillid <= 0 || remaining_time < 0) continue;
+	        if (skillid == L1SkillId.SHAPE_CHANGE) {
+	            shape = buffInfo;
+	            continue;
+	        }
+	        if (skillid == L1SkillId.POLY_RING_MASTER) {
+	            ring = buffInfo;
+	            continue;
+	        }
 	        if (remaining_time > Integer.MAX_VALUE / 1000) {
 	            remaining_time = Integer.MAX_VALUE / 1000;
 	        }
@@ -1175,6 +1185,13 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 	        BuffRestoreRegistry.find(skillid).restore(pc, skillid, buffInfo.polyId, remaining_time, icon);
 	        pc.setSkillEffect(skillid, remaining_time * 1000);
 	    }
+
+	    // The transform callback owns both effects. Restore the ring variant once,
+	    // even if the database returns the plain transform row after the ring row.
+	    if (ring != null)
+	        BuffRestoreRegistry.find(ring.skillId).restore(pc, ring.skillId, ring.polyId, ring.remainTime, icon);
+	    if (shape != null && !pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER))
+	        BuffRestoreRegistry.find(shape.skillId).restore(pc, shape.skillId, shape.polyId, shape.remainTime, icon);
 
 	    SC_UnityIcon.send(pc, icon);
 	}

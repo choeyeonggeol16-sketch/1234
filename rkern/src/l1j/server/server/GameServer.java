@@ -65,7 +65,7 @@ import l1j.server.server.model.shop.NpcCashShopSpawnTable;
 import l1j.server.server.model.npc.chat.NpcChatTable;
 import l1j.server.server.datatables.NpcMarkTable;
 import l1j.server.server.datatables.NpcSpawnTable;
-import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.model.character.transform.CTransformDB;
 import l1j.server.server.datatables.RaceTable;
 import l1j.server.server.datatables.ReportTable;
 import l1j.server.server.datatables.ResolventTable;
@@ -231,7 +231,7 @@ public class GameServer {
 		CNpcMakerDB.getInstance();
 		MobGroupTable.getInstance();
 		CSkillDB.getInstance();
-		PolyTable.getInstance();
+		CTransformDB.getInstance();
 		CObjectDB.LoadItem().initRace();
 		DropTable.getInstance();
 		DropItemTable.getInstance();

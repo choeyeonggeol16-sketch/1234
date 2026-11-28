@@ -16,7 +16,6 @@ import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.world.residence.L1HouseLocation;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.inventory.warehouse.CWareHouseWithdraw;
@@ -292,7 +291,7 @@ final class NpcServiceHtmlCommands {
                                     htmlid = "";
                                 else
                                     HadinSystem.getInstance().startHadin(pc);
-                                L1PolyMorph.undoPoly(pc);
+                                pc.CancelTransform();
                                 CWorld.getInstance().broadcastServerMessage("\\aD" + pc.getName() + " 님이 동료들과 함께 과거로 여행을 떠났습니다.");
                             }
                             htmlid = "";

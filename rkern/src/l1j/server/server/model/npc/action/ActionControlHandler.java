@@ -1,5 +1,7 @@
 package l1j.server.server.model.npc.action;
 
+import l1j.server.server.model.character.transform.TransformType;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 
@@ -17,7 +19,6 @@ import l1j.server.Config;
 import l1j.server.server.model.item.teleport.NeigeTower;
 import l1j.server.server.model.L1NeigeSaveChar;
 import l1j.server.server.model.SeasonRewardHandler;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1NpcInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
@@ -73,7 +74,7 @@ public class ActionControlHandler {
 
         // --- 특수 변신 (Kir 포함) ---
         _actionMap.put("neikir", this::handleKirPolyAction);
-        _actionMap.put("neicen", pc -> { L1PolyMorph.undoPoly(pc); pc.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE); return false; });
+        _actionMap.put("neicen", pc -> { pc.CancelTransform(); return false; });
         
         // 일반 변신 데이터 매핑
         _actionMap.put("neibapo", pc -> applySimplePoly(pc, pc.getAccount().getInfo_bapo_poly(), 13863));
@@ -178,10 +179,8 @@ public class ActionControlHandler {
     }
 
     private boolean applySimplePoly(L1PcInstance pc, int authCheck, int polyId) {
-        if (authCheck != 0) {
-            L1PolyMorph.doPoly(pc, polyId, 7200, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
+        if (authCheck != 0 && pc.Transform(polyId, 7200, TransformType.ITEM_MAGIC, true))
             soundAndBroadcast(pc, 6082);
-        }
         return false;
     }
 
@@ -195,9 +194,8 @@ public class ActionControlHandler {
         }
         if (pc.getAccount().getInfo_kir_poly() != 0) {
             int polyId = (pc.getCurrentSpriteId() != 21140) ? 21140 : 19514;
-            L1PolyMorph.doPoly(pc, polyId, -1, L1PolyMorph.MORPH_BY_ITEMMAGIC, true);
-            pc.getInventory().DeleteItemInInventory(875640379, 1);
-            soundAndBroadcast(pc, 6082);
+            CTransform.TransformWithCost(pc, polyId, -1, TransformType.ITEM_MAGIC, true,
+                    875640379, 1, () -> soundAndBroadcast(pc, 6082));
         }
         return false;
     }

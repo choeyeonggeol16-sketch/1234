@@ -3009,6 +3009,12 @@ public final class CIOThreadCallback {
         }
     }
 
+    /** Transform admission uses the existing NPC skill heartbeat before publishing an effect. */
+    public boolean tryScheduleTransformHeartbeat(L1NpcInstance npc, int generation) {
+        return CNPCServer.getInstance().isOwnerThread(npc)
+                && scheduleSkillHeartbeat(npc, generation, SKILL_EFFECT_HEARTBEAT_MS);
+    }
+
     private boolean scheduleSkillHeartbeat(L1Character cha, int generation, long delayMs) {
         final CIOThread owner = characterOwner(cha);
         if (owner == null || !owner.running || generation == 0 || delayMs <= 0L) {

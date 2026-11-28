@@ -54,7 +54,7 @@ public final class ClassChange {
 
     
     private static final int[] RETIRED_EFFECTS = IntStream.concat(Arrays.stream(skillsWithIcons),
-            IntStream.concat(Arrays.stream(skillsOnly), IntStream.of(L1SkillId.에테리얼))).toArray();
+            IntStream.concat(Arrays.stream(skillsOnly), IntStream.of(L1SkillId.에테리얼, L1SkillId.SHAPE_CHANGE, L1SkillId.POLY_RING_MASTER))).toArray();
 
     // 클래스 이름
     private static final String[] CLASS_NAMES = { "군주", "기사", "요정", "마법사", "다크엘프", "용기사", "환술사", "전사" };
@@ -114,6 +114,7 @@ public final class ClassChange {
                 }
             }, () -> {
                 try {
+                    pc.CancelTransform();
                     deleteSkillsAndResetStats(pc, oldType);
                     finishClassChange(pc, newGfx);
                     pc.save();

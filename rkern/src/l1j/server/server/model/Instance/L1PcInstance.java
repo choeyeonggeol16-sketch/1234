@@ -40,7 +40,7 @@ import l1j.server.server.datatables.CharactersGiftItemTable;
 import l1j.server.server.datatables.ClanBuffTable;
 import l1j.server.server.datatables.ClanBuffTable.ClanBuff;
 import l1j.server.server.datatables.ExpTable;
-import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.model.character.transform.CTransformDB;
 import l1j.server.server.model.BookQuest.Loader.BQSCharacterDataLoader;
 import l1j.server.server.model.BookQuest.UserSide.BQSCharacterData;
 import l1j.server.server.model.Getback;
@@ -59,7 +59,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.inventory.CUserInventory;
 import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.inventory.L1PolyMorph;
+import l1j.server.server.model.character.transform.CTransform;
 import l1j.server.server.model.quest.CQuestSystem;
 import l1j.server.server.model.L1Racing;
 import l1j.server.server.model.L1ReturnStatTemp;
@@ -3802,6 +3802,7 @@ for (L1PcInstance partymember : this.getParty().getMembers()) {
 				setTempCharGfxAtDead(getClassId());
 			}
 
+			CancelTransform();
 			setCurrentSprite(getClassId());
 			
 
@@ -6422,7 +6423,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	public void setAttackSpeed() {
 		int spriteId = getCurrentSpriteId();
 	    int level = getLevel();
-	    L1PolyMorph poly = PolyTable.getInstance().find(spriteId);
+	    CTransform poly = CTransformDB.getInstance().find(spriteId);
 	    if (poly != null) {
 	        level = Math.max(level, poly.getMinLevel());
 	    }
@@ -6437,6 +6438,12 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
             SC_CharSpeedUpdate.broadcast(this, getId(), status, level);
 	    }
 	}
+
+    private Object transformEquipmentSource;
+
+    public Object getTransformEquipmentSource() { return transformEquipmentSource; }
+
+    public void setTransformEquipmentSource(Object source) { transformEquipmentSource = source; }
 
 	private int _polyIdByEquip = 0;
 

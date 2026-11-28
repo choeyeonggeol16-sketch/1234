@@ -66,8 +66,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 20528);
+
+			NeigeMorph.applyPaid(pc, 20528);
 			}
 			return false;
 		case "rnlpolyh02":
@@ -80,8 +80,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21226);
+
+			NeigeMorph.applyPaid(pc, 21226);
 			}
 			return false;
 		case "rnlpolyh03":
@@ -95,8 +95,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21233);
+
+			NeigeMorph.applyPaid(pc, 21233);
 			}
 			return false;
 			//근거리
@@ -110,8 +110,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21184);
+
+			NeigeMorph.applyPaid(pc, 21184);
 			}
 			return false;
 		case "rnlpolyh05":
@@ -124,8 +124,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21187);
+
+			NeigeMorph.applyPaid(pc, 21187);
 			}
 			return false;
 		case "rnlpolyh06":
@@ -138,8 +138,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21218);
+
+			NeigeMorph.applyPaid(pc, 21218);
 			}
 			return false;
 		case "rnlpolyh07":
@@ -152,8 +152,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21180);
+
+			NeigeMorph.applyPaid(pc, 21180);
 			}
 			return false;
 		case "rnlpolyh08":
@@ -166,8 +166,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21194);
+
+			NeigeMorph.applyPaid(pc, 21194);
 			}
 			return false;
 		case "rnlpolyh09":
@@ -180,8 +180,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18347);
+
+			NeigeMorph.applyPaid(pc, 18347);
 			}
 			return false;
 		case "rnlpolyh10":
@@ -194,8 +194,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21198);
+
+			NeigeMorph.applyPaid(pc, 21198);
 			}
 			return false;
 		case "rnlpolyh11":
@@ -208,8 +208,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21202);
+
+			NeigeMorph.applyPaid(pc, 21202);
 			}
 			return false;
 		case "rnlpolyh12":
@@ -222,8 +222,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18375);
+
+			NeigeMorph.applyPaid(pc, 18375);
 			}
 			return false;
 		case "rnlpolyh13":
@@ -236,8 +236,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21237);
+
+			NeigeMorph.applyPaid(pc, 21237);
 			}
 			return false;
 		case "rnlpolyh14":
@@ -250,8 +250,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21241);
+
+			NeigeMorph.applyPaid(pc, 21241);
 			}
 			return false;
 		case "rnlpolyh15":
@@ -264,8 +264,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18320);
+
+			NeigeMorph.applyPaid(pc, 18320);
 			}
 			return false;
 		case "rnlpolyh16":
@@ -278,8 +278,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18323);
+
+			NeigeMorph.applyPaid(pc, 18323);
 			}
 			return false;
 		case "rnlpolyh17":
@@ -292,8 +292,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18326);
+
+			NeigeMorph.applyPaid(pc, 18326);
 			}
 			return false;
 		case "rnlpolyh18":
@@ -306,8 +306,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18329);
+
+			NeigeMorph.applyPaid(pc, 18329);
 			}
 			return false;
 		case "rnlpolyh19":
@@ -320,8 +320,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18340);
+
+			NeigeMorph.applyPaid(pc, 18340);
 			}
 			return false;
 		case "rnlpolyh20":
@@ -334,8 +334,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18344);
+
+			NeigeMorph.applyPaid(pc, 18344);
 			}
 			return false;
 		case "rnlpolyh21":
@@ -348,8 +348,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21249);
+
+			NeigeMorph.applyPaid(pc, 21249);
 			}
 			return false;
 			//원거리
@@ -363,8 +363,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21189);
+
+			NeigeMorph.applyPaid(pc, 21189);
 			}
 			return false;
 		case "rnlpolyh23":
@@ -377,8 +377,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21192);
+
+			NeigeMorph.applyPaid(pc, 21192);
 			}
 			return false;
 		case "rnlpolyh24":
@@ -391,8 +391,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21209);
+
+			NeigeMorph.applyPaid(pc, 21209);
 			}
 			return false;
 		case "rnlpolyh25":
@@ -405,8 +405,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21222);
+
+			NeigeMorph.applyPaid(pc, 21222);
 			}
 			return false;
 		case "rnlpolyh26":
@@ -419,8 +419,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18388);
+
+			NeigeMorph.applyPaid(pc, 18388);
 			}
 			return false;
 		case "rnlpolyh27":
@@ -433,8 +433,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18391);
+
+			NeigeMorph.applyPaid(pc, 18391);
 			}
 			return false;
 		case "rnlpolyh28":
@@ -447,8 +447,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18394);
+
+			NeigeMorph.applyPaid(pc, 18394);
 			}
 			return false;
 		case "rnlpolyh29":
@@ -461,8 +461,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18398);
+
+			NeigeMorph.applyPaid(pc, 18398);
 			}
 			return false;
 			//마법
@@ -476,8 +476,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21205);
+
+			NeigeMorph.applyPaid(pc, 21205);
 			}
 			return false;
 		case "rnlpolyh31":
@@ -490,8 +490,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21213);
+
+			NeigeMorph.applyPaid(pc, 21213);
 			}
 			return false;
 		case "rnlpolyh32":
@@ -504,8 +504,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21229);
+
+			NeigeMorph.applyPaid(pc, 21229);
 			}
 			return false;
 		case "rnlpolyh33":
@@ -518,8 +518,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 21245);
+
+			NeigeMorph.applyPaid(pc, 21245);
 			}
 			return false;
 		case "rnlpolyh34":
@@ -532,8 +532,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18379);
+
+			NeigeMorph.applyPaid(pc, 18379);
 			}
 			return false;
 		case "rnlpolyh35":
@@ -546,8 +546,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18368);
+
+			NeigeMorph.applyPaid(pc, 18368);
 			}
 			return false;
 		case "rnlpolyh36":
@@ -560,8 +560,8 @@ public static boolean Neige(L1PcInstance pc, String s) {
 					pc.sendPackets("지금은 사용할 수 없는 상태입니다.");
 					return false;
 				}
-				pc.getInventory().DeleteItemInInventory(875640379, 1);
-			NeigeMorph.apply(pc, 18372);
+
+			NeigeMorph.applyPaid(pc, 18372);
 			}
 			return false;
 			//첫 선택************************************************************************************

@@ -32,58 +32,58 @@ public static boolean Low(L1PcInstance pc, String s) {
 			return true;
 
 		case "nelowp01":
-			NeigeMorph.apply(pc, 21350);
+			NeigeMorph.applyPaid(pc, 21350);
 			return false;
 		case "nelowp02":
-			NeigeMorph.apply(pc, 21354);
+			NeigeMorph.applyPaid(pc, 21354);
 			return false;
 		case "nelowp03":
-			NeigeMorph.apply(pc, 21356);
+			NeigeMorph.applyPaid(pc, 21356);
 			return false;
 		case "nelowp04":
-			NeigeMorph.apply(pc, 21359);
+			NeigeMorph.applyPaid(pc, 21359);
 			return false;
 		case "nelowp05":
-			NeigeMorph.apply(pc, 21361);
+			NeigeMorph.applyPaid(pc, 21361);
 			return false;
 		case "nelowp06":
-			NeigeMorph.apply(pc, 21363);
+			NeigeMorph.applyPaid(pc, 21363);
 			return false;
 		case "nelowp07":
-			NeigeMorph.apply(pc, 21366);
+			NeigeMorph.applyPaid(pc, 21366);
 			return false;
 		case "nelowp08":
-			NeigeMorph.apply(pc, 21369);
+			NeigeMorph.applyPaid(pc, 21369);
 			return false;
 		case "nelowp09":
-			NeigeMorph.apply(pc, 21373);
+			NeigeMorph.applyPaid(pc, 21373);
 			return false;
 		case "nelowp10":
-			NeigeMorph.apply(pc, 21377);
+			NeigeMorph.applyPaid(pc, 21377);
 			return false;
 		case "nelowp11":
-			NeigeMorph.apply(pc, 21381);
+			NeigeMorph.applyPaid(pc, 21381);
 			return false;
 		case "nelowp12":
-			NeigeMorph.apply(pc, 21384);
+			NeigeMorph.applyPaid(pc, 21384);
 			return false;
 		case "nelowp13":
-			NeigeMorph.apply(pc, 21387);
+			NeigeMorph.applyPaid(pc, 21387);
 			return false;
 		case "nelowp14":
-			NeigeMorph.apply(pc, 21390);
+			NeigeMorph.applyPaid(pc, 21390);
 			return false;
 		case "nelowp15":
-			NeigeMorph.apply(pc, 21393);
+			NeigeMorph.applyPaid(pc, 21393);
 			return false;
 		case "nelowp16":
-			NeigeMorph.apply(pc, 21397);
+			NeigeMorph.applyPaid(pc, 21397);
 			return false;
 		case "nelowp17":
-			NeigeMorph.apply(pc, 21399);
+			NeigeMorph.applyPaid(pc, 21399);
 			return false;
 		case "nelowp18":
-			NeigeMorph.apply(pc, 21402);
+			NeigeMorph.applyPaid(pc, 21402);
 			return false;
 			
 	     default: {

@@ -1,5 +1,7 @@
 package l1j.server.server.model.character.skill;
 
+import l1j.server.server.model.character.transform.TransformType;
+import l1j.server.server.model.character.transform.CTransformCombatData;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.datatables.CObjectDB;
 import java.util.Iterator;
@@ -9,7 +11,7 @@ import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.world.siege.CCastleSiegeManager;
-import l1j.server.server.datatables.PolyTable;
+import l1j.server.server.model.character.transform.CTransformDB;
 import l1j.server.server.model.character.skill.CSkillDB;
 import l1j.server.server.model.Instance.L1CompanionInstance;
 import l1j.server.server.model.Instance.L1DollInstance;
@@ -28,7 +30,6 @@ import l1j.server.server.model.L1Magic;
 import l1j.server.server.model.L1Object;
 import l1j.server.server.model.CParty;
 import l1j.server.server.model.L1PinkName;
-import l1j.server.server.model.inventory.L1PolyMorph;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.skill.core.DurationResolver;
 import l1j.server.server.model.character.skill.helper.SkillUseHelper;
@@ -440,7 +441,7 @@ public final class CSkillEffectActivation {
 	}
 
 	/** Polymorph's player mutation is owned by the target, not a remote caster. */
-	static void startShapeChangeFromOwner(L1PcInstance pc, int skillId, int duration,
+	static void PumpStartTransformSkill(L1PcInstance pc, int skillId, int duration,
 			int polyId, int casterId, boolean partyMember) {
 		if (pc.isDead()) return;
 		L1PcInstance caster = null;
@@ -458,8 +459,8 @@ public final class CSkillEffectActivation {
 			SC_MessageYN.send(pc, 180);
 			return;
 		}
-		L1PolyMorph.doPoly(pc, polyId, duration, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
-		if (caster != null) SC_ServerMessage.send(pc, 241, caster.getName());
+		boolean applied = pc.Transform(polyId, duration, TransformType.ITEM_MAGIC, false);
+		if (applied && caster != null) SC_ServerMessage.send(pc, 241, caster.getName());
 	}
 
 	// =========================
@@ -512,7 +513,8 @@ public final class CSkillEffectActivation {
 		} else if (cha instanceof L1MonsterInstance) {
 			final L1MonsterInstance mon = (L1MonsterInstance) cha;
 			final L1Skills skillTemp = CSkillDB.getInstance().getTemplate(L1SkillId.SHAPE_CHANGE);
-			L1PolyMorph.doPoly(mon, polyId, skillTemp.getBuffDuration(), L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
+			return mon.Transform(polyId, skillTemp.getBuffDuration(), TransformType.ITEM_MAGIC, false)
+                    ? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 		}
 
 		return HandlerResult.HANDLED;
@@ -723,7 +725,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 					if (cha instanceof L1PcInstance) {
 						L1PcInstance pc = (L1PcInstance) cha;
 
-						if (pc.getRankLevel() >= 9 && PolyTable.getInstance().isRankingPoly(pc.getCurrentSpriteId())) {
+						if (pc.getRankLevel() >= 9 && CTransformDB.getInstance().isRankingPoly(pc.getCurrentSpriteId())) {
 							continue;
 						}
 						if (pc.hasSkillEffect(L1SkillId.POLY_RING_MASTER)) {
@@ -2795,7 +2797,7 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 	private static int weaponType1(final L1PcInstance pc) {
 		if (pc == null) return -1;
 		if (pc.getWeapon() == null || pc.getWeapon().getItem() == null) return -1;
-		return pc.getWeapon().getItem().getType1();
+		return CTransformCombatData.weaponAction(pc, pc.getWeapon());
 	}
 
 	private static boolean isOneOf(int v, int... arr) {
@@ -3645,7 +3647,7 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 			if (skillNum == L1SkillId.SHAPE_CHANGE) {
 
 				if (pc.getRankLevel() >= 9
-						&& PolyTable.getInstance()
+						&& CTransformDB.getInstance()
 								.isRankingPoly(
 										pc.getCurrentSpriteId())) {
 					continue;
@@ -3694,11 +3696,11 @@ private static void sendIvenBuffIcon(final L1PcInstance pc, final int skillId, f
 
 		// 랭킹 변신 보호. 원본 그대로.
 		if (!(pc.getRankLevel() >= 9
-				&& PolyTable.getInstance()
+				&& CTransformDB.getInstance()
 						.isRankingPoly(
 								pc.getCurrentSpriteId()))) {
 
-			L1PolyMorph.undoPoly(pc);
+			pc.CancelTransform();
 
 			SC_CharVisualUpdate.sendPacked(pc, SC_CharVisualUpdate.pack(pc));
 

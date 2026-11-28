@@ -23,7 +23,8 @@ import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.Instance.L1ScarecrowInstance;
 import l1j.server.server.model.L1Character;
 import l1j.server.server.model.L1Object;
-import l1j.server.server.model.inventory.L1PolyMorph;
+import l1j.server.server.model.character.transform.CTransform;
+import l1j.server.server.model.character.transform.CTransformCombatData;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.character.combat.attack.DamageReductionHelper;
 import l1j.server.server.model.character.combat.attack.HitEvasionModel;
@@ -271,7 +272,7 @@ public final class CAttackAction extends CNewAction {
             boolean isAuto) {
 
         if (owner.getWeapon() == null
-                && !L1PolyMorph.canAttackWithoutWeapon(owner.getCurrentSpriteId())) return false;
+                && !CTransform.canAttackWithoutWeapon(owner.getCurrentSpriteId())) return false;
 
         if (!owner.hasSkillEffect(L1SkillId.비욘드)) {
             owner.killSkillEffectTimer(L1SkillId.MEDITATION);
@@ -959,7 +960,7 @@ public final class CAttackAction extends CNewAction {
             }
 			if (weapon != null) {
 				_weaponId = weapon.getItem().getItemId();
-				_weaponType = weapon.getItem().getType1();
+				_weaponType = CTransformCombatData.weaponAction(_pc, weapon);
 				_weaponType2 = weapon.getItem().getType();// 변경
                 // DB corrections are additive to the original template stats.
                 // One immutable memory lookup for both values; no SQL/new per hit.
@@ -1038,7 +1039,7 @@ public final class CAttackAction extends CNewAction {
     private boolean calcHitPcAttack() {
         if (_pc == null) return false;
         if (isUnarmedPcAttack()
-                && !L1PolyMorph.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) return false;
+                && !CTransform.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) return false;
         
         // 1) 탄/무기 조건
         final int type1 = _weaponType;
@@ -1262,7 +1263,7 @@ public final class CAttackAction extends CNewAction {
 	public int calcDamage() {
 
         if (isUnarmedPcAttack()
-                && !L1PolyMorph.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) {
+                && !CTransform.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) {
             _isHit = false;
             return (_damage = 0);
         }
@@ -1845,7 +1846,7 @@ public final class CAttackAction extends CNewAction {
     private void actionPc() {
         // A rejected bow-only morph must not emit even a missed fist swing.
         if (isUnarmedPcAttack()
-                && !L1PolyMorph.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) {
+                && !CTransform.canAttackWithoutWeapon(_pc.getCurrentSpriteId())) {
             _isHit = false;
             return;
         }

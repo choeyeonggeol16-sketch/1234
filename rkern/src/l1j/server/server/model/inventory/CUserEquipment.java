@@ -1,5 +1,9 @@
 package l1j.server.server.model.inventory;
 
+import l1j.server.server.model.character.transform.CTransform;
+import l1j.server.server.model.character.transform.CTransformDB;
+import l1j.server.server.model.character.transform.CTransformCombatData;
+import l1j.server.server.model.character.transform.TransformType;
 import static l1j.server.server.model.inventory.EquipmentTraits.Flag.*;
 
 import java.util.ArrayList;
@@ -60,8 +64,6 @@ public final class CUserEquipment {
 
 	private static final List<CSetItem> EMPTY_ACTIVE_SETS = List.of();
 	private List<CSetItem> activeSets = EMPTY_ACTIVE_SETS;
-	private CSetItem polymorphSet;
-	private int polymorphSetSprite;
 	private final ArrayList<L1ItemInstance> _armors = new ArrayList<>();
 	private static final int ARMOR_BONUS_WIDTH = 4;
 	private enum ClassArmorBonus { MELEE, MAGIC, BOW }
@@ -349,22 +351,52 @@ public final class CUserEquipment {
         }
     }
 
-    public void takeOffItems(int polyId) {
-        final L1ItemInstance primary = getWeapon();
-        final L1ItemInstance secondary = getSecondWeapon();
-        if (primary != null && !L1PolyMorph.isEquipableWeapon(polyId, primary.getItem().getType())) {
-            _owner.UnequipItem(primary);
+    public void refreshTransformWeaponAction() {
+        var primary = getWeapon();
+        _owner.setCurrentWeapon(getSecondWeapon() != null ? 88 : primary == null ? 0
+                : CTransformCombatData.weaponAction(_owner, primary));
+    }
+
+    /** Transform callers hold the existing inventory equipment gate. */
+    public int removeIncompatibleForTransform(CTransform form, Object source) {
+        if (form == null) return 29;
+        L1ItemInstance primary = getWeapon();
+        L1ItemInstance secondary = getSecondWeapon();
+        boolean removePrimary = disallowsWeapon(form, primary);
+        boolean removeSecondary = disallowsWeapon(form, secondary);
+        if ((removePrimary && removesTransformSource(primary, source))
+                || (removeSecondary && removesTransformSource(secondary, source))) return -1;
+        for (var armor : _armors) {
+            if (armor.isEquipped() && !form.CanUseArmor(armor.getItem().getType())
+                    && removesTransformSource(armor, source)) return -1;
         }
-        if (secondary != null && !L1PolyMorph.isEquipableWeapon(polyId, secondary.getItem().getType())) {
-            _owner.UnequipItem(secondary);
-        }
-        for (int type = 0; type <= 12; type++) {
-            if (L1PolyMorph.isEquipableArmor(polyId, type)) continue;
-            L1ItemInstance armor;
-            while ((armor = getAppliedArmor(type)) != null) {
+        if (removeSecondary) _owner.UnequipItem(secondary);
+        if (removePrimary) _owner.UnequipItem(primary);
+        if ((removePrimary && primary.isEquipped()) || (removeSecondary && secondary.isEquipped())) return -1;
+        for (int i = _armors.size() - 1; i >= 0; i--) {
+            var armor = _armors.get(i);
+            if (armor.isEquipped() && !form.CanUseArmor(armor.getItem().getType())) {
                 _owner.UnequipItem(armor);
-                if (armor.isEquipped()) break;
+                if (armor.isEquipped()) return -1;
             }
+        }
+        return removePrimary || removeSecondary ? 0 : 29;
+    }
+
+    private static boolean disallowsWeapon(CTransform form, L1ItemInstance weapon) {
+        return weapon != null && !form.CanUseWeapon(weapon.getItem().getType());
+    }
+
+    private static boolean removesTransformSource(L1ItemInstance item, Object source) {
+        return item == source || source instanceof CSetItem set && set.containsItem(item.getItemId());
+    }
+
+    public void takeOffItems(int sprite) {
+        if (!_owner.getInventory().tryBeginEquipmentChange()) return;
+        try {
+            removeIncompatibleForTransform(CTransformDB.getInstance().find(sprite), null);
+        } finally {
+            _owner.getInventory().endEquipmentChange();
         }
     }
 
@@ -558,7 +590,7 @@ public final class CUserEquipment {
 	private void publishWeapons(L1ItemInstance primary, L1ItemInstance secondary) {
 		_owner.setWeapon(primary);
 		_owner.setSecondWeapon(secondary);
-		_owner.setCurrentWeapon(secondary != null ? 88 : primary == null ? 0 : primary.getItem().getType1());
+		_owner.setCurrentWeapon(secondary != null ? 88 : primary == null ? 0 : CTransformCombatData.weaponAction(_owner, primary));
 	}
 
 	public boolean hasRoomForWeapon(L1ItemInstance weapon) {
@@ -724,10 +756,7 @@ public final class CUserEquipment {
 		}
 
 
-        final int morph = EquipmentTraits.forItem(item.getItemId()).morph();
-        if (morph != 0 && _owner.getCurrentSpriteId() == morph && polymorphSet == null) {
-            L1PolyMorph.undoPoly(_owner);
-        }
+        if (_owner.getTransformEquipmentSource() == weapon) _owner.CancelTransform();
         applyWeaponBlessBonus(weapon, -1);
         removeWeaponFromSlots(weapon);
     }
@@ -844,7 +873,7 @@ public final class CUserEquipment {
 		showMagicHelmSpells(equipment);
 		onEquipmentChanged(equipment, item, true, _owner.getType());
         if (type == 1 && traits.morph() != 0 && equipment.isEquipped()) {
-            L1PolyMorph.doPoly(_owner, traits.morph(), 0, L1PolyMorph.MORPH_BY_ITEMMAGIC, false);
+            _owner.Transform(traits.morph(), 0, TransformType.ITEM_MAGIC, false, equipment);
         }
 		// A set polymorph can synchronously unequip gear. Complete this item's
 		// own options and callbacks before exposing that transition.
@@ -1318,33 +1347,21 @@ public final class CUserEquipment {
 
 	private void applySetPolymorph(CSetItem set) {
 		if (!set.canApplyPolymorph(_owner)) return;
-		L1PolyMorph.doPoly(_owner, set.polymorphGfx(_owner), 0, L1PolyMorph.MORPH_BY_ITEMMAGIC, false, set);
+		_owner.Transform(set.polymorphGfx(_owner), 0, TransformType.ITEM_MAGIC, false, set);
 	}
 
-	void recordPolymorphSource(CSetItem set, int sprite) {
-		polymorphSet = set;
-		polymorphSetSprite = set == null ? 0 : sprite;
-	}
-
-	boolean ownsPolymorph(CSetItem set, int sprite) {
-		return polymorphSet == set && polymorphSetSprite == sprite;
-	}
-
-	private void removeSetPolymorph(CSetItem set) {
-		if (polymorphSet != set) return;
-		final int gfx = polymorphSetSprite;
-		recordPolymorphSource(null, 0);
-		if (_owner.getCurrentSpriteId() != gfx) return;
-		for (int i = 0; i < activeSets.size(); i++) {
-			final CSetItem other = activeSets.get(i);
-			if (other.polymorphGfx(_owner) == set.polymorphGfx(_owner) && other.canApplyPolymorph(_owner)) {
-				recordPolymorphSource(other, gfx);
-				return;
-			}
-		}
-		_owner.killSkillEffectTimer(L1SkillId.SHAPE_CHANGE);
-		L1PolyMorph.undoPoly(_owner);
-	}
+    private void removeSetPolymorph(CSetItem set) {
+        if (_owner.getTransformEquipmentSource() != set) return;
+        int sprite = _owner.getTransformId();
+        for (int i = 0; i < activeSets.size(); i++) {
+            CSetItem other = activeSets.get(i);
+            if (other != set && other.polymorphGfx(_owner) == sprite && other.canApplyPolymorph(_owner)) {
+                _owner.setTransformEquipmentSource(other);
+                return;
+            }
+        }
+        _owner.CancelTransform();
+    }
 
 	public int evaIconDuration(int skillSeconds) {
 		return hasEvaEquipment(null) ? -1 : skillSeconds;
