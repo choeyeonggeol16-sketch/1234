@@ -105,6 +105,8 @@ public final class InventoryIndexRegression {
                 () -> row.setHotel_Town("fixture"));
         int fields = 0;
         for (Runnable write : writes) {
+            row.setLastUsed(null);
+            row.setEndTime(null);
             row.getLastStatus().updateAll();
             check(!list.hasMissedPersistenceChange(row, 0, list.persistenceRevision()), "retire clean candidate");
             check(list.dirtyPersistenceCandidates().length == 0, "clean candidate removed");
@@ -126,7 +128,6 @@ public final class InventoryIndexRegression {
     private static void checkPendingItemSave() {
         L1ItemInstance row = item(3001, CANDLE, LIGHT_DESCRIPTION, 10);
         Timestamp lastUsed = Timestamp.valueOf("2025-01-02 03:04:05.123456");
-        row.setLastUsed(lastUsed);
         row.getLastStatus().updateAll();
 
         var list = new CItemList();
@@ -146,8 +147,16 @@ public final class InventoryIndexRegression {
         check((row.getRecordingColumns() & CUserInventory.COL_COUNT) != 0, "reverted count still needs SQL");
         check(row.getLastStatus().chargeCount == 0, "partial acknowledgement changed another column");
 
+        row.setLastUsed(lastUsed);
+        final Timestamp endTime = Timestamp.valueOf("2026-01-01 03:00:00");
+        row.setEndTime(endTime);
+        row.getLastStatus().updateAll();
+        list.hasMissedPersistenceChange(row, 0, list.persistenceRevision());
+        check(list.dirtyPersistenceCandidates().length == 1, "retain clean row with mutable timestamps");
         lastUsed.setNanos(876543000);
+        row.getEndTime().setNanos(120000);
         check((row.getRecordingColumns() & CUserInventory.COL_DELAY_EFFECT) != 0, "timestamp alias hid mutation");
+        check((row.getRecordingColumns() & CUserInventory.COL_END_TIME) != 0, "timestamp getter hid mutation");
         ItemSnapshot.capture(row, 77).finish((1L << 18) - 1);
         check(row.getRecordingColumns() == 0, "latest full acknowledgement");
     }

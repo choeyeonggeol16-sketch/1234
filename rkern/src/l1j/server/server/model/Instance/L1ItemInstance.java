@@ -265,6 +265,11 @@ public class L1ItemInstance extends L1Object {
 		if (list != null && list.tracksPersistence()) list.notePersistenceChange(this);
 	}
 
+    // Existing item APIs expose mutable timestamps, including aliases supplied to their setters.
+    boolean hasMutablePersistenceTimes() {
+        return _lastUsed != null || _endTime != null;
+    }
+
     /** A write can make a previously reverted live image dirty again when it commits. */
     public void persistedImageChanged() {
         notePersistenceChange();

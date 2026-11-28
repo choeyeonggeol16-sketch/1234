@@ -716,7 +716,8 @@ public class CUserInventory extends CInventory {
 
     public Iterable<L1ItemInstance> autosaveCandidates() {
         if (CItemList.AUDIT_PERSISTENCE) return getItemSnapshot();
-        return java.util.Arrays.asList(_items.dirtyPersistenceCandidates());
+        final L1ItemInstance[] candidates = _items.dirtyPersistenceCandidates();
+        return candidates.length == 0 ? java.util.List.of() : java.util.Arrays.asList(candidates);
     }
 
     /** The autosave membership snapshot may contain an item which has since moved. */

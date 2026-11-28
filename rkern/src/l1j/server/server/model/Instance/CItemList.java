@@ -94,13 +94,13 @@ public final class CItemList extends AbstractList<L1ItemInstance> implements Ser
     public synchronized boolean hasMissedPersistenceChange(L1ItemInstance item, int columns, long revision) {
         final PersistenceCandidates candidates = persistence;
         if (candidates == null || item.inventoryLinkOwner != this || revision != candidates.revision) return false;
-        if (columns == 0) {
+        if (columns == 0 && !item.hasMutablePersistenceTimes()) {
             candidates.remove(item.getId(), item);
             return false;
         }
         final boolean missed = candidates.rows == null || candidates.rows.get(item.getId()) != item;
         if (missed) notePersistenceChange(item);
-        return missed;
+        return missed && columns != 0;
     }
 
     private static final int INDEX_MIN_SIZE = 8;
