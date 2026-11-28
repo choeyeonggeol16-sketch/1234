@@ -14,7 +14,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_OwnCharStatus;
 import l1j.server.server.model.network.core.sc.packet.SC_SPMR;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.utils.GameUtils;
 
 /** Consumable active skill for item ID 70708. */
@@ -95,6 +95,6 @@ final class PrimeSkillConsumable {
 
     private static boolean isInWarAreaAndWarTime(L1PcInstance pc) {
         int castleId = L1CastleLocation.getCastleIdByArea(pc);
-        return castleId != 0 && CastleWarBusiness.getInstance().isNowWar(castleId);
+        return castleId != 0 && CCastleSiegeManager.getInstance().isNowWar(castleId);
     }
 }

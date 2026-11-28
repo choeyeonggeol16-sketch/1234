@@ -93,8 +93,8 @@ import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.rank.loader.RankLoadManager;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
@@ -1807,12 +1807,12 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			if (minute != 0)
 				cal.add(Calendar.MINUTE, minute);
 
-			CastleWar war = CastleWarBusiness.getInstance().findWar(name);
+			CCastle war = CCastleSiegeManager.getInstance().findSiege(name);
 			if (war == null)
 				throw new Exception();
 
-			war.nextCalendar(cal);
-			CastleWarBusiness.getInstance().updateCastle(war.getCastleId());
+			war.SetSiegeDate(cal);
+			CCastleSiegeManager.getInstance().updateCastle(war);
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 			gm.sendPackets(String.format(".공성시간이 %s 으로 변경 되었습니다.", formatter.format(cal.getTime())));
 			gm.sendPackets(param + "분 뒤 공성이 시작합니다.");
@@ -1826,11 +1826,11 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 		try {
 			StringTokenizer tok = new StringTokenizer(param);
 			String name = tok.nextToken();
-			CastleWar war = CastleWarBusiness.getInstance().findWar(name);
+			CCastle war = CCastleSiegeManager.getInstance().findSiege(name);
 			if (war == null)
 				throw new Exception();
 
-			war.close();
+			war.requestEndSiege();
 		} catch (Exception e) {
 			gm.sendPackets(".공성종료 [성이름두글자]");
 		}
@@ -6575,11 +6575,17 @@ SC_SystemMessage.send(pc, "\\aHREAL:(S: " + target.GetTotalStatStr() + " / " + "
             }
 		} else if (arg.equalsIgnoreCase("클랜데이터")){
 			ClanTable.reload();
-			CastleWarBusiness.getInstance().reload();
-			gm.sendPackets("리로드: clan_data 테이블이 리로드 되었습니다.");		
+			if (CCastleSiegeManager.getInstance().reload()) {
+				gm.sendPackets("리로드: clan_data 테이블이 리로드 되었습니다.");
+			} else {
+				gm.sendPackets("리로드: clan_data를 갱신했지만 공성 데이터 로드에 실패했습니다.");
+			}
 		} else if (arg.equalsIgnoreCase("공성")){
-			CastleWarBusiness.getInstance().reload();
-			gm.sendPackets("리로드: castle 테이블이 리로드 되었습니다.");		
+			if (CCastleSiegeManager.getInstance().reload()) {
+				gm.sendPackets("리로드: castle 테이블이 리로드 되었습니다.");
+			} else {
+				gm.sendPackets("리로드: 공성 데이터 로드에 실패했습니다. 서버 로그를 확인하세요.");
+			}
 		} else if (arg.equalsIgnoreCase("스폰리스트")){
 			
 			gm.sendPackets("[.엔피씨다운 몬스터 배치or삭제]를 이용하시길 바랍니다.");	

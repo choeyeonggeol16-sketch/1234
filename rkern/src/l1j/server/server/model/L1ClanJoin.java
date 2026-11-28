@@ -37,7 +37,7 @@ import l1j.server.server.datatables.CharacterTable;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.utils.ServerMessage;
 import l1j.server.server.model.inventory.L1InventoryTransaction;
 
@@ -1029,7 +1029,7 @@ public class L1ClanJoin {
          * 공성 중 추방 불가.
          */
         if (castleId != 0
-                && CastleWarBusiness
+                && CCastleSiegeManager
                         .getInstance()
                         .isNowWar(castleId)) {
 
@@ -1080,7 +1080,7 @@ public class L1ClanJoin {
                 || CWorld.getInstance().findObject(leader.getId()) != leader
                 || CWorld.getInstance().findObject(target.getId()) != target) return false;
         int castle = clan.getCastleId();
-        return castle == 0 || !CastleWarBusiness.getInstance().isNowWar(castle);
+        return castle == 0 || !CCastleSiegeManager.getInstance().isNowWar(castle);
     }
 
     private static void BanOnlineMember(L1PcInstance pc, L1Clan clan,
@@ -1177,7 +1177,7 @@ public class L1ClanJoin {
                         || leaderId != clan.getLeaderId()
                         || CWorld.getInstance().getClan(clanId) != clan) return;
                 final int castle = clan.getCastleId();
-                if (castle != 0 && CastleWarBusiness.getInstance().isNowWar(castle)) {
+                if (castle != 0 && CCastleSiegeManager.getInstance().isNowWar(castle)) {
                     SC_ServerMessage.send(pc, 439);
                     return;
                 }

@@ -9,8 +9,8 @@ import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_MessageYN;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.model.world.siege.War;
 
 public final class CS_War {
@@ -50,7 +50,7 @@ public final class CS_War {
 
     private static void handleProclaim(L1PcInstance player, String targetClanName) {
 
-        final CastleWarBusiness warBusiness = CastleWarBusiness.getInstance();
+        final CCastleSiegeManager warBusiness = CCastleSiegeManager.getInstance();
 
         /*
          * 붉은 기사단은 현재 위치의 공성전에 선포.
@@ -63,7 +63,7 @@ public final class CS_War {
                 return;
             }
 
-            final CastleWar war = warBusiness.get(castleId);
+            final CCastle war = warBusiness.get(castleId);
 
             if (war == null) {
                 player.sendPackets("공성전이 진행 중이지 않습니다.");
@@ -79,7 +79,7 @@ public final class CS_War {
         }
 
         final CWorld world = CWorld.getInstance();
-        final CastleWar war = warBusiness.findWar(targetClanName);
+        final CCastle war = warBusiness.findSiege(targetClanName);
 
         if (war != null) {
             warBusiness.proclaim(player, war.getCastleId());

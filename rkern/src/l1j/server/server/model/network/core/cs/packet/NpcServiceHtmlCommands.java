@@ -37,8 +37,8 @@ import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_TaxRate;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.model.item.function.StatReset;
 
@@ -353,7 +353,7 @@ final class NpcServiceHtmlCommands {
             if (clan != null) {
                 int castle_id = clan.getCastleId();
                 if (castle_id != 0) {
-                    CastleWar war = CastleWarBusiness.getInstance().get(castle_id);
+                    CCastle war = CCastleSiegeManager.getInstance().get(castle_id);
                     SC_ServerMessage.send(pc, 309, war.getCastleName(), String.valueOf(war.getPublicMoney()));
                     htmlid = "";
                 }
@@ -361,13 +361,13 @@ final class NpcServiceHtmlCommands {
         } else if (s.equalsIgnoreCase("tax")) {
             L1Clan clan = pc.getClan();
             if (clan != null && clan.getCastleId() != 0)
-                SC_TaxRate.send(pc, pc.getId(), CastleWarBusiness.getInstance().getTaxRate(clan.getCastleId()));
+                SC_TaxRate.send(pc, pc.getId(), CCastleSiegeManager.getInstance().getTaxRate(clan.getCastleId()));
         } else if (s.equalsIgnoreCase("withdrawal")) {
             L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
             if (clan != null) {
                 int castle_id = clan.getCastleId();
                 if (castle_id != 0) {
-                    SC_Drawal.send(pc, pc.getId(), CastleWarBusiness.getInstance().getPublicMoney(castle_id));
+                    SC_Drawal.send(pc, pc.getId(), CCastleSiegeManager.getInstance().getPublicMoney(castle_id));
                 }
             }
         } else if (s.equalsIgnoreCase("cdeposit")) {

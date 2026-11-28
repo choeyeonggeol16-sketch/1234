@@ -25,7 +25,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.network.core.sc.packet.SC_ShowCmd;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.utils.BytesOutputStream;
@@ -312,7 +312,7 @@ public class Kda {
 		int castleId = L1CastleLocation.getCastleIdByArea(pc);
 		
 		if (castleId != 0) {
-			if (CastleWarBusiness.getInstance().isNowWar(castleId)) {
+			if (CCastleSiegeManager.getInstance().isNowWar(castleId)) {
 				return true;
 			}
 		}

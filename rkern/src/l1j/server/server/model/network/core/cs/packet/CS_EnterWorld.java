@@ -94,8 +94,8 @@ import l1j.server.server.model.rank.loader.RankUserLoader;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeProgressLoader;
 import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Inventory.Proto.ItemInfo;
@@ -735,7 +735,7 @@ public final class CS_EnterWorld {
             applyExcludeList(SpamTable.getInstance().getExcludeTable(pc.getId()), data.excludes);
 
         serchSummon(pc);
-        CastleWarBusiness.getInstance().viewNowCastleWarState(pc);
+        CCastleSiegeManager.getInstance().viewNowCastleWarState(pc);
 
         L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
         if (clan != null) {
@@ -766,10 +766,10 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
 }
                     War war = clan.getCurrentWar();
                     if (war != null) {
-                        war.notifyEnenmy(pc);
-                        if (war instanceof CastleWar) {
-                            CastleWar cw = (CastleWar) war;
-                            if (cw.isRun()) cw.onLordBuff(pc);
+                        war.notifyEnemies(pc);
+                        if (war instanceof CCastle) {
+                            CCastle cw = (CCastle) war;
+                            if (cw.IsUnderSiege()) cw.onLordBuff(pc);
                         }
                     }
                 } else {
@@ -890,7 +890,7 @@ for (L1PcInstance member : clan.getOnlineClanMember()) {
             castle_id = 6;
         }
         if (0 < castle_id) {
-            if (CastleWarBusiness.getInstance().isNowWar(castle_id)) {
+            if (CCastleSiegeManager.getInstance().isNowWar(castle_id)) {
                 L1Clan clan = CWorld.getInstance().getClan(pc.getClanid());
                 if (clan != null && clan.getCastleId() != castle_id) {
                     int[] loc = L1CastleLocation.getGetBackLoc(castle_id);

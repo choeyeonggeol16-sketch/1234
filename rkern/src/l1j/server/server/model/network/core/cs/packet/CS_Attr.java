@@ -47,7 +47,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_Trade;
 import l1j.server.server.model.npc.spawn.boss.BossTeleportInvites;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.siege.WarFactory;
 import l1j.server.server.shared.GameRandom;
@@ -619,7 +619,7 @@ public final class CS_Attr {
 		int castleId = L1CastleLocation.getCastleIdByArea(callClanPc);
 		if (castleId != 0) {
 			isInWarArea = true;
-			if (CastleWarBusiness.getInstance().isNowWar(castleId)) {
+			if (CCastleSiegeManager.getInstance().isNowWar(castleId)) {
 				isInWarArea = false;
 			}
 		}

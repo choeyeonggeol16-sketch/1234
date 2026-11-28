@@ -18,7 +18,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_PacketBox;
 import l1j.server.server.model.world.trap.L1WorldTraps;
 import l1j.server.server.model.world.instance.inn.InnRoom;
 import l1j.server.server.model.world.instance.inn.loader.InnMapInfoLoader;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.shared.observer.CopyMapObservable;
 import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.GameUtils;
@@ -227,7 +227,7 @@ public final class CMoveAction extends CNewAction {
                 }
             }
 
-            CastleWarBusiness.move(pc);
+            CCastleSiegeManager.updateSiegeZone(pc);
 
 //            if (L1HauntedHouse.getInstance().getHauntedHouseStatus()
 //                    == L1HauntedHouse.STATUS_PLAYING) {

@@ -28,7 +28,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.templates.L1Npc;
 
 public class L1CataInstance extends L1NpcInstance {
@@ -120,7 +120,7 @@ public class L1CataInstance extends L1NpcInstance {
 		}
 
 		boolean isNowWar = false;
-		isNowWar = CastleWarBusiness.getInstance().isNowWar(castleid);
+		isNowWar = CCastleSiegeManager.getInstance().isNowWar(castleid);
 		if (!isNowWar) {
 			return;
 		}

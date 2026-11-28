@@ -128,7 +128,7 @@ import l1j.server.server.model.world.trap.L1WorldTraps;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeLoadManager;
 import l1j.server.server.model.world.instance.inn.loader.InnHelperLoader;
 import l1j.server.server.model.world.instance.raid.loader.RaidLoadManager;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.logd.CLogD;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Craft.CraftLoader;
 import l1j.server.server.packets.Protocol.MainServer.PlaySupport.window.PlaySupportWindow;
@@ -316,7 +316,7 @@ public class GameServer {
 		CompanionLoader.getInstance();
 		DogFightLoader.getInstance();
 		
-		CastleWarBusiness.getInstance().run();
+		CCastleSiegeManager.getInstance().start();
 
 		CollectionLoadManager.getInstance().load();
 		
@@ -620,6 +620,7 @@ public class GameServer {
             while (!CInstanceWork.awaitDrained(30L, TimeUnit.SECONDS)) {
                 System.err.println("[Instance] Waiting for accepted instance work");
             }
+            CCastleSiegeManager.getInstance().dispose();
             while (!CWorldWork.awaitDrained(30L, TimeUnit.SECONDS)) {
                 System.err.println("[World] Waiting for accepted world work");
             }

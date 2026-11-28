@@ -20,7 +20,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillHaste;
 import l1j.server.server.model.network.core.sc.packet.SC_SkillSound;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.shared.GameRandom;
 import l1j.server.server.templates.L1Skills;
 import l1j.server.server.utils.CommonUtil;
@@ -2105,7 +2105,7 @@ public class L1Magic {
 			boolean isNowWar = false;
 			int castleId = L1CastleLocation.getCastleIdByArea(_targetPc);
 			if (castleId > 0) {
-				isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
+				isNowWar = CCastleSiegeManager.getInstance().isNowWar(castleId);
 			}
 			if (!isNowWar) {
 				if (_npc instanceof L1SummonInstance) {
@@ -2291,7 +2291,7 @@ public class L1Magic {
 			boolean isNowWar = false;
 			int castleId = L1CastleLocation.getCastleIdByArea(_targetNpc);
 			if (castleId > 0) {
-				isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
+				isNowWar = CCastleSiegeManager.getInstance().isNowWar(castleId);
 			}
 			if (!isNowWar) {
 				if (_targetNpc instanceof L1SummonInstance) {

@@ -1,9 +1,9 @@
 package l1j.server.server.model.world.siege;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Stream;
 
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1Clan;
@@ -54,17 +54,26 @@ public class War {
 		return war.getOffenseClan(clan.getClanId()) != null;
 	}
 	
-	protected int						_warId;
-	protected HashMap<Integer, L1Clan> 	_offenses;
+	protected final int					_warId;
+	protected final HashMap<Integer, L1Clan> _offenses;
 	protected volatile L1Clan _defense;
-	protected int						_defenseId;
-	protected WAR_TYPE					_warType;
-	protected Lock						_warLock;
+	protected volatile int				_defenseId;
+	protected final WAR_TYPE			_warType;
+	protected final Lock				_warLock;
+	protected volatile boolean disposed;
 	protected War(L1Clan defense, WAR_TYPE warType, int id){
+		this(warType, id);
+		publish(defense);
+	}
+
+	protected War(WAR_TYPE warType, int id) {
 		_warType = warType;
 		_offenses = new HashMap<Integer, L1Clan>(8);
 		_warLock = new ReentrantLock();
 		_warId = id;
+	}
+
+	protected final void publish(L1Clan defense) {
 		setDefenseClan(defense);
 		CWorld.getInstance().addWar(this);
 	}
@@ -80,52 +89,59 @@ public class War {
 	public void updateDefense(L1Clan nextDefense){
 		try{
 			_warLock.lock();
-			if(WAR_TYPE.CASTLE.equals(_warType)){
-				broadcastWinner(nextDefense, _defense);
-				for(L1Clan clan : _offenses.values()){
-					broadcastEndWar(_defense, clan);
-					clan.clearCurrentWar(this);
-				}
-			}else{
-				notifyWinner(nextDefense, _defense);
-				for(L1Clan clan : _offenses.values()){
-					notifyEndWar(_defense, clan);
-					clan.clearCurrentWar(this);
-				}
-			}
-			_defense.clearCurrentWar(this);
-			_offenses.clear();
+			if (disposed || nextDefense == null) return;
+			L1Clan previous = _defense;
+			List<L1Clan> offenses = clearOffenses();
+			if (previous != null) previous.clearCurrentWar(this);
 			setDefenseClan(nextDefense);
+			if (previous == null) return;
+			if (_warType == WAR_TYPE.CASTLE) {
+				broadcastWinner(nextDefense, previous);
+				for (L1Clan clan : offenses) broadcastEndWar(previous, clan);
+			} else {
+				notifyWinner(nextDefense, previous);
+				for (L1Clan clan : offenses) notifyEndWar(previous, clan);
+			}
 		}finally{
 			_warLock.unlock();
 		}
 	}
 	
-	public void register(L1Clan offense){
-		putOffenseClan(offense);
-		if(_warType == WAR_TYPE.CASTLE){
-			broadcastDeclaration(_defense, offense);
-		}else if(_warType == WAR_TYPE.NORMAL){
-			notifyDeclaration(_defense, offense);
+	public boolean register(L1Clan offense) {
+		return register(offense, offense == null ? null : offense.getCurrentWar());
+	}
+
+	protected final boolean register(L1Clan offense, War previous) {
+		final L1Clan defense;
+		_warLock.lock();
+		try {
+			if (disposed || offense == null || _offenses.containsKey(offense.getClanId())) return false;
+			if (_warType == WAR_TYPE.CASTLE) {
+				if (!offense.compareAndSetCurrentWar(previous, this)) return false;
+			} else {
+				offense.setCurrentWar(this);
+			}
+			_offenses.put(offense.getClanId(), offense);
+			defense = _defense;
+		} finally {
+			_warLock.unlock();
 		}
+		if (defense != null) {
+			if (_warType == WAR_TYPE.CASTLE) broadcastDeclaration(defense, offense);
+			else notifyDeclaration(defense, offense);
+		}
+		return true;
 	}
 	
 	public void dispose(){
 		try{
 			_warLock.lock();
+			if (disposed) return;
+			disposed = true;
 			CWorld.getInstance().removeWar(this);
-			if(_defense != null){
-				_defense.clearCurrentWar(this);
-				_defense = null;
-			}
-			if(_offenses != null){
-				for(L1Clan c : _offenses.values())
-					c.clearCurrentWar(this);
-				_offenses.clear();
-				_offenses = null;
-			}
-		}catch(Exception e){
-			e.printStackTrace();
+			if (_defense != null) _defense.clearCurrentWar(this);
+			setDefenseClan(null);
+			clearOffenses();
 		}finally{
 			_warLock.unlock();
 		}
@@ -172,36 +188,32 @@ public class War {
 		SC_War.broadcastClan(c2, 1, c1.getClanName(), c2.getClanName());
 	}
 	
-	public void notifyEnenmy(L1PcInstance pc){
+	public void notifyEnemies(L1PcInstance pc){
 		int clanId = pc.getClanid();
-		if(clanId <= 0 || _defense == null || _offenses.size() <= 0)
-			return;
-		
-		final String clanName = pc.getClanname();
-		if(_defense.getClanId() != clanId)
-			SC_War.send(pc, 8, clanName, _defense.getClanName());
-		
-		Stream<L1Clan> stream = createOffensesStream();
-		if(stream == null)
-			return;
-		
-		stream.filter((L1Clan enemy) ->{
-			return enemy != null && enemy.getClanId() != clanId;
-		})
-		.forEach((L1Clan enemy) -> {
-			try{
-				SC_War.send(pc, 8, clanName, enemy.getClanName());
-			}catch(Exception e){}
-		});
-	}
-	
-	public void initializeOffenses(){
-		try{
-			_warLock.lock();
-			_offenses.clear();
-		}finally{
+		if (clanId <= 0) return;
+		final L1Clan defense;
+		final List<L1Clan> offenses;
+		_warLock.lock();
+		try {
+			defense = _defense;
+			if (defense == null || _offenses.isEmpty()) return;
+			offenses = List.copyOf(_offenses.values());
+		} finally {
 			_warLock.unlock();
 		}
+		String clanName = pc.getClanname();
+		if (defense.getClanId() != clanId) SC_War.send(pc, 8, clanName, defense.getClanName());
+		for (L1Clan enemy : offenses) {
+			if (enemy.getClanId() != clanId) SC_War.send(pc, 8, clanName, enemy.getClanName());
+		}
+	}
+
+	/** Caller holds the war lock. */
+	protected List<L1Clan> clearOffenses() {
+		List<L1Clan> offenses = List.copyOf(_offenses.values());
+		for (L1Clan clan : offenses) clan.clearCurrentWar(this);
+		_offenses.clear();
+		return offenses;
 	}
 	
 	public L1Clan getOffenseClan(int id){
@@ -213,30 +225,6 @@ public class War {
 			_warLock.unlock();
 		}
 		return c;
-	}
-	
-	public Stream<L1Clan> createOffensesStream(){
-		if(_offenses.size() <= 0)
-			return null;
-		
-		Stream<L1Clan> stream = null;
-		try{
-			_warLock.lock();
-			stream = _offenses.values().stream();
-		}finally{
-			_warLock.unlock();
-		}
-		return stream;
-	}
-	
-	public void putOffenseClan(L1Clan offenseClan){
-		try{
-			_warLock.lock();
-			_offenses.put(offenseClan.getClanId(), offenseClan);
-			offenseClan.setCurrentWar(this);
-		}finally{
-			_warLock.unlock();
-		}
 	}
 	
 	public void removeOffenseClan(int id){
@@ -255,10 +243,10 @@ public class War {
 	}
 	
 	public L1Clan getDefenseClan(){
-		return _defense == null ? CWorld.getInstance().getClan(_defenseId) : _defense;
+		return _defense;
 	}
 	
-	public void setDefenseClan(L1Clan clan) {
+	private void setDefenseClan(L1Clan clan) {
 		_defense = clan;
 		if (clan != null) {
 			_defenseId = clan.getClanId();
@@ -272,12 +260,12 @@ public class War {
 	public String toString(){
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("[War] Id : ").append(getId()).append("\n");
-		sb.append("\nDefense : ").append(_defense.getClanName());
-		Stream<L1Clan> stream = createOffensesStream();
-		if(stream != null){
-			stream.forEach((L1Clan c) -> {
-				sb.append("\nOffense : ").append(c.getClanName());
-			});
+		_warLock.lock();
+		try {
+			sb.append("\nDefense : ").append(_defense == null ? "" : _defense.getClanName());
+			for (L1Clan clan : _offenses.values()) sb.append("\nOffense : ").append(clan.getClanName());
+		} finally {
+			_warLock.unlock();
 		}
 		return sb.toString();
 	}

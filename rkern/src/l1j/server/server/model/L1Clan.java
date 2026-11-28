@@ -898,6 +898,10 @@ public class L1Clan {
 		_currentWar = war;
 	}
 
+	public boolean compareAndSetCurrentWar(War expected, War war) {
+		return CURRENT_WAR.compareAndSet(this, expected, war);
+	}
+
 	public void clearCurrentWar(War expected) {
 		CURRENT_WAR.compareAndSet(this, expected, null);
 	}

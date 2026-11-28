@@ -27,7 +27,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_Paralysis;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.npc.spawn.boss.BossTeleportInvites;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SOCIAL_ACTION_NOTI;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_TAM_WINDOW;
 import l1j.server.server.shared.GameRandom;
@@ -640,7 +640,7 @@ public final class CS_ActionUi {
 
         try {
 
-            CastleWarBusiness
+            CCastleSiegeManager
                     .getInstance()
                     .proclaim(
                             pc,

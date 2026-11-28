@@ -28,13 +28,15 @@ import l1j.server.server.model.character.action.CAttackAction;
 import l1j.server.server.model.network.core.sc.packet.SC_DoActionGFX;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_WorldPutObject;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.templates.L1Npc;
 
 public class L1TowerInstance extends L1NpcInstance {
 
 	private static final long serialVersionUID = 1L;
+	private static final int ADEN_SUB_TOWER_FIRST = 81190;
+	private static final int ADEN_SUB_TOWER_LAST = 81193;
 
 	public L1TowerInstance(L1Npc template) {
 		super(template);
@@ -158,24 +160,8 @@ public class L1TowerInstance extends L1NpcInstance {
 			}
 		}
 
-		if (_castle_id > 0
-				&& CastleWarBusiness.getInstance()
-						.isNowWar(_castle_id)) {
-
-			if (_castle_id == L1CastleLocation.ADEN_CASTLE_ID
-					&& !isSubTower()) {
-
-				int subTowerDeadCount = 0;
-				for (L1NpcInstance npc : CWorld.getInstance().getAllNpc()) {
-					if (npc instanceof L1TowerInstance tower && tower.isSubTower() && tower.isDead()) {
-						if (++subTowerDeadCount == 4) break;
-					}
-				}
-
-				if (subTowerDeadCount < 3) {
-					return;
-				}
-			}
+		CCastle war = _castle_id > 0 ? CCastleSiegeManager.getInstance().get(_castle_id) : null;
+		if (war != null && war.IsUnderSiege()) {
 
 			L1PcInstance pc = null;
 
@@ -187,39 +173,26 @@ public class L1TowerInstance extends L1NpcInstance {
 
 				pc = ((L1CompanionInstance) attacker).get_master();
 
-			} else if (attacker instanceof L1SummonInstance) {
-
-				pc = (L1PcInstance)
-						((L1SummonInstance) attacker).getMaster();
+			} else if (attacker instanceof L1SummonInstance summon
+					&& summon.getMaster() instanceof L1PcInstance player) {
+				pc = player;
 			}
 
 			if (pc == null) {
 				return;
 			}
 
-			CastleWar war =
-					CastleWarBusiness.getInstance()
-							.get(_castle_id);
-
-			L1Clan defense = war.getDefenseClan();
-			L1Clan offense = pc.getClan();
-
-			if (defense == null) {
-				System.out.println(
-						String.format(
-								"[공성타워]수성중인 클랜이 없습니다. 성 : %d",
-								_castle_id));
-				return;
-			}
-
 			if (!pc.isGm()) {
-
-				if (offense == null
-						|| war.getOffenseClan(
-								offense.getClanId()) == null) {
-
+				L1Clan offense = pc.getClan();
+				if (offense == null || offense.getCurrentWar() != war
+						|| war.getOffenseClan(offense.getClanId()) != offense) {
 					return;
 				}
+			}
+
+			if (_castle_id == L1CastleLocation.ADEN_CASTLE_ID
+					&& !isSubTower() && !hasDestroyedAdenSubTowers()) {
+				return;
 			}
 
 			if (getCurrentHp() > 0 && !isDead()) {
@@ -350,10 +323,22 @@ public class L1TowerInstance extends L1NpcInstance {
 		}
 	}
 
+	private static boolean hasDestroyedAdenSubTowers() {
+		CWorld world = CWorld.getInstance();
+		int destroyed = 0;
+		for (int templateId = ADEN_SUB_TOWER_FIRST; templateId <= ADEN_SUB_TOWER_LAST; templateId++) {
+			for (L1NpcInstance npc : world.getNpcsByTemplateId(templateId)) {
+				if (npc instanceof L1TowerInstance tower && tower.isSubTower() && tower.isDead()
+						&& ++destroyed == 3) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public boolean isSubTower() {
-		return getNpcTemplate().get_npcId() == 81190
-				|| getNpcTemplate().get_npcId() == 81191
-				|| getNpcTemplate().get_npcId() == 81192
-				|| getNpcTemplate().get_npcId() == 81193;
+		int templateId = getNpcTemplate().get_npcId();
+		return templateId >= ADEN_SUB_TOWER_FIRST && templateId <= ADEN_SUB_TOWER_LAST;
 	}
 }

@@ -7,8 +7,8 @@ import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 
 public final class CS_Withdraw {
 
@@ -59,8 +59,8 @@ public final class CS_Withdraw {
                 return;
             }
 
-            final CastleWarBusiness business =
-                    CastleWarBusiness
+            final CCastleSiegeManager business =
+                    CCastleSiegeManager
                             .getInstance();
 
             /*
@@ -86,7 +86,7 @@ public final class CS_Withdraw {
                 return;
             }
 
-            final CastleWar war =
+            final CCastle war =
                     business.get(castleId);
 
             if (war == null) {
@@ -103,7 +103,7 @@ public final class CS_Withdraw {
             }
 
             try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
-                    l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, CastleWarBusiness.TREASURY_ORDER_KEY)) {
+                    l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, CCastleSiegeManager.TREASURY_ORDER_KEY)) {
                 if (tx.grant(L1ItemId.ADENA, drawAmount) == null) return;
                 final Runnable treasury = business.stageTreasury(tx, castleId, -drawAmount);
                 tx.commit(() -> {

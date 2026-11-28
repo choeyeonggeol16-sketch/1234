@@ -12,7 +12,7 @@ import l1j.server.server.model.L1Object;
 import l1j.server.server.model.LocalWorldMap;
 import l1j.server.server.model.character.skill.L1SkillId;
 import l1j.server.server.model.character.skill.L1SkillUse;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.templates.L1Skills;
 
 public enum SkillTargetListBuilder {
@@ -223,7 +223,7 @@ public enum SkillTargetListBuilder {
         if (castleId == 0) return false;
 
         try {
-            return CastleWarBusiness.getInstance().isNowWar(castleId);
+            return CCastleSiegeManager.getInstance().isNowWar(castleId);
         } catch (Throwable t) {
             return false;
         }

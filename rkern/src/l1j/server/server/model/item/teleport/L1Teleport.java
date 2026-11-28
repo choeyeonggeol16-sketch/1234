@@ -39,7 +39,7 @@ import l1j.server.server.model.npc.ai.NpcEventFactory;
 import l1j.server.server.model.world.instance.dungeon.time.DungeonTimeInformation;
 import l1j.server.server.model.world.instance.dungeon.time.loader.DungeonTimeInformationLoader;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_MAP_ID;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_WORLD_PUT_OBJECT_NOTI;
 import l1j.server.server.utils.CommonUtil;
@@ -436,7 +436,7 @@ public class L1Teleport {
 		updateQuestState(pc, oldMapId);
 
 		// 공성 관련 위치 이동 처리
-		CastleWarBusiness.move(pc);
+		CCastleSiegeManager.updateSiegeZone(pc);
 
 		// 개인 상점 찾기 HTML 복구
 		if (pc.getFindMerchantId() != 0) {

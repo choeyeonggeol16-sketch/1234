@@ -6,8 +6,8 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_ChatPacket;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 
 public final class CS_Deposit {
 
@@ -68,8 +68,8 @@ public final class CS_Deposit {
             return;
         }
 
-        final CastleWarBusiness business =
-                CastleWarBusiness
+        final CCastleSiegeManager business =
+                CCastleSiegeManager
                         .getInstance();
 
         /*
@@ -86,7 +86,7 @@ public final class CS_Deposit {
             return;
         }
 
-        final CastleWar war =
+        final CCastle war =
                 business.get(castleId);
 
         if (war == null) {
@@ -111,7 +111,7 @@ public final class CS_Deposit {
         }
 
         try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
-                l1j.server.server.model.inventory.L1InventoryTransaction.begin(player, CastleWarBusiness.TREASURY_ORDER_KEY)) {
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(player, CCastleSiegeManager.TREASURY_ORDER_KEY)) {
             if (!tx.debit(L1ItemId.ADENA, amount)) return;
             final Runnable treasury = business.stageTreasury(tx, castleId, amount);
             tx.commit(treasury);

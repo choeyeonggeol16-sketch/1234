@@ -6,7 +6,7 @@ import l1j.server.server.model.network.thread.CServerTimer;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.network.core.sc.packet.SC_PinkName;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.shared.L1Type;
 
 /**
@@ -32,7 +32,7 @@ public class L1PinkName {
     // =========================================
     private static boolean isWarAreaNow(L1PcInstance pc) {
         int castleId = L1CastleLocation.getCastleIdByArea(pc);
-        return castleId != 0 && CastleWarBusiness.getInstance().isNowWar(castleId);
+        return castleId != 0 && CCastleSiegeManager.getInstance().isNowWar(castleId);
     }
 
     private static boolean canApplyPink(L1PcInstance targetAreaPc, L1PcInstance attacker) {

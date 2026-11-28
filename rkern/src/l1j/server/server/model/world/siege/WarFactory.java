@@ -24,12 +24,12 @@ public class WarFactory {
 	}
 	
 	private static final AtomicInteger warSerial = new AtomicInteger(0);
-	private static Integer nextSerial(){
+	private static int nextSerial(){
 		return warSerial.incrementAndGet();
 	}
 	
-	public static CastleWar createCastleWar(L1Clan defense, int castleId, String castleName){
-		return CastleWar.newInstance(defense, nextSerial(), castleId, castleName);
+	static CCastle createCastleSiege(L1Clan defense, CastleSiegeTable.Entry entry) {
+		return new CCastle(defense, nextSerial(), entry);
 	}
 	
 	public static War createNormalWar(L1Clan defense){

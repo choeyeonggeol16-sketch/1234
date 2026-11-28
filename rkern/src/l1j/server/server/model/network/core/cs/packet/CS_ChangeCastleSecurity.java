@@ -5,8 +5,8 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_CloseList;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 
 public final class CS_ChangeCastleSecurity {
 
@@ -54,11 +54,11 @@ public final class CS_ChangeCastleSecurity {
             return;
         }
 
-        final CastleWarBusiness business =
-                CastleWarBusiness
+        final CCastleSiegeManager business =
+                CCastleSiegeManager
                         .getInstance();
 
-        final CastleWar war =
+        final CCastle war =
                 business.get(castleId);
 
         if (war == null) {
@@ -81,7 +81,7 @@ public final class CS_ChangeCastleSecurity {
         }
 
         try (l1j.server.server.model.inventory.L1InventoryTransaction tx =
-                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, CastleWarBusiness.TREASURY_ORDER_KEY)) {
+                l1j.server.server.model.inventory.L1InventoryTransaction.begin(pc, CCastleSiegeManager.TREASURY_ORDER_KEY)) {
             Runnable treasury = type == 1 ? business.stageTreasury(tx, castleId, -100000) : () -> {};
             if (type != 1) tx.sql(con -> { /* owner/FIFO receipt for the state transition */ });
             tx.commit(() -> {

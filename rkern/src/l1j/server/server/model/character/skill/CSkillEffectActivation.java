@@ -8,6 +8,7 @@ import java.util.Random;
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
 import l1j.server.server.model.world.CWorldWork;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.datatables.PolyTable;
 import l1j.server.server.datatables.SkillsTable;
 import l1j.server.server.model.Instance.L1CompanionInstance;
@@ -2194,14 +2195,14 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(ta
 
 	static HandlerResult castInvisibility(L1SkillUse cast, L1Character target, L1Magic magic, int undeadType, Iterator<?> targets) {
 		if (!(target instanceof L1PcInstance pc)) return HandlerResult.NOT_HANDLED;
-		if (pc.is_combat_field()) return HandlerResult.RETURN;
+		if (pc.is_combat_field() || CCastleSiegeManager.isNearActiveGuardianTower(pc)) return HandlerResult.RETURN;
 		final int id = cast.hdSkillId();
 		return submitContextBuff(pc, id, durationSecForBuff(cast, id), 0, 0, null)
 				? HandlerResult.HANDLED_WITHOUT_TIMER : HandlerResult.CONTINUE;
 	}
 
 	static void startInvisibility(L1PcInstance pc, int id, int duration, int option, int gfx, boolean partyMember) {
-		if (pc.is_combat_field()) return;
+		if (pc.is_combat_field() || CCastleSiegeManager.isNearActiveGuardianTower(pc)) return;
 		if (id == L1SkillId.BLIND_HIDING && pc.hasSkillEffect(id)) {
 			pc.delBlindHiding();
 			return;

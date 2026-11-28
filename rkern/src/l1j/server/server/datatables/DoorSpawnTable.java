@@ -15,6 +15,7 @@ import l1j.server.DatabaseFactory;
 import l1j.server.server.IdFactory;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.Instance.L1DoorInstance;
+import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.templates.L1Npc;
 
 public class DoorSpawnTable {
@@ -24,6 +25,8 @@ public class DoorSpawnTable {
 	private final List<L1DoorInstance> _doorList = new ArrayList<L1DoorInstance>(256);
 	
 	private final TIntObjectMap<L1DoorInstance> _doorMap = new TIntObjectHashMap<L1DoorInstance>(256);
+	private final TIntObjectMap<List<L1DoorInstance>> _castleDoors = new TIntObjectHashMap<>();
+	private final TIntObjectMap<List<L1DoorInstance>> _keeperDoors = new TIntObjectHashMap<>();
 	
 	public static DoorSpawnTable getInstance() {
 		if (_instance == null) {
@@ -77,11 +80,16 @@ public class DoorSpawnTable {
 
 				_doorList.add(door);
 				_doorMap.put(door.getDoorId(), door);
+				int castleId = L1CastleLocation.getCastleIdByArea(door);
+				if (castleId != 0) addToIndex(_castleDoors, castleId, door);
+				addToIndex(_keeperDoors, door.getKeeperId(), door);
 			}
 		} catch (Exception e) {
 			_log.log(Level.SEVERE, "DoorSpawnTable load error", e);
 		}
 
+		_castleDoors.transformValues(List::copyOf);
+		_keeperDoors.transformValues(List::copyOf);
 		buildDoorCacheOnce();
 		
 	}
@@ -90,6 +98,25 @@ public class DoorSpawnTable {
 		return _doorList;
 	}
 	
+	public List<L1DoorInstance> getCastleDoors(int castleId) {
+		List<L1DoorInstance> doors = _castleDoors.get(castleId);
+		return doors == null ? List.of() : doors;
+	}
+
+	public List<L1DoorInstance> getKeeperDoors(int keeperId) {
+		List<L1DoorInstance> doors = _keeperDoors.get(keeperId);
+		return doors == null ? List.of() : doors;
+	}
+
+	private static void addToIndex(TIntObjectMap<List<L1DoorInstance>> index, int key, L1DoorInstance door) {
+		List<L1DoorInstance> doors = index.get(key);
+		if (doors == null) {
+			doors = new ArrayList<>();
+			index.put(key, doors);
+		}
+		doors.add(door);
+	}
+
 	public L1DoorInstance getDoor(int doorId) {
 		return _doorMap.get(doorId);
 	}

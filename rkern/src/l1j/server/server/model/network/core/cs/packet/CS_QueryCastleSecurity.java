@@ -5,7 +5,7 @@ import l1j.server.server.model.L1Clan;
 import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.model.network.core.sc.packet.SC_NPCTalkReturn;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 
 public final class CS_QueryCastleSecurity {
 
@@ -62,7 +62,7 @@ public final class CS_QueryCastleSecurity {
 
         final String status;
 
-        if (CastleWarBusiness
+        if (CCastleSiegeManager
                 .getInstance()
                 .getSecurity(castleId) == 0) {
 

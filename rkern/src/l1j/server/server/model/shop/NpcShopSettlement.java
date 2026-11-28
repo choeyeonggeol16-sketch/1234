@@ -21,7 +21,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_ActionUI;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SurvivalCry;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.utils.TYUtil;
 
@@ -219,7 +219,7 @@ final class NpcShopSettlement {
         Runnable[] updates = new Runnable[taxes.size()];
         int index = 0;
         for (var tax : taxes.entrySet()) {
-            var castle = CastleWarBusiness.getInstance().get(tax.getKey());
+            var castle = CCastleSiegeManager.getInstance().get(tax.getKey());
             if (castle == null) throw new IllegalStateException("Tax castle missing");
             int before = castle.getPublicMoney();
             long after = (long) before + tax.getValue();

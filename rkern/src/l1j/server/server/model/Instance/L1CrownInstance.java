@@ -7,7 +7,7 @@ import l1j.server.server.model.CWorld;
 import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.siege.CastleWar;
+import l1j.server.server.model.world.siege.CCastle;
 import l1j.server.server.templates.L1Npc;
 
 public class L1CrownInstance extends L1NpcInstance {
@@ -51,14 +51,13 @@ public class L1CrownInstance extends L1NpcInstance {
 				return;
 
 			// 크라운의 좌표로부터 castle_id를 취득
-			CastleWar war = (CastleWar)clan.getCurrentWar();
 			int castle_id = L1CastleLocation.getCastleId(getX(), getY(), getMapId());
-			if(war == null || war.getDefenseClan().getCastleId() != castle_id){
+			if (!(clan.getCurrentWar() instanceof CCastle siege)
+					|| siege.getCastleId() != castle_id || !siege.ChangeOwner(clan)) {
 				SC_SystemMessage.send(player, "선포되어 있지 않습니다.");
 				return;
 			}
 			
-			war.updateDefense(clan);
 			deleteMe();
 		}catch(Exception e){
 			e.printStackTrace();
@@ -94,7 +93,8 @@ public class L1CrownInstance extends L1NpcInstance {
 	}
 
 	private boolean checkRange(L1PcInstance pc) {
-		return (getX() - 1 <= pc.getX() && pc.getX() <= getX() + 1 && getY() - 1 <= pc.getY()
+		return getMap() == pc.getMap()
+				&& (getX() - 1 <= pc.getX() && pc.getX() <= getX() + 1 && getY() - 1 <= pc.getY()
 				&& pc.getY() <= getY() + 1);
 	}
 }

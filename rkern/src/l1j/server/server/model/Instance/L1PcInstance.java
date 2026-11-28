@@ -151,7 +151,7 @@ import l1j.server.server.model.world.instance.dungeon.time.progress.AccountTimeP
 import l1j.server.server.model.world.instance.dungeon.time.progress.CharacterTimeProgress;
 import l1j.server.server.model.world.instance.dungeon.time.progress.DungeonTimeProgress;
 import l1j.server.server.model.world.instance.raid.RaidSpace;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.siege.WarFactory.WAR_TYPE;
 import l1j.server.server.logd.CLogD.ItemActionType;
@@ -223,7 +223,7 @@ public class L1PcInstance extends L1Character {
 	public boolean _SandwormBox = false;
 
 	public int 상인찾기Objid = 0;
-	public boolean war_zone = false;
+	public volatile int siegeZoneWarId;
 
 	private boolean _isMonsterHpBar = false;
 
@@ -3179,7 +3179,7 @@ public class L1PcInstance extends L1Character {
 		int castleId = L1CastleLocation.getCastleIdByArea(pc);
 		int targetCastleId = L1CastleLocation.getCastleIdByArea(target);
 		if (castleId != 0 && targetCastleId != 0 && castleId == targetCastleId) {
-			if (CastleWarBusiness.getInstance().isNowWar(castleId)) {
+			if (CCastleSiegeManager.getInstance().isNowWar(castleId)) {
 				return true;
 			}
 		}
@@ -3249,7 +3249,7 @@ public class L1PcInstance extends L1Character {
 		int castleId = L1CastleLocation.getCastleIdByArea(this);
 
 		if (castleId != 0) {
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(castleId);
 		}
 		return isNowWar;
 	}
@@ -4069,7 +4069,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 		boolean isNowWar = false;
 		castleId = L1CastleLocation.getCastleIdByArea(this);
 		if (castleId != 0) {
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(castleId);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(castleId);
 		}
 		return isNowWar;
 	}
@@ -7858,7 +7858,7 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	 * 투명 아이템 사용
 	 */
 	public void invisibleItem() {
-	    if (hasSkillEffect(L1SkillId.INVISIBILITY)) {
+	    if (hasSkillEffect(L1SkillId.INVISIBILITY) || CCastleSiegeManager.isNearActiveGuardianTower(this)) {
 	        return;
 	    }
 	    removeSkillEffect(L1SkillId.BLIND_HIDING);

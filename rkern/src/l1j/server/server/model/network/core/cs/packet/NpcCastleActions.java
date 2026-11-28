@@ -33,7 +33,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_EffectLocation;
 import l1j.server.server.model.network.core.sc.packet.SC_SellHouse;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.model.world.siege.War;
 import l1j.server.server.model.world.residence.L1House;
 import l1j.server.server.templates.L1Npc;
@@ -47,7 +47,7 @@ final class NpcCastleActions {
         if (socket == null || !socket.isConnected()) return false;
         final CUserSocket connection = socket;
         if (connection == null || !connection.isClientConnected()) return false;
-        final String value = Integer.toString(CastleWarBusiness.getInstance().getTaxRate(castleId));
+        final String value = Integer.toString(CCastleSiegeManager.getInstance().getTaxRate(castleId));
         final long size = 24L + 4L * (page.length() + value.length());
         if (size > Integer.MAX_VALUE) return false;
         final CIOFrame frame = connection.beginDirectFrame((int)size);
@@ -184,21 +184,21 @@ final class NpcCastleActions {
 					return;
 				}
 			}
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.KENT_CASTLE_ID);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(L1CastleLocation.KENT_CASTLE_ID);
 		} else if (keeperId == 70600) { // OT
 			if (isExistDefenseClan(L1CastleLocation.OT_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.OT_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.OT_CASTLE_ID);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(L1CastleLocation.OT_CASTLE_ID);
 		} else if (keeperId == 70778 || keeperId == 70987 || keeperId == 70687) {
 			if (isExistDefenseClan(L1CastleLocation.WW_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.WW_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.WW_CASTLE_ID);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(L1CastleLocation.WW_CASTLE_ID);
 		} else if (keeperId == 70817 || keeperId == 70800 || keeperId == 70988 || keeperId == 70990 || keeperId == 70989
 				|| keeperId == 70991) {
 			if (isExistDefenseClan(L1CastleLocation.GIRAN_CASTLE_ID)) {
@@ -206,7 +206,7 @@ final class NpcCastleActions {
 					return;
 				}
 			}
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.GIRAN_CASTLE_ID);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(L1CastleLocation.GIRAN_CASTLE_ID);
 
 		} else if (keeperId == 70863 || keeperId == 70992 || keeperId == 70862) {
 			if (isExistDefenseClan(L1CastleLocation.HEINE_CASTLE_ID)) {
@@ -214,37 +214,30 @@ final class NpcCastleActions {
 					return;
 				}
 			}
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.HEINE_CASTLE_ID);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(L1CastleLocation.HEINE_CASTLE_ID);
 		} else if (keeperId == 70995 || keeperId == 70994 || keeperId == 70993) {
 			if (isExistDefenseClan(L1CastleLocation.DOWA_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.DOWA_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.DOWA_CASTLE_ID);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(L1CastleLocation.DOWA_CASTLE_ID);
 		} else if (keeperId == 70996) {
 			if (isExistDefenseClan(L1CastleLocation.ADEN_CASTLE_ID)) {
 				if (pcCastleId != L1CastleLocation.ADEN_CASTLE_ID) {
 					return;
 				}
 			}
-			isNowWar = CastleWarBusiness.getInstance().isNowWar(L1CastleLocation.ADEN_CASTLE_ID);
+			isNowWar = CCastleSiegeManager.getInstance().isNowWar(L1CastleLocation.ADEN_CASTLE_ID);
 		}
-		List<L1DoorInstance> doors = DoorSpawnTable.getInstance().getDoorList();
-		
-		for (L1DoorInstance door : doors) {
-			if (door.getKeeperId() == keeperId) {
-				if (isNowWar && door.getMaxHp() > 1) {
-				} else {
-					if (isOpen) {
-						door.open();
-					} else {
-						door.close();
-					}
-				}
+		for (L1DoorInstance door : DoorSpawnTable.getInstance().getKeeperDoors(keeperId)) {
+			if (isNowWar && door.getMaxHp() > 1) continue;
+			if (isOpen) {
+				door.open();
+			} else {
+				door.close();
 			}
 		}
-		doors = null;
 	}
 
 	static boolean isExistDefenseClan(int castleId) {
@@ -325,14 +318,10 @@ final class NpcCastleActions {
 		if (clan != null) {
 			int castleId = clan.getCastleId();
 			if (castleId != 0) {
-				if (!CastleWarBusiness.getInstance().isNowWar(castleId)) {
-					List<L1DoorInstance> doors = DoorSpawnTable.getInstance().getDoorList();
-					for (L1DoorInstance door : doors) {
-						if (L1CastleLocation.checkInWarArea(castleId, door)) {
-							door.repairGate();
-						}
+				if (!CCastleSiegeManager.getInstance().isNowWar(castleId)) {
+					for (L1DoorInstance door : DoorSpawnTable.getInstance().getCastleDoors(castleId)) {
+						door.repairGate();
 					}
-					doors = null;
 					SC_ServerMessage.send(pc, 990);
 				} else {
 					SC_ServerMessage.send(pc, 991);
@@ -383,7 +372,7 @@ final class NpcCastleActions {
 	}
 
 	static String[] makeWarTimeStrings(int castleId) {		
-		Calendar warTime = CastleWarBusiness.getInstance().get(castleId).nextCal();
+		Calendar warTime = CCastleSiegeManager.getInstance().get(castleId).getNextStartCalendar();
 		int year = warTime.get(Calendar.YEAR);
 		int month = warTime.get(Calendar.MONTH) + 1;
 		int day = warTime.get(Calendar.DATE);
@@ -566,7 +555,7 @@ final class NpcCastleActions {
 						return htmlid;
 					}
 
-					boolean isNowWar = castleid != 0 && CastleWarBusiness.getInstance().isNowWar(castleid);
+					boolean isNowWar = castleid != 0 && CCastleSiegeManager.getInstance().isNowWar(castleid);
 					if (!isNowWar) {
 						SC_ServerMessage.send(pc, 3683);
 						// 투석기 사용: 실패(공성 시간에만 사용 가능)
@@ -653,8 +642,8 @@ final class NpcCastleActions {
 					 * if (pc.getLevel() < 52) { SC_ServerMessage.send(pc, 3854); // 52레벨
 					 * 이상만 붉은 기사단에 가입이 가능합니다. return htmlid; }
 					 * 
-					 * if (pc.getRedKnightClanId() == 0) { CastleWarBusiness business =
-					 * CastleWarBusiness.getInstance(); int castleId =
+					 * if (pc.getRedKnightClanId() == 0) { CCastleSiegeManager business =
+					 * CCastleSiegeManager.getInstance(); int castleId =
 					 * business.isNowReady(L1CastleLocation.GIRAN_CASTLE_ID) ?
 					 * L1CastleLocation.GIRAN_CASTLE_ID :
 					 * business.isNowReady(L1CastleLocation.OT_CASTLE_ID) ?
@@ -699,7 +688,7 @@ final class NpcCastleActions {
             return false;
         }
         final int castleId = L1CastleLocation.getCastleIdByArea(npc);
-        if (castleId > 0 && CastleWarBusiness.getInstance().isNowWar(castleId)) {
+        if (castleId > 0 && CCastleSiegeManager.getInstance().isNowWar(castleId)) {
             SC_SystemMessage.send(pc, "해당성의 공성전이 진행중에는 이용 불가능합니다.");
             return false;
         }

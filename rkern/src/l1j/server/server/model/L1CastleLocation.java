@@ -6,8 +6,8 @@ import l1j.server.server.shared.GameRandom;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CTimeListener;
 import l1j.server.server.model.gametime.CGameTime;
-import l1j.server.server.model.world.siege.CastleWar;
-import l1j.server.server.model.world.siege.CastleWarBusiness;
+import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 
 
 public class L1CastleLocation {
@@ -157,6 +157,18 @@ public class L1CastleLocation {
 	public static int getCastleByMapId(int castleId) {
 		L1MapArea a = (castleId >= 1 && castleId <= 8) ? AREAS[castleId] : null;
 		return (a != null) ? a.getMapId() : 0;
+	}
+
+	public static int getCastleInnerMapId(int castleId) {
+		return switch (castleId) {
+			case KENT_CASTLE_ID -> KENT_INNER_CASTLE_MAP;
+			case WW_CASTLE_ID -> WW_INNER_CASTLE_MAP;
+			case GIRAN_CASTLE_ID -> GIRAN_INNER_CASTLE_MAP;
+			case HEINE_CASTLE_ID -> HEINE_INNER_CASTLE_MAP;
+			case ADEN_CASTLE_ID -> ADEN_INNER_CASTLE_MAP;
+			case DIAD_CASTLE_ID -> DIAD_INNER_CASTLE_MAP;
+			default -> 0;
+		};
 	}
 
 	public static int getCastleIdByArea(L1Location loc) {
@@ -332,7 +344,7 @@ public class L1CastleLocation {
     private static void refreshCastleTaxRates() {
         int[] rates = new int[9];
         for (int i = 1; i < rates.length; i++) {
-            CastleWar war = CastleWarBusiness.getInstance().get(i);
+            CCastle war = CCastleSiegeManager.getInstance().get(i);
             rates[i] = war == null ? 0 : war.getTaxRate();
         }
         CASTLE_TAX_RATE = rates;
