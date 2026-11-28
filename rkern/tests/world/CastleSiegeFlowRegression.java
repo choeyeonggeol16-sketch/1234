@@ -227,6 +227,7 @@ public final class CastleSiegeFlowRegression {
                     "capturing king becomes the defender and its attack membership ends");
             check(world.getNpcsByTemplateId(CROWN).isEmpty() && castle.IsUnderSiege(),
                     "the captured crown disappears and the siege continues");
+            final L1Clan successor = transferOwnedCastle(world, kent, castle, clan, data);
             long start = castle.getNextStartMillis();
             castle.requestEndSiege();
             Field phase = field(CCastle.class, "_state");
@@ -238,11 +239,48 @@ public final class CastleSiegeFlowRegression {
                     throw new AssertionError(failure);
                 }
             }, "end restores tower and schedules next siege");
-            check(manager.get(KENT) == castle && castle.getDefenseClan() == clan, "owner survives the end");
-            System.out.println("PASS unowned siege declaration, tower damage, crown spawn, capture and close");
+            check(manager.get(KENT) == castle && castle.getDefenseClan() == successor, "owner survives the end");
+            world.removeClan(successor);
+            System.out.println("PASS unowned and owned castle capture, tower, rollback, duplicate rejection and close");
         } finally {
             world.leaveAndRemoveObject(tower);
             world.removeClan(clan);
+        }
+    }
+
+    private static L1Clan transferOwnedCastle(CWorld world, L1V1Map terrain, CCastle castle,
+            L1Clan defender, HikariDataSource data) throws Exception {
+        final var successor = clan(909, 1909);
+        world.storeClan(successor);
+        check(castle.proclaim(successor) == castle, "new offense is registered");
+        final var king = king(successor, terrain);
+        final var crown = new L1CrownInstance(npc(CROWN, "L1Crown"));
+        crown.setId(2909);
+        crown.getLocation().set(X, Y, terrain);
+        world.storeAndEnterWorld(crown);
+
+        crown.onAction(king);
+        check(CacheD.getInstance().flushAll(3_000), "failed occupied capture drained");
+        check(defender.getCastleId() == KENT && successor.getCastleId() == 0
+                && world.findObject(crown.getId()) == crown && storedOwners(data, 903),
+                "failure after clearing the defender rolls back both DB and world state");
+
+        try (var con = data.getConnection(); var sql = con.createStatement()) {
+            sql.executeUpdate("INSERT INTO clan_data VALUES (909,0)");
+        }
+        crown.onAction(king);
+        crown.onAction(king);
+        check(CacheD.getInstance().flushAll(3_000), "occupied capture drained");
+        check(storedOwners(data, 909) && castle.getDefenseClan() == successor
+                && defender.getCastleId() == 0 && successor.getCastleId() == KENT
+                && world.findObject(crown.getId()) == null, "one new owner after duplicate crown input");
+        return successor;
+    }
+
+    private static boolean storedOwners(HikariDataSource data, int expected) throws SQLException {
+        try (var con = data.getConnection(); var sql = con.createStatement();
+                var rows = sql.executeQuery("SELECT clan_id FROM clan_data WHERE hascastle=1")) {
+            return rows.next() && rows.getInt(1) == expected && !rows.next();
         }
     }
 
