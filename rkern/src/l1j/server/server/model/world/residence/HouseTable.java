@@ -51,9 +51,11 @@ public final class HouseTable {
 
 
     public static void reload() {
+        final HouseTable loaded;
         synchronized (HouseTable.class) {
-            _instance = new HouseTable();
+            _instance = loaded = new HouseTable();
         }
+        CWorldAgitTimer.housesReloaded(loaded);
     }
 
     private HouseTable() {
@@ -198,6 +200,7 @@ public final class HouseTable {
             _houses.put(house.getHouseId(), house);
 
             _snapshotDirty.set(true);
+            CWorldAgitTimer.houseChanged(house.getHouseId());
 
         } catch (SQLException e) {
             _log.log(Level.SEVERE, "HouseTable updateHouse() failed. houseId=" + house.getHouseId(), e);

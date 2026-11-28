@@ -55,7 +55,7 @@ public class L1AuctionBoard {
 		_houseArea = i;
 	}
 
-	private Calendar _deadline;
+	private volatile Calendar _deadline;
 
 	public Calendar getDeadline() {
 		return _deadline;

@@ -79,7 +79,12 @@ public final class L1AuctionTransaction {
                     ps.setInt(1,house.getHouseId());if(ps.executeUpdate()!=1)throw new SQLException("House already on auction");
                 }
             });
-            tx.commit(()->{house.setOnSale(true);house.setPurchaseBasement(true);AuctionBoardTable.getInstance().putCommitted(board);});
+            tx.commit(()->{
+                house.setOnSale(true);
+                house.setPurchaseBasement(true);
+                AuctionBoardTable.getInstance().putCommitted(board);
+                CWorldAgitTimer.houseChanged(house.getHouseId());
+            });
         } catch(RuntimeException failure){SC_SystemMessage.send(pc,"경매 등록을 완료하지 못했습니다.");}
     }
     private static L1AuctionBoard boardFor(L1House house,int price) {
@@ -243,6 +248,7 @@ public final class L1AuctionTransaction {
                         || house.getTaxDeadline().getTimeInMillis()!=previous)
                     throw new IllegalStateException("House tax memory preimage changed after commit");
                 house.setTaxDeadline(next);
+                CWorldAgitTimer.houseChanged(houseId);
             });
         } catch(RuntimeException failure) {
             LOG.log(Level.WARNING,"House tax payment not admitted houseId="+houseId,failure);
@@ -250,8 +256,10 @@ public final class L1AuctionTransaction {
         }
     }
     /** Called on the existing house timer. Receipt contains foreclosure and listing. */
-    public static void foreclose(L1House house) {
-        if(house==null || house.isOnSale() || house.getTaxDeadline()==null)return;
+    static void foreclose(L1House house, long expectedDeadline) {
+        final Calendar taxDeadline = house.getTaxDeadline();
+        if(house.isOnSale() || taxDeadline==null || taxDeadline.getTimeInMillis()!=expectedDeadline
+                || System.currentTimeMillis()<CWorldAgitTimer.nextMinuteAfter(expectedDeadline))return;
         final CWorld world=CWorld.getInstance();
         final HouseTable houses=HouseTable.getInstance();
         final AuctionBoardTable boards=AuctionBoardTable.getInstance();
@@ -260,7 +268,7 @@ public final class L1AuctionTransaction {
         final boolean previousBasement=house.isPurchaseBasement();
         final List<ClanHouseImage> clans=clanImages(world,house.getHouseId(),0);
         final L1AuctionBoard board=boardFor(house,100000);
-        final Timestamp previous=new Timestamp(house.getTaxDeadline().getTimeInMillis());
+        final Timestamp previous=new Timestamp(expectedDeadline);
         final Calendar next=(Calendar)board.getDeadline().clone();next.add(Calendar.DATE,Config.HOUSE_TAX_INTERVAL);
         runTimer(world,house.getHouseId(),con->{
             CTransaction.requireTransactionalTables(con,"house","board_auction","clan_data");
@@ -281,11 +289,14 @@ public final class L1AuctionTransaction {
             house.setOnSale(true);house.setPurchaseBasement(true);house.setTaxDeadline(next);
             for(ClanHouseImage image:clans)image.clan.setHouseId(0);
             boards.putCommitted(board);
+            CWorldAgitTimer.houseChanged(house.getHouseId());
         });
     }
     /** Settlement and the old owner's durable proceeds are one receipt. */
-    public static void expire(L1AuctionBoard board) {
-        if(board==null || board.getDeadline()==null)return;
+    static void expire(L1AuctionBoard board, long expectedDeadline) {
+        final Calendar currentDeadline = board.getDeadline();
+        if(currentDeadline==null || currentDeadline.getTimeInMillis()!=expectedDeadline
+                || System.currentTimeMillis()<CWorldAgitTimer.nextMinuteAfter(expectedDeadline))return;
         final CWorld world=CWorld.getInstance();
         final HouseTable houses=HouseTable.getInstance();
         final AuctionBoardTable boards=AuctionBoardTable.getInstance();
@@ -295,7 +306,7 @@ public final class L1AuctionTransaction {
         final boolean previousSale=house.isOnSale(),previousBasement=house.isPurchaseBasement();
         final Long previousTax=house.getTaxDeadline()==null?null:house.getTaxDeadline().getTimeInMillis();
         final List<ClanHouseImage> clans=clanImages(world,houseId,bidder);
-        final Timestamp deadline=new Timestamp(board.getDeadline().getTimeInMillis());
+        final Timestamp deadline=new Timestamp(expectedDeadline);
         final Calendar next=Calendar.getInstance(java.util.TimeZone.getTimeZone(Config.TIME_ZONE));
         next.add(Calendar.DATE,oldOwner==0 && bidder==0 ? 1 : Config.HOUSE_TAX_INTERVAL);
         next.set(Calendar.MINUTE,0);next.set(Calendar.SECOND,0);next.set(Calendar.MILLISECOND,0);
@@ -337,7 +348,11 @@ public final class L1AuctionTransaction {
                     || !java.util.Objects.equals(previousTax,
                         house.getTaxDeadline()==null?null:house.getTaxDeadline().getTimeInMillis()))
                 throw new IllegalStateException("Auction settlement memory preimage changed");
-            if(relist){board.setDeadline(next);return;}
+            if(relist){
+                board.setDeadline(next);
+                CWorldAgitTimer.auctionChanged(houseId);
+                return;
+            }
             verifyClanImages(world,clans,houseId,bidder);
             if(bidder>0) {
                 int winners=0;
@@ -349,6 +364,7 @@ public final class L1AuctionTransaction {
                 if(image.leaderId==bidder)image.clan.setHouseId(houseId);
             }
             house.setOnSale(false);house.setTaxDeadline(next);boards.removeCommitted(houseId);
+            CWorldAgitTimer.houseChanged(houseId);
             if(credit!=null)L1PendingCredit.notifyOnline(oldOwner);
         });
     }

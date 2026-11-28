@@ -29,6 +29,14 @@ public class AuctionBoardTable {
 		return _instance;
 	}
 
+    public static void reload() {
+        final AuctionBoardTable loaded;
+        synchronized (AuctionBoardTable.class) {
+            _instance = loaded = new AuctionBoardTable();
+        }
+        CWorldAgitTimer.auctionsReloaded(loaded);
+    }
+
 	private final java.util.concurrent.ConcurrentHashMap<Integer,L1AuctionBoard> _boards = new java.util.concurrent.ConcurrentHashMap<>();
 
 	private Calendar timestampToCalendar(Timestamp ts) {
@@ -81,8 +89,15 @@ public class AuctionBoardTable {
 		return _boards.get(houseId);
 	}
 
-    public void putCommitted(L1AuctionBoard board) { _boards.put(board.getHouseId(),board); }
-    public void removeCommitted(int id) { _boards.remove(id); }
+    public void putCommitted(L1AuctionBoard board) {
+        _boards.put(board.getHouseId(), board);
+        CWorldAgitTimer.auctionChanged(board.getHouseId());
+    }
+
+    public void removeCommitted(int id) {
+        _boards.remove(id);
+        CWorldAgitTimer.auctionChanged(id);
+    }
 
 	public void insertAuctionBoard(L1AuctionBoard board) {
 		String sql = "INSERT INTO board_auction SET house_id=?, house_name=?, house_area=?, deadline=?, price=?, location=?, old_owner=?, old_owner_id=?, bidder=?, bidder_id=?";
@@ -104,7 +119,7 @@ public class AuctionBoardTable {
 			pstm.setInt(10, board.getBidderId());
 			pstm.execute();
 
-			_boards.put(board.getHouseId(), board);
+			putCommitted(board);
 		} catch (SQLException e) {
 			_log.log(Level.SEVERE, "insertAuctionBoard error", e);
 		}
@@ -130,7 +145,7 @@ public class AuctionBoardTable {
 			pstm.setInt(10, board.getHouseId());
 			pstm.execute();
 
-			_boards.put(board.getHouseId(), board);
+			putCommitted(board);
 		} catch (SQLException e) {
 			_log.log(Level.SEVERE, "updateAuctionBoard error", e);
 		}
@@ -144,7 +159,7 @@ public class AuctionBoardTable {
 			pstm.setInt(1, houseId);
 			pstm.execute();
 
-			_boards.remove(houseId);
+			removeCommitted(houseId);
 		} catch (SQLException e) {
 			_log.log(Level.SEVERE, "deleteAuctionBoard error", e);
 		}

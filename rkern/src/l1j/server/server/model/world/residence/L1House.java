@@ -75,7 +75,7 @@ public class L1House {
 		_keeperId = i;
 	}
 
-	private boolean _isOnSale;
+	private volatile boolean _isOnSale;
 
 	public boolean isOnSale() {
 		return _isOnSale;
@@ -95,7 +95,7 @@ public class L1House {
 		_isPurchaseBasement = flag;
 	}
 
-	private Calendar _taxDeadline;
+	private volatile Calendar _taxDeadline;
 
 	public Calendar getTaxDeadline() {
 		return _taxDeadline;
