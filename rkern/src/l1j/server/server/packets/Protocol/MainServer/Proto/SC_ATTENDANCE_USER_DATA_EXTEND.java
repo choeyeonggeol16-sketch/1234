@@ -184,6 +184,22 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
                     target.set_attendanceTime(source.get_attendanceTime());
                     changed = true;
                 }
+                final int activeIndex = target.get_currentAttendanceIndex();
+                if (activeIndex == source.get_currentAttendanceIndex()) {
+                    final var incomingSlot = AttendanceRewardClaims.findSlot(target, activeIndex);
+                    final var durableSlot = AttendanceRewardClaims.findSlot(source, activeIndex);
+                    if (incomingSlot != null && durableSlot != null
+                            && incomingSlot.get_state() == UserAttendanceState.INIT
+                            && durableSlot.get_state() == UserAttendanceState.INIT) {
+                        final int time = Math.max(Math.max(target.get_attendanceTime(), incomingSlot.get_time()),
+                                Math.max(source.get_attendanceTime(), durableSlot.get_time()));
+                        if (time != target.get_attendanceTime() || time != incomingSlot.get_time()) {
+                            target.set_attendanceTime(time);
+                            incomingSlot.set_time(time);
+                            changed = true;
+                        }
+                    }
+                }
                 if (target.get_recvedRewardCount() < source.get_recvedRewardCount()) {
                     target.set_recvedRewardCount(source.get_recvedRewardCount());
                     if (source.get_resultCode() == UserAttendanceTimeStatus.ATTENDANCE_NO_MORE_TIME

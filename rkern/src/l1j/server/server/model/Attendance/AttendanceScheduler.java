@@ -47,11 +47,23 @@ public final class AttendanceScheduler implements CTimeListener {
         retries.clear();
     }
 
-    private record Window(long day, long cutoffNanos) {}
+    record Boundary(long day, long nanos) {}
+
+    record Window(long day, long cutoffNanos, long intervalMillis, Boundary opened) {
+        Boundary latestDue(long wall, long nano) {
+            if (wall < day) return null;
+            final long latest = day + Math.floorDiv(wall - day, intervalMillis) * intervalMillis;
+            final long estimate = latest == day ? cutoffNanos : nano - TimeUnit.MILLISECONDS.toNanos(wall - latest);
+            // An adjustment to the wall clock must not put the cut before the old
+            // monotonic timer or retroactively credit time after an instant jump.
+            return new Boundary(latest, Math.min(nano, Math.max(cutoffNanos, estimate)));
+        }
+    }
 
     private static Window nextWindow(long wall, long nano) {
-        final long day = nextResetMillis(wall, AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND);
-        return new Window(day, nano + TimeUnit.MILLISECONDS.toNanos(day - wall));
+        final int resetSeconds = AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND;
+        final long day = nextResetMillis(wall, resetSeconds);
+        return new Window(day, nano + TimeUnit.MILLISECONDS.toNanos(day - wall), resetSeconds * 1000L, null);
     }
 
     static long nextResetMillis(long wall, int resetSeconds) {
@@ -81,13 +93,20 @@ public final class AttendanceScheduler implements CTimeListener {
             if (AttendanceLoadManager.attendanceDayMillis() == 0L) {
                 AttendanceLoadManager.loadAttendanceStartupCalendar();
             }
-            final long now = System.currentTimeMillis();
-            if (now < expected.day()) return;
-            if (AttendanceLoadManager.attendanceDayMillis() < expected.day()) {
-                AttendanceLoadManager.updateServerStartupInfo(expected.day());
+            final Boundary due = expected.latestDue(System.currentTimeMillis(), System.nanoTime());
+            if (due == null) return;
+            if (AttendanceLoadManager.attendanceDayMillis() < due.day()) {
+                AttendanceLoadManager.updateServerStartupInfo(due.day());
             }
-            // The old cutoff stays available to sessions until they have credited both sides.
-            window = nextWindow(System.currentTimeMillis(), System.nanoTime());
+            final long interval = AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND * 1000L;
+            final long period = interval > 0 ? interval : expected.intervalMillis();
+            final long day = due.day() + period;
+            final Window next = new Window(day, System.nanoTime()
+                    + TimeUnit.MILLISECONDS.toNanos(day - System.currentTimeMillis()), period, due);
+            synchronized (this) {
+                if (!running || window != expected) return;
+                window = next;
+            }
             sessions.forEach((account, session) -> refresh(session));
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Attendance day update failed; retrying", failure);
@@ -191,7 +210,8 @@ public final class AttendanceScheduler implements CTimeListener {
         private long cafe;
         private long afterNormal;
         private long afterCafe;
-        private boolean appliedBoundary;
+        private Boundary afterBoundary;
+        private long appliedDay;
         private boolean eligible;
         private boolean pcCafe;
         private volatile CServerTimer timer;
@@ -217,39 +237,49 @@ public final class AttendanceScheduler implements CTimeListener {
             pcCafe = pc.PC방_버프;
         }
 
-        private void accrue(long until) {
-            final long elapsed = Math.max(0L, until - checkpoint);
-            final long before = Math.min(elapsed, Math.max(0L, period.cutoffNanos() - checkpoint));
-            checkpoint = until;
-            if (!eligible) return;
-            normal += before;
-            afterNormal += elapsed - before;
-            if (pcCafe) {
-                cafe += before;
-                afterCafe += elapsed - before;
+        private void accrue(long now, Boundary due) {
+            if (due != null && (afterBoundary == null || afterBoundary.day() < due.day())) {
+                afterBoundary = due;
+                afterNormal = afterCafe = 0L;
             }
+            if (eligible) {
+                final long beforeEnd = afterBoundary == null ? now
+                        : Math.min(period.cutoffNanos(), afterBoundary.nanos());
+                final long before = Math.max(0L, Math.min(now, beforeEnd) - checkpoint);
+                final long after = afterBoundary == null ? 0L
+                        : Math.max(0L, now - Math.max(checkpoint, afterBoundary.nanos()));
+                normal += before;
+                afterNormal += after;
+                if (pcCafe) {
+                    cafe += before;
+                    afterCafe += after;
+                }
+            }
+            checkpoint = now;
         }
 
         void credit(long now, boolean saving) {
             final Window latest = window;
-            accrue(now);
-            if (!appliedBoundary && (period != latest || (saving && now >= period.cutoffNanos()
-                    && System.currentTimeMillis() >= period.day()))) {
-                flushTime(false);
+            final boolean published = period != latest;
+            final Boundary due = published ? latest.opened()
+                    : (now >= period.cutoffNanos() || saving ? period.latestDue(System.currentTimeMillis(), now) : null);
+            accrue(now, due);
+            if (due != null && (published || saving) && due.day() > appliedDay) {
+                if (appliedDay == 0L) flushTime(false);
                 // A departing account persists its own side of the cut even if
                 // the global calendar write is awaiting retry.
-                final long day = period != latest ? AttendanceLoadManager.attendanceDayMillis() : period.day();
-                data.advanceElapsedDay(pc, day);
-                appliedBoundary = true;
+                data.advanceElapsedDay(pc, due.day());
+                appliedDay = due.day();
             }
-            if (period != latest) {
+            if (published) {
                 period = latest;
-                normal = afterNormal;
-                cafe = afterCafe;
+                normal = due != null && afterBoundary != null && due.day() == afterBoundary.day() ? afterNormal : 0L;
+                cafe = due != null && afterBoundary != null && due.day() == afterBoundary.day() ? afterCafe : 0L;
                 afterNormal = afterCafe = 0L;
-                appliedBoundary = false;
+                afterBoundary = null;
+                appliedDay = 0L;
             }
-            flushTime(appliedBoundary);
+            flushTime(appliedDay != 0L);
         }
 
         private void flushTime(boolean afterBoundary) {
