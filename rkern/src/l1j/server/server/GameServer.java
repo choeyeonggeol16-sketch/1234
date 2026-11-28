@@ -620,7 +620,6 @@ public class GameServer {
             while (!CInstanceWork.awaitDrained(30L, TimeUnit.SECONDS)) {
                 System.err.println("[Instance] Waiting for accepted instance work");
             }
-            CCastleSiegeManager.getInstance().dispose();
             while (!CWorldWork.awaitDrained(30L, TimeUnit.SECONDS)) {
                 System.err.println("[World] Waiting for accepted world work");
             }
@@ -672,6 +671,7 @@ public class GameServer {
                 if (failure != null) failure.printStackTrace();
             }
 
+            CCastleSiegeManager.getInstance().dispose();
             ClanTable.checkpointActiveBlessings(CWorld.getInstance(), cache);
 
             final CIOThreadCallback cio = CIOThreadCallback.getInstance();

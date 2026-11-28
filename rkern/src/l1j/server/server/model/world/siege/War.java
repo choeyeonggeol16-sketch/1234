@@ -246,7 +246,7 @@ public class War {
 		return _defense;
 	}
 	
-	private void setDefenseClan(L1Clan clan) {
+	protected final void setDefenseClan(L1Clan clan) {
 		_defense = clan;
 		if (clan != null) {
 			_defenseId = clan.getClanId();

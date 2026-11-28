@@ -11,6 +11,8 @@ import java.util.logging.Logger;
 
 import l1j.server.Config;
 import l1j.server.server.datatables.ClanTable;
+import l1j.server.server.model.CWorld;
+import l1j.server.server.model.Instance.L1CrownInstance;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.L1CastleLocation;
 import l1j.server.server.model.L1Clan;
@@ -23,6 +25,8 @@ import l1j.server.server.packets.Protocol.MainServer.Proto.Proto;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SIEGE_INJURY_TIME_NOIT;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_SIEGE_ZONE_UPDATE_NOT;
 import l1j.server.server.storage.CacheD;
+import l1j.server.server.storage.cached.CTransaction;
+import l1j.server.server.model.network.thread.CIOThreadCallback;
 
 public final class CCastleSiegeManager implements CTimeListener {
 
@@ -105,34 +109,125 @@ public final class CCastleSiegeManager implements CTimeListener {
     }
 
     private volatile Map<Integer, CCastle> _castleWars = Map.of();
+    private volatile boolean manualAssignmentPending;
+    private volatile boolean reloading;
+    private boolean disposed;
 
     private CCastleSiegeManager() {
         reload();
     }
 
-    public synchronized boolean reload() {
-        final List<CastleSiegeTable.Entry> entries;
-        final ClanTable clans;
+    public boolean reload() {
+        synchronized (this) {
+            if (disposed || reloading || manualAssignmentPending
+                    || _castleWars.values().stream().anyMatch(CCastle::capturePending)) return false;
+            reloading = true;
+        }
         try {
-            entries = CastleSiegeTable.load();
-            clans = ClanTable.getInstance();
+            final List<CastleSiegeTable.Entry> entries = CastleSiegeTable.load();
+            final ClanTable clans = ClanTable.getInstance();
+            synchronized (this) {
+                if (disposed) return false;
+                for (CCastle siege : _castleWars.values()) siege.dispose();
+                Map<Integer, CCastle> replacement = new HashMap<>(entries.size());
+                for (CastleSiegeTable.Entry entry : entries) {
+                    L1Clan defense = clans.findCastleClan(entry.castleId());
+                    replacement.put(entry.castleId(), WarFactory.createCastleSiege(defense, entry));
+                }
+                _castleWars = replacement;
+                return true;
+            }
         } catch (SQLException | RuntimeException failure) {
             _log.log(Level.WARNING, "Castle siege load failed", failure);
             return false;
+        } finally {
+            reloading = false;
         }
-
-        for (CCastle siege : _castleWars.values()) siege.dispose();
-
-        Map<Integer, CCastle> replacement = new HashMap<>(entries.size());
-        for (CastleSiegeTable.Entry entry : entries) {
-            L1Clan defense = clans.findCastleClan(entry.castleId());
-            replacement.put(entry.castleId(), WarFactory.createCastleSiege(defense, entry));
-        }
-        _castleWars = replacement;
-        return true;
     }
 
     public static final int TREASURY_ORDER_KEY = CacheD.accountOrderKey("$castle-treasury-global");
+
+    public synchronized boolean requestCapture(CCastle siege, L1Clan winner, L1CrownInstance crown) {
+        if (disposed || reloading || manualAssignmentPending || get(siege.getCastleId()) != siege) return false;
+        final CCastle.Capture capture = siege.reserveCapture(winner, crown);
+        if (capture == null) return false;
+        final CWorld world = CWorld.getInstance();
+        final int castleId = siege.getCastleId();
+        final int winnerId = winner.getClanId();
+        final int defenderId = capture.oldDefense() == null ? 0 : capture.oldDefense().getClanId();
+        final int[] extraOwners = defenderId == 0 ? new int[0] : new int[] {defenderId};
+        try (var move = CacheD.beginEconomyMove(TREASURY_ORDER_KEY, winnerId, extraOwners)) {
+            move.stageWarehouseSql(con -> CastleSiegeTable.capture(con, castleId, defenderId, winnerId,
+                    siege.getCastleName(), capture.round().startMillis, capture.taxRate()));
+            move.onError(failure -> {
+                if (!isUncertain(failure)) siege.finishCapture(capture);
+                _log.log(Level.WARNING, "Castle capture could not finish: " + castleId, failure);
+            });
+            move.commit(() -> CIOThreadCallback.getInstance().completeWorldMutation(world,
+                    () -> siege.confirmCapture(capture), move::finishOwnerApply));
+            return true;
+        } catch (RuntimeException failure) {
+            siege.finishCapture(capture);
+            _log.log(Level.FINE, "Castle capture admission deferred: " + castleId, failure);
+            return false;
+        }
+    }
+
+    private static boolean isUncertain(Throwable failure) {
+        if (failure instanceof CTransaction.OutcomeUnknownException || failure instanceof CacheD.CommittedReplayException)
+            return true;
+        for (Throwable suppressed : failure.getSuppressed()) {
+            if (suppressed instanceof CTransaction.OutcomeUnknownException) return true;
+        }
+        return false;
+    }
+
+    public synchronized boolean assignCastle(L1Clan clan, int destination, Runnable success, Runnable failure) {
+        if (disposed || reloading || manualAssignmentPending || destination < 0 || (destination != 0 && get(destination) == null)
+                || _castleWars.values().stream().anyMatch(CCastle::capturePending)) return false;
+        final CWorld world = CWorld.getInstance();
+        final int clanId = clan.getClanId();
+        final int previous = clan.getCastleId();
+        if (previous == destination) {
+            success.run();
+            return true;
+        }
+        final CCastle oldCastle = get(previous);
+        final CCastle newCastle = get(destination);
+        manualAssignmentPending = true;
+        if ((oldCastle != null && !oldCastle.readyForManualAssignment())
+                || (newCastle != null && !newCastle.readyForManualAssignment())) {
+            manualAssignmentPending = false;
+            return false;
+        }
+        try (var move = CacheD.beginEconomyMove(TREASURY_ORDER_KEY, clanId)) {
+            move.stageWarehouseSql(con -> CastleSiegeTable.assign(con, clanId, previous, destination));
+            move.onError(error -> {
+                if (!isUncertain(error)) finishManualAssignment();
+                failure.run();
+            });
+            move.commit(() -> CIOThreadCallback.getInstance().completeWorldMutation(world, () -> {
+                if (world.getClan(clanId) != clan || clan.getCastleId() != previous)
+                    throw new IllegalStateException("GM castle assignment preimage changed");
+                clan.setCastleId(destination);
+                if (oldCastle != null) oldCastle.replaceIdleDefense(null);
+                if (newCastle != null) newCastle.replaceIdleDefense(clan);
+            }, error -> move.finishOwnerApply(error, outcome -> {
+                if (outcome == null) {
+                    finishManualAssignment();
+                    success.run();
+                } else failure.run();
+            })));
+            return true;
+        } catch (RuntimeException unavailable) {
+            manualAssignmentPending = false;
+            return false;
+        }
+    }
+
+    boolean transitionPaused() { return manualAssignmentPending || reloading; }
+
+    private synchronized void finishManualAssignment() { manualAssignmentPending = false; }
 
     /** Stage treasury arithmetic on the inventory receipt's connection. */
     public Runnable stageTreasury(L1InventoryTransaction tx, int castleId, int delta) {
@@ -165,12 +260,11 @@ public final class CCastleSiegeManager implements CTimeListener {
 
     public void updateCastle(CCastle siege) {
         int castleId = siege.getCastleId();
-        if (siege.disposed || get(castleId) != siege) return;
-        String name = siege.getCastleName();
-        long startMillis = siege.getNextStartMillis();
-        int taxRate = siege.getTaxRate();
-        CacheD.getInstance().submitDbJobOrdered(TREASURY_ORDER_KEY,
-                () -> CastleSiegeTable.saveMetadata(castleId, name, startMillis, taxRate));
+        if (siege.disposed || siege.capturePending() || get(castleId) != siege) return;
+        CacheD.getInstance().submitDbJobOrdered(TREASURY_ORDER_KEY, () -> {
+            if (!siege.disposed && get(castleId) == siege)
+                CastleSiegeTable.saveMetadata(castleId, siege.getCastleName(), siege.getNextStartMillis(), siege.getTaxRate());
+        });
     }
 
     public synchronized void start() {
@@ -179,13 +273,15 @@ public final class CCastleSiegeManager implements CTimeListener {
 
     @Override
     public void onSecondChanged(CDateTime time) {
+        if (manualAssignmentPending) return;
         long nowMillis = time.getSeconds() * 1000L;
         for (CCastle siege : _castleWars.values()) {
-            siege.onClockTick(nowMillis);
+            siege.onClockTick(nowMillis, this);
         }
     }
 
     public synchronized void dispose() {
+        disposed = true;
         CGameTime.removeRealListener(this, Calendar.SECOND);
         Map<Integer, CCastle> previous = _castleWars;
         _castleWars = Map.of();

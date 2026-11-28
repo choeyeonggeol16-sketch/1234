@@ -173,9 +173,9 @@ public final class ClanSiegeRosterRegression {
             var entry = new CastleSiegeTable.Entry(1, "Regression castle", schedule, 10, 0);
             CCastle siege = WarFactory.createCastleSiege(null, entry);
             try {
-                siege.onClockTick(schedule.readyMillis);
+                siege.onClockTick(schedule.readyMillis, null);
                 check(!siege.isReady(), "ready window preserves the original strict boundary");
-                siege.onClockTick(schedule.readyMillis + 1);
+                siege.onClockTick(schedule.readyMillis + 1, null);
                 check(siege.isReady(), "siege enters its ready window");
                 check(siege.register(attacker) && !siege.register(attacker)
                         && attacker.getCurrentWar() == siege, "unowned castle and duplicate declaration");
@@ -185,7 +185,7 @@ public final class ClanSiegeRosterRegression {
             } finally {
                 siege.dispose();
             }
-            siege.onClockTick(startMillis + 1);
+            siege.onClockTick(startMillis + 1, null);
             check(!siege.isReady() && !siege.IsUnderSiege() && !siege.register(attacker)
                     && attacker.getCurrentWar() == null
                     && world.createWarStream().noneMatch(war -> war == siege), "retired siege releases war links");

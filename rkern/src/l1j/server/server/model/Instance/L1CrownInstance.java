@@ -8,6 +8,7 @@ import l1j.server.server.model.network.core.sc.packet.SC_RemoveObject;
 import l1j.server.server.model.network.core.sc.packet.SC_ServerMessage;
 import l1j.server.server.model.network.core.sc.packet.SC_SystemMessage;
 import l1j.server.server.model.world.siege.CCastle;
+import l1j.server.server.model.world.siege.CCastleSiegeManager;
 import l1j.server.server.templates.L1Npc;
 
 public class L1CrownInstance extends L1NpcInstance {
@@ -53,12 +54,14 @@ public class L1CrownInstance extends L1NpcInstance {
 			// 크라운의 좌표로부터 castle_id를 취득
 			int castle_id = L1CastleLocation.getCastleId(getX(), getY(), getMapId());
 			if (!(clan.getCurrentWar() instanceof CCastle siege)
-					|| siege.getCastleId() != castle_id || !siege.ChangeOwner(clan)) {
+					|| siege.getCastleId() != castle_id) {
 				SC_SystemMessage.send(player, "선포되어 있지 않습니다.");
 				return;
 			}
 			
-			deleteMe();
+			if (!CCastleSiegeManager.getInstance().requestCapture(siege, clan, this)) {
+				SC_SystemMessage.send(player, "성 점령을 처리할 수 없습니다. 잠시 후 다시 시도해 주세요.");
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}

@@ -54,6 +54,11 @@ public final class CCastle extends War {
     private volatile int _security;
     private volatile CastleSiegeState _state = CastleSiegeState.IDLE;
     private CServerTimer evacuationRetry;
+    private volatile Capture capture;
+    private boolean endAfterCapture;
+
+    record Capture(L1Clan oldDefense, L1Clan winner, L1CrownInstance crown,
+                   CastleSiegeSchedule round, CastleSiegeSchedule defenseTime, int taxRate) {}
 
     CCastle(L1Clan defense, int id, CastleSiegeTable.Entry entry) {
         super(WAR_TYPE.CASTLE, id);
@@ -134,41 +139,96 @@ public final class CCastle extends War {
         return (int) Math.clamp(seconds, 0L, Integer.MAX_VALUE);
     }
 
-    public void SetSiegeDate(Calendar cal) {
+    public boolean SetSiegeDate(Calendar cal) {
         _warLock.lock();
         try {
-            if (!disposed) schedule = new CastleSiegeSchedule(cal);
+            if (disposed || capture != null) return false;
+            schedule = new CastleSiegeSchedule(cal);
+            return true;
         } finally {
             _warLock.unlock();
         }
     }
 
-    public synchronized boolean ChangeOwner(L1Clan nextDefense) {
-        final L1Clan oldDefense;
+    boolean readyForManualAssignment() {
         _warLock.lock();
         try {
-            if (!IsUnderSiege() || nextDefense == null || nextDefense.getCurrentWar() != this
-                    || _offenses.get(nextDefense.getClanId()) != nextDefense
-                    || nextDefense.getCastleId() != 0) return false;
-            oldDefense = _defense;
-            if (oldDefense != null) oldDefense.setCastleId(0);
-            super.updateDefense(nextDefense);
-            nextDefense.setCastleId(_castleId);
-            schedule = schedule.withDefenseTime(CGameTime.getRealTimeCalendar(), Config.수성시간);
+            return !disposed && _state != CastleSiegeState.RUN && _state != CastleSiegeState.CLOSING;
         } finally {
             _warLock.unlock();
         }
-        applyCaptureEffects(oldDefense, nextDefense);
-        return true;
     }
 
-    private void applyCaptureEffects(L1Clan oldDefense, L1Clan nextDefense) {
+    void replaceIdleDefense(L1Clan clan) {
+        _warLock.lock();
+        try {
+            if (IsUnderSiege() || disposed) throw new IllegalStateException("Active castle assignment");
+            if (_defense != null) _defense.clearCurrentWar(this);
+            setDefenseClan(clan);
+        } finally {
+            _warLock.unlock();
+        }
+    }
+
+    boolean capturePending() { return capture != null; }
+
+    Capture reserveCapture(L1Clan winner, L1CrownInstance crown) {
+        _warLock.lock();
+        try {
+            final CWorld world = CWorld.getInstance();
+            if (capture != null || !IsUnderSiege() || winner == null || winner.getCurrentWar() != this
+                    || _offenses.get(winner.getClanId()) != winner || winner.getCastleId() != 0
+                    || world.getClan(winner.getClanId()) != winner
+                    || world.findObject(crown.getId()) != crown
+                    || (_defense != null && (world.getClan(_defense.getClanId()) != _defense
+                        || _defense.getCastleId() != _castleId))) return null;
+            return capture = new Capture(_defense, winner, crown, schedule,
+                    schedule.withDefenseTime(CGameTime.getRealTimeCalendar(), Config.수성시간), _taxRate);
+        } finally {
+            _warLock.unlock();
+        }
+    }
+
+    synchronized void confirmCapture(Capture expected) {
+        _warLock.lock();
+        try {
+            final CWorld world = CWorld.getInstance();
+            if (capture != expected || !IsUnderSiege() || schedule != expected.round()
+                    || _defense != expected.oldDefense() || expected.winner().getCastleId() != 0
+                    || world.getClan(expected.winner().getClanId()) != expected.winner()
+                    || world.findObject(expected.crown().getId()) != expected.crown()
+                    || (_defense != null && (world.getClan(_defense.getClanId()) != _defense
+                        || _defense.getCastleId() != _castleId))) {
+                throw new IllegalStateException("Castle capture world preimage changed");
+            }
+            if (_defense != null) _defense.setCastleId(0);
+            expected.winner().setCastleId(_castleId);
+            schedule = expected.defenseTime();
+            super.updateDefense(expected.winner());
+        } finally {
+            _warLock.unlock();
+        }
+        expected.crown().deleteMe();
+        applyCaptureEffects(expected.winner());
+        finishCapture(expected);
+    }
+
+    void finishCapture(Capture expected) {
+        _warLock.lock();
+        try {
+            if (capture != expected) return;
+            capture = null;
+            if (endAfterCapture) {
+                endAfterCapture = false;
+                requestEndSiege();
+            }
+        } finally {
+            _warLock.unlock();
+        }
+    }
+
+    private void applyCaptureEffects(L1Clan nextDefense) {
         cancelEvacuationRetry();
-        try {
-            CCastleSiegeManager.getInstance().updateCastle(this);
-        } catch (RuntimeException failure) {
-            _log.log(Level.WARNING, "Could not queue siege metadata after capture", failure);
-        }
         try {
             final L1Location loc = createGetBackLocation();
             try (var shared = new CAsyncSendConstBuffer(
@@ -203,13 +263,6 @@ public final class CCastle extends War {
         } catch (RuntimeException failure) {
             _log.log(Level.WARNING, "Siege structures could not be restored after capture", failure);
         }
-        try {
-            ClanTable.getInstance().updateClan(nextDefense);
-            if (oldDefense != null) ClanTable.getInstance().updateClan(oldDefense);
-        } catch (RuntimeException failure) {
-            _log.log(Level.WARNING, "Could not queue siege ownership after capture", failure);
-        }
-
         try {
             CInstanceWork.execute(() -> {
                 if (!IsUnderSiege() || _defense != nextDefense) return;
@@ -246,13 +299,13 @@ public final class CCastle extends War {
         cancelEvacuationRetry();
     }
 
-    void onClockTick(long nowMillis) {
+    void onClockTick(long nowMillis, CCastleSiegeManager manager) {
         if (!_warLock.tryLock()) return;
         try {
-            if (disposed || _state == CastleSiegeState.CLOSING) return;
+            if (disposed || _state == CastleSiegeState.CLOSING || (manager != null && manager.transitionPaused())) return;
             CastleSiegeSchedule current = schedule;
             if (_state == CastleSiegeState.RUN) {
-                if (nowMillis > current.endMillis) submitTransition(CastleSiegeState.CLOSING, this::EndSiege);
+                if (capture == null && nowMillis > current.endMillis) submitTransition(CastleSiegeState.CLOSING, this::EndSiege);
             } else if (nowMillis > current.startMillis && nowMillis < current.limitMillis) {
                 submitTransition(CastleSiegeState.RUN, this::StartSiege);
             } else if (_state == CastleSiegeState.IDLE
@@ -267,7 +320,8 @@ public final class CCastle extends War {
     public void requestEndSiege() {
         _warLock.lock();
         try {
-            if (IsUnderSiege()) submitTransition(CastleSiegeState.CLOSING, this::EndSiege);
+            if (capture != null) endAfterCapture = true;
+            else if (IsUnderSiege()) submitTransition(CastleSiegeState.CLOSING, this::EndSiege);
         } finally {
             _warLock.unlock();
         }

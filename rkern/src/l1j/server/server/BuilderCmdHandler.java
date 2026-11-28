@@ -948,11 +948,9 @@ public final class BuilderCmdHandler {
 				if (clan == null) {
 					gm.sendPackets("혈맹이 존재하지 않습니다.");
 				} else {
-					clan.setCastleId(number);
-					CWorld.getInstance().removeClan(clan);
-					CWorld.getInstance().storeClan(clan);
-					ClanTable.getInstance().updateClan(clan);
-					gm.sendPackets(name + " 혈맹정보가 변경됐습니다.");
+					Runnable failed = () -> gm.sendPackets("성 소유권 변경을 처리할 수 없습니다.");
+					if (!CCastleSiegeManager.getInstance().assignCastle(clan, number,
+							() -> gm.sendPackets(name + " 혈맹정보가 변경됐습니다."), failed)) failed.run();
 				}
 			} catch (Exception e) {
 				gm.sendPackets(".성혈조작 [혈이름] [성번호] 입력");
@@ -1811,7 +1809,10 @@ private void \uC11C\uBC84\uCD08\uAE30\uD654(L1PcInstance pc, String param) {
 			if (war == null)
 				throw new Exception();
 
-			war.SetSiegeDate(cal);
+			if (!war.SetSiegeDate(cal)) {
+				gm.sendPackets("성 점령 처리 중입니다. 잠시 후 다시 시도해 주세요.");
+				return;
+			}
 			CCastleSiegeManager.getInstance().updateCastle(war);
 			SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 			gm.sendPackets(String.format(".공성시간이 %s 으로 변경 되었습니다.", formatter.format(cal.getTime())));

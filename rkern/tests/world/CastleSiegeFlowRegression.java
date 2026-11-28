@@ -40,6 +40,7 @@ import l1j.server.server.model.map.L1V1Map;
 import l1j.server.server.model.map.L1WorldMap;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.model.world.instance.CInstanceWork;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.storage.CacheD;
 import l1j.server.server.templates.L1Npc;
 
@@ -66,7 +67,7 @@ public final class CastleSiegeFlowRegression {
         Logger.getLogger(CacheD.class.getName()).setUseParentHandlers(false);
 
         Field poolField = field(DatabaseFactory.class, "DATABASE_POOL");
-        try (var data = new FixtureDatabase()) {
+        try (var data = args.length > 1 ? storageFixture(args[1]) : new FixtureDatabase()) {
             poolField.set(null, data);
             CWorld world = CWorld.getInstance();
             L1WorldMap maps = L1WorldMap.getInstance();
@@ -96,7 +97,7 @@ public final class CastleSiegeFlowRegression {
                     guardianTowerReveals(world, kent, other, castle);
                 }
                 if ("all".equals(scenario) || "capture".equals(scenario)) {
-                    unownedCastleCanBeTaken(world, kent, manager, castle);
+                    unownedCastleCanBeTaken(world, kent, manager, castle, data, args.length > 1);
                 }
             } finally {
                 manager.dispose();
@@ -105,6 +106,8 @@ public final class CastleSiegeFlowRegression {
                 CacheD.getInstance().shutdown(2_000);
                 CIOThreadCallback.getInstance().shutdown();
                 check(CIOThreadCallback.getInstance().awaitTermination(3, TimeUnit.SECONDS), "CIO workers drain");
+                CWorldWork.stopAccepting();
+                check(CWorldWork.awaitDrained(3, TimeUnit.SECONDS), "world workers drain");
                 for (var object : world.snapshotZoneOccupants(kent)) world.leaveAndRemoveObject(object);
                 maps.removeMap(kent);
                 maps.removeMap(other);
@@ -171,7 +174,7 @@ public final class CastleSiegeFlowRegression {
     }
 
     private static void unownedCastleCanBeTaken(CWorld world, L1V1Map kent, CCastleSiegeManager manager,
-            CCastle castle) throws Exception {
+            CCastle castle, HikariDataSource data, boolean durable) throws Exception {
         var clan = clan(903, 1903);
         world.storeClan(clan);
         var king = king(clan, kent);
@@ -193,7 +196,32 @@ public final class CastleSiegeFlowRegression {
             var crown = (L1CrownInstance) crowns.getFirst();
             tower.receiveDamage(king, 500);
             check(world.getNpcsByTemplateId(CROWN).size() == 1, "repeated tower damage cannot spawn a second crown");
+            if (durable) {
+                check(CacheD.getInstance().flushAll(3_000), "ready receipt schema");
+                try (var con = data.getConnection(); var sql = con.createStatement()) {
+                    sql.executeUpdate("INSERT INTO castle VALUES (" + KENT + ",'Kent',NOW(),0,0)");
+                }
+                crown.onAction(king);
+                check(CacheD.getInstance().flushAll(3_000), "failed capture drained");
+                check(world.findObject(crown.getId()) == crown && clan.getCastleId() == 0,
+                        "missing winner rolls back and preserves crown");
+                try (var con = data.getConnection(); var sql = con.createStatement()) {
+                    sql.executeUpdate("INSERT INTO clan_data VALUES (903,0)");
+                }
+            }
             crown.onAction(king);
+            if (!durable) {
+                check(clan.getCastleId() == 0 && world.findObject(crown.getId()) == crown,
+                        "castle capture requires durable receipt storage");
+                System.out.println("PASS siege capture fails closed without receipt storage");
+                return;
+            }
+            crown.onAction(king);
+            check(CacheD.getInstance().flushAll(3_000), "receive and publish capture");
+            try (var con = data.getConnection(); var sql = con.createStatement();
+                    var rows = sql.executeQuery("SELECT hascastle FROM clan_data WHERE clan_id=903")) {
+                check(rows.next() && rows.getInt(1) == KENT, "one durable castle owner");
+            }
             check(castle.getDefenseClan() == clan && clan.getCastleId() == KENT
                     && clan.getCurrentWar() == castle && castle.getOffenseClan(clan.getClanId()) == null,
                     "capturing king becomes the defender and its attack membership ends");
@@ -399,6 +427,40 @@ public final class CastleSiegeFlowRegression {
         long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
         while (!condition.getAsBoolean() && System.nanoTime() < deadline) Thread.sleep(5);
         check(condition.getAsBoolean(), label);
+    }
+
+    private static HikariDataSource storageFixture(String url) throws SQLException {
+        var config = new com.zaxxer.hikari.HikariConfig();
+        config.setJdbcUrl(url);
+        config.setUsername("root");
+        config.setPassword(System.getenv().getOrDefault("RKERN_STORAGE_TEST_PASSWORD", ""));
+        var data = new HikariDataSource(config);
+        try (var con = data.getConnection(); var sql = con.createStatement()) {
+            for (String table : new String[] {"character_warehouse", "clan_warehouse", "character_elf_warehouse",
+                    "character_special_warehouse", "character_supplementary_service", "character_items",
+                    "character_package_warehouse", "character_teleport"}) {
+                sql.executeUpdate("CREATE TABLE " + table + "(id INT PRIMARY KEY) ENGINE=InnoDB");
+            }
+            sql.executeUpdate("CREATE TABLE characters (objid INT PRIMARY KEY,ClanID INT,char_name VARCHAR(32),ClanRank INT,"
+                    + "level INT,notes VARCHAR(32),Type INT) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE companion_instance (object_id INT PRIMARY KEY) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE letter (item_object_id INT PRIMARY KEY) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE npc (npcid INT PRIMARY KEY, family VARCHAR(45)) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE npc_born (id INT PRIMARY KEY) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE spawnlist_door (id INT PRIMARY KEY) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE clan_data (clan_id INT PRIMARY KEY, hascastle INT) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE castle (castle_id INT PRIMARY KEY,name VARCHAR(45),war_time DATETIME,"
+                    + "tax_rate INT,public_money INT) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE cached_transaction_receipts (tx_id CHAR(36) PRIMARY KEY,kind VARCHAR(16),"
+                    + "owner_a INT,owner_b INT) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE character_quests (char_id INT,quest_id INT,PRIMARY KEY(char_id,quest_id)) ENGINE=InnoDB");
+            sql.executeUpdate("CREATE TABLE character_level_gifts (char_id INT,gift_level INT,"
+                    + "PRIMARY KEY(char_id,gift_level)) ENGINE=InnoDB");
+        } catch (SQLException failure) {
+            data.close();
+            throw failure;
+        }
+        return data;
     }
 
     private static final class FixtureDatabase extends HikariDataSource {

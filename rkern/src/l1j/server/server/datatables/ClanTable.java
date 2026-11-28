@@ -563,8 +563,8 @@ public class ClanTable {
 
     public void updateClan(L1Clan clan,Runnable afterCommit) {
         final int owner=clan.getClanId();
-        final Object[] values = new Object[]{clan.getClanId(),clan.getLeaderId(),clan.getLeaderName(),clan.getCastleId(),clan.getAlliance(),clan.getClanBirthDay(),clan.getBotStyle(),clan.getBotLevel(),clan.getOnlineMaxUser(),clan.getAnnouncement(),clan.getEmblemId(),clan.getEmblemStatus(),clan.getJoinSetting(),clan.getJoinType(),clan.getClanMemberList().size(),clan.getCurrentOnlineMemebers(),clan.getClanName()};
-        final String sql="UPDATE clan_data SET clan_id=?, leader_id=?, leader_name=?, hascastle=?, alliance=?, clan_birthday=?, bot_style=?, bot_level=?, max_online_user=?, announcement=?, emblem_id=?, emblem_status=?, join_setting=?, join_type=?, total_m=?, current_m=? WHERE clan_name=?";
+        final Object[] values = new Object[]{clan.getLeaderId(),clan.getLeaderName(),clan.getAlliance(),clan.getClanBirthDay(),clan.getBotStyle(),clan.getBotLevel(),clan.getOnlineMaxUser(),clan.getAnnouncement(),clan.getEmblemId(),clan.getEmblemStatus(),clan.getJoinSetting(),clan.getJoinType(),clan.getClanMemberList().size(),clan.getCurrentOnlineMemebers(),owner,clan.getClanName()};
+        final String sql="UPDATE clan_data SET leader_id=?, leader_name=?, alliance=?, clan_birthday=?, bot_style=?, bot_level=?, max_online_user=?, announcement=?, emblem_id=?, emblem_status=?, join_setting=?, join_type=?, total_m=?, current_m=? WHERE clan_id=? AND clan_name=?";
         CacheD.getInstance().submitDbJobOrdered(owner,()->{
             try(Connection con=DatabaseFactory.getInstance().getConnection();PreparedStatement ps=con.prepareStatement(sql)) {
                 for(int index=0;index<values.length;index++)ps.setObject(index+1,values[index]);
@@ -750,7 +750,7 @@ public class ClanTable {
 
     public void deleteClan(L1Clan clan){
         if (clan == null) return;
-        String sql = "DELETE FROM clan_data WHERE clan_id = ? AND clan_name = ?";
+        String sql = "DELETE FROM clan_data WHERE clan_id = ? AND clan_name = ? AND hascastle=0";
         try (Connection con = DatabaseFactory.getInstance().getConnection();
              PreparedStatement pstm = con.prepareStatement(sql)) {
             pstm.setInt(1, clan.getClanId());
