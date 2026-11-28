@@ -2,6 +2,16 @@
 
 SQL은 MySQL 5.7과 MariaDB에서 사용할 수 있습니다. 예시의 `net`은 실제 DB 이름으로 바꾸세요.
 
+## 2026-11-29 전체 설치본
+
+빈 DB에는 [Net.sql](Net.sql)을 한 번 가져오면 됩니다. 11월 26일 드라이브에 업로드된 Net 원본에 [통합 업그레이드 SQL](Net_upgrade_20261129.sql)과 몬스터북 매핑을 반영했습니다.
+
+```sh
+mysql --default-character-set=utf8mb4 net < database/Net.sql
+```
+
+공개 설치본에는 게임 스키마와 설정 데이터가 들어 있습니다. 계정, 캐릭터, IP, 거래, 플레이 기록은 제외했습니다. 별도 MariaDB 11.4 빈 DB에서 전체 설치를 검증했습니다. 기존 운영 DB에는 백업 후 통합 업그레이드 SQL 또는 아래 개별 마이그레이션 절차를 사용하세요.
+
 ## 2026-11-27 마을 정산
 
 마을 정산은 `town`, `characters`, `cached_transaction_receipts`의 InnoDB 트랜잭션을 사용합니다. 기존 Net DB에는 [거래 테이블 엔진 변환](Net_transaction_engines.sql)을 적용하고 [마을 공헌도 조회 인덱스](Net_town_lookup_index.sql)를 추가합니다.
@@ -18,7 +28,7 @@ SQL은 MySQL 5.7과 MariaDB에서 사용할 수 있습니다. 예시의 `net`은
 
 [Net 쿼리 변경과 검증 결과](../rkern/docs/net_sql_20261126/README.md)
 
-## 새 DB
+## 이전 원본으로 새 DB 설치
 
 1. 빈 DB를 만든 뒤 `net_69_SRC_optimized_clean_install_20261031.sql`을 가져옵니다. 이 덤프에는 `DROP TABLE`이 들어 있습니다. 대상 DB가 비어 있는지 확인하세요.
 2. [CacheD 저장 스키마](CacheD_storage_schema_migration.sql)를 적용합니다. 캐릭터 HP·MP 성장 이력, 각 창고의 장비 품질, 패키지 창고의 축복·아이템 레벨을 저장할 열을 추가합니다. 이 버전의 덤프에는 거래 영수증, 경매 미정산금, 레벨 보상 테이블과 필요한 InnoDB 엔진이 들어 있습니다.
