@@ -2557,7 +2557,7 @@ public class L1PcInstance extends L1Character {
         }
         if (!LOGOUT_OWNER.compareAndSet(this, null, Thread.currentThread())) return;
         try {
-            AttendanceScheduler.getInstance().settle(this);
+            AttendanceScheduler.getInstance().settleBeforeSave(this);
             try { l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this); }
             catch (RuntimeException e) { _log.log(Level.WARNING, "Logout waiting reply cleanup failed: " + getId(), e); }
             suspendGroundSight();
@@ -2582,6 +2582,7 @@ public class L1PcInstance extends L1Character {
                 if (!is무인상점()) {
                     SC_ATTENDANCE_USER_DATA_EXTEND userData = getAttendanceData();
                     if (userData != null) {
+                        AttendanceScheduler.getInstance().settleBeforeSave(this);
                         try { SC_ATTENDANCE_USER_DATA_EXTEND.update(getAccountName(), userData); }
                         finally { setAttendanceData(null); }
                     }
@@ -2681,7 +2682,7 @@ public class L1PcInstance extends L1Character {
 	}
     /** Persist the attendance snapshot before handing the account to another PC. */
     public void savePrivateStoreAttendance() {
-        AttendanceScheduler.getInstance().settle(this);
+        AttendanceScheduler.getInstance().settleBeforeSave(this);
         final SC_ATTENDANCE_USER_DATA_EXTEND data = getAttendanceData();
         if (data != null) SC_ATTENDANCE_USER_DATA_EXTEND.update(getAccountName(), data);
     }

@@ -139,13 +139,25 @@ public final class AttendanceScheduler implements CTimeListener {
 
     // Call before and after an eligibility change so neither side borrows the other's time.
     public void settle(L1PcInstance pc) {
+        settle(pc, false);
+    }
+
+    public void settleBeforeSave(L1PcInstance pc) {
+        settle(pc, true);
+    }
+
+    private void settle(L1PcInstance pc, boolean saving) {
         final String account = pc.getAccountName();
         if (account == null) return;
         final Session session = sessions.get(account);
-        if (session != null && session.pc == pc) refresh(session);
+        if (session != null && session.pc == pc) refresh(session, saving);
     }
 
     private void refresh(Session session) {
+        refresh(session, false);
+    }
+
+    private void refresh(Session session, boolean saving) {
         synchronized (session.data) {
             if (!session.current()) {
                 sessions.remove(session.account, session);
@@ -154,7 +166,7 @@ public final class AttendanceScheduler implements CTimeListener {
                 return;
             }
             try {
-                session.credit(System.nanoTime());
+                session.credit(System.nanoTime(), saving);
                 session.captureEligibility();
                 if (session.arm()) retries.remove(session);
                 else retries.add(session);
@@ -179,6 +191,7 @@ public final class AttendanceScheduler implements CTimeListener {
         private long cafe;
         private long afterNormal;
         private long afterCafe;
+        private boolean appliedBoundary;
         private boolean eligible;
         private boolean pcCafe;
         private volatile CServerTimer timer;
@@ -217,25 +230,38 @@ public final class AttendanceScheduler implements CTimeListener {
             }
         }
 
-        void credit(long now) {
+        void credit(long now, boolean saving) {
             final Window latest = window;
             accrue(now);
+            if (!appliedBoundary && (period != latest || (saving && now >= period.cutoffNanos()
+                    && System.currentTimeMillis() >= period.day()))) {
+                flushTime(false);
+                // A departing account persists its own side of the cut even if
+                // the global calendar write is awaiting retry.
+                final long day = period != latest ? AttendanceLoadManager.attendanceDayMillis() : period.day();
+                data.advanceElapsedDay(pc, day);
+                appliedBoundary = true;
+            }
             if (period != latest) {
-                flushTime();
-                data.advanceElapsedDay(pc, AttendanceLoadManager.attendanceDayMillis());
                 period = latest;
                 normal = afterNormal;
                 cafe = afterCafe;
                 afterNormal = afterCafe = 0L;
+                appliedBoundary = false;
             }
-            flushTime();
+            flushTime(appliedBoundary);
         }
 
-        private void flushTime() {
-            final int normalSeconds = (int) Math.min(Integer.MAX_VALUE, normal / SECOND);
-            final int cafeSeconds = (int) Math.min(Integer.MAX_VALUE, cafe / SECOND);
-            normal -= normalSeconds * SECOND;
-            cafe -= cafeSeconds * SECOND;
+        private void flushTime(boolean afterBoundary) {
+            final int normalSeconds = (int) Math.min(Integer.MAX_VALUE, (afterBoundary ? afterNormal : normal) / SECOND);
+            final int cafeSeconds = (int) Math.min(Integer.MAX_VALUE, (afterBoundary ? afterCafe : cafe) / SECOND);
+            if (afterBoundary) {
+                afterNormal -= normalSeconds * SECOND;
+                afterCafe -= cafeSeconds * SECOND;
+            } else {
+                normal -= normalSeconds * SECOND;
+                cafe -= cafeSeconds * SECOND;
+            }
             data.applyElapsedTime(pc, normalSeconds, cafeSeconds);
         }
 
