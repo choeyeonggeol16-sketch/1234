@@ -5,10 +5,14 @@ import static l1j.server.server.model.character.skill.L1SkillId.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.DatabaseFactory;
+import l1j.server.server.model.character.skill.SkillEffectContainer.ActiveSnapshot;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.storage.CacheD;
 
@@ -90,6 +94,53 @@ public class CharBuffTable {
 			BUFF_특별한성장축복, BUFF_특별한방어축복, BUFF_특별한공격축복
 	};
 
+    private static final int[] EMPTY_SNAPSHOT = new int[0];
+    private static final TIntObjectHashMap<TIntArrayList> SAVE_ORDER = new TIntObjectHashMap<>();
+
+    static {
+        for (int index = 0; index < buffSkill.length; index++) {
+            final int skillId = buffSkill[index];
+            TIntArrayList positions = SAVE_ORDER.get(skillId);
+            if (positions == null) {
+                positions = new TIntArrayList(1);
+                SAVE_ORDER.put(skillId, positions);
+            }
+            positions.add(index);
+        }
+    }
+
+    static int[] captureBuffRows(L1PcInstance pc) {
+        return orderBuffRows(pc.snapshotSkillEffects(SAVE_ORDER::containsKey, SHAPE_CHANGE, POLY_RING_MASTER));
+    }
+
+    static int[] orderBuffRows(ActiveSnapshot active) {
+        int size = 0;
+        for (long effect : active.effects()) {
+            final TIntArrayList positions = SAVE_ORDER.get((int) (effect >>> 32));
+            if (positions != null) size += positions.size();
+        }
+        if (size == 0) return EMPTY_SNAPSHOT;
+        final long[] ordered = new long[size];
+        int position = 0;
+        for (long effect : active.effects()) {
+            final TIntArrayList positions = SAVE_ORDER.get((int) (effect >>> 32));
+            if (positions == null) continue;
+            for (int i = 0; i < positions.size(); i++) {
+                ordered[position++] = ((long) positions.getQuick(i) << 32) | Integer.toUnsignedLong((int) effect);
+            }
+        }
+        Arrays.sort(ordered);
+        final int[] rows = new int[size * 3];
+        position = 0;
+        for (long effect : ordered) {
+            final int skillId = buffSkill[(int) (effect >>> 32)];
+            rows[position++] = skillId;
+            rows[position++] = (int) effect;
+            rows[position++] = (skillId == SHAPE_CHANGE || skillId == POLY_RING_MASTER) ? active.spriteId() : 0;
+        }
+        return rows;
+    }
+
 	public static void DeleteBuff(L1PcInstance pc) {
 		String sql = "DELETE FROM character_buff WHERE char_obj_id = ?";
 		try (Connection con = DatabaseFactory.getInstance().getConnection();
@@ -108,16 +159,8 @@ public class CharBuffTable {
         // Capture runs outside CacheD's monitor; paid buff writes ordered after
         // this reservation cannot overtake it.
         CacheD.getInstance().submitSessionDbJobOrdered(charId, pc.getCacheDSessionEpoch(), () -> {
-            final int[] snapshot = new int[buffSkill.length * 3];
-            int count = 0;
-            for (int skillId : buffSkill) {
-                if (!pc.hasSkillEffect(skillId)) continue;
-                snapshot[count++] = skillId;
-                snapshot[count++] = pc.getSkillEffectTimeSec(skillId);
-                snapshot[count++] = (skillId == SHAPE_CHANGE || skillId == POLY_RING_MASTER)
-                        ? pc.getCurrentSpriteId() : 0;
-            }
-            final int length = count;
+            final int[] snapshot = captureBuffRows(pc);
+            final int length = snapshot.length;
             return () -> {
                 try (Connection con = DatabaseFactory.getInstance().getConnection()) {
                     con.setAutoCommit(false);

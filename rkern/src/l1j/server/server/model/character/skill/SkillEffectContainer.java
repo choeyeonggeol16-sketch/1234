@@ -311,6 +311,42 @@ public final class SkillEffectContainer {
 		}
 	}
 
+    private static final long[] NO_ACTIVE_EFFECTS = new long[0];
+
+    public record ActiveSnapshot(long[] effects, int spriteId) {
+        public static final ActiveSnapshot EMPTY = new ActiveSnapshot(NO_ACTIVE_EFFECTS, 0);
+    }
+
+    /** Pack the skill ID and the existing wire duration from one stable active revision. */
+    public ActiveSnapshot snapshotActive(java.util.function.IntPredicate include,
+            int firstSpriteEffect, int secondSpriteEffect) {
+        long[] matched = NO_ACTIVE_EFFECTS;
+        for (;;) {
+            final int before = revision;
+            if ((before & 1) != 0) {
+                Thread.onSpinWait();
+                continue;
+            }
+            final int count = size;
+            final int[] ids = skillIds;
+            final int[] durations = remainingSeconds;
+            if (count > ids.length || count > durations.length) continue;
+            int used = 0;
+            boolean includeSprite = false;
+            for (int i = 0; i < count; i++) {
+                final int id = ids[i];
+                if (!include.test(id)) continue;
+                if (matched.length < count) matched = new long[count];
+                matched[used++] = ((long) id << 32) | Math.max(0, durations[i]);
+                includeSprite |= id == firstSpriteEffect || id == secondSpriteEffect;
+            }
+            final int sprite = includeSprite ? owner.getCurrentSpriteId() : 0;
+            if (before != revision) continue;
+            if (used == 0) return ActiveSnapshot.EMPTY;
+            return new ActiveSnapshot(used == matched.length ? matched : java.util.Arrays.copyOf(matched, used), sprite);
+        }
+    }
+
 	public int getRemainingTimeSec(int skillId) {
 		for (;;) {
 			final int before = revision;

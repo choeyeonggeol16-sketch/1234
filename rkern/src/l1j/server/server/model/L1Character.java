@@ -881,6 +881,13 @@ public class L1Character extends L1Object {
 		return effects != null && effects.containsMatching(matchesSkillId, exceptSkillId);
 	}
 
+    public SkillEffectContainer.ActiveSnapshot snapshotSkillEffects(java.util.function.IntPredicate include,
+            int firstSpriteEffect, int secondSpriteEffect) {
+        final SkillEffectContainer effects = skillEffects(false);
+        return effects == null ? SkillEffectContainer.ActiveSnapshot.EMPTY
+                : effects.snapshotActive(include, firstSpriteEffect, secondSpriteEffect);
+    }
+
 	public int getSkillEffectTimeSec(int skillId) {
 		final SkillEffectContainer effects = skillEffects(false);
 		return effects == null ? -1 : effects.getRemainingTimeSec(skillId);
