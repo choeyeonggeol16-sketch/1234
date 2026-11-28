@@ -86,11 +86,11 @@ public class AttendanceLoadManager implements Command{
 	}
 	
 	public static volatile Calendar ATTEN_STARTUP_CALENDAR;
-	public static int ATTEN_CHECK_INTERVAL;
-	public static int ATTEN_RESET_PERIOD_SECOND;
-	public static int ATTEN_DAILY_MAX_COUNT;
-	public static int ATTEN_WEEKEND_MAX_COUNT;
-	public static int ATTEN_TOTAL_TIMESECOND;
+	public static volatile int ATTEN_CHECK_INTERVAL;
+	public static volatile int ATTEN_RESET_PERIOD_SECOND;
+	public static volatile int ATTEN_DAILY_MAX_COUNT;
+	public static volatile int ATTEN_WEEKEND_MAX_COUNT;
+	public static volatile int ATTEN_TOTAL_TIMESECOND;
 	public void load(){
 		loadConfig();
 		loadBonusGroup();
@@ -142,6 +142,7 @@ public class AttendanceLoadManager implements Command{
 			switch(args.nextInt()){
 			case 1:
 				loadConfig();
+				AttendanceScheduler.getInstance().refreshConfiguration();
 				args.notify("출석체크 컨픽 리로드가 완료되었습니다.");
 				break;
 			case 2:

@@ -75,11 +75,33 @@ public class UserAttendanceDataGroup {
         return true;
     }
 
-    public boolean onUpdateTime(int seconds) {
-        if (_resultCode != UserAttendanceTimeStatus.ATTENDANCE_NORMAL || seconds <= 0) return false;
-        if (_currentAttendanceIndex >= _groupData.size()) return updateFinishedStatus();
+    public int secondsUntilCompletion() {
         final int threshold = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
-        if (_currentAttendanceIndex < 0 || threshold <= 0 || _totalRewardCount <= 0) return false;
+        if (_resultCode != UserAttendanceTimeStatus.ATTENDANCE_NORMAL || threshold <= 0
+                || _totalRewardCount <= 0 || _currentAttendanceIndex < 0
+                || _currentAttendanceIndex >= _groupData.size()
+                || _groupData.get(_currentAttendanceIndex).get_state() != UserAttendanceState.INIT) return -1;
+        return Math.max(1, threshold - _attendanceTime);
+    }
+
+    public boolean creditEligibleTime(int seconds) {
+        if (seconds <= 0) return false;
+        // Time captured before a PC cafe flag change still belongs to its original group.
+        final boolean paused = _groupType == AttendanceGroupType.PC_CAFE
+                && _resultCode == UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME;
+        if (paused) _resultCode = UserAttendanceTimeStatus.ATTENDANCE_NORMAL;
+        try {
+            return onUpdateTime(seconds);
+        } finally {
+            if (paused && _resultCode == UserAttendanceTimeStatus.ATTENDANCE_NORMAL) {
+                _resultCode = UserAttendanceTimeStatus.ATTENDANCE_CANT_BE_ACHIEVE_TIME;
+            }
+        }
+    }
+
+    public boolean onUpdateTime(int seconds) {
+        if (secondsUntilCompletion() < 0 || seconds <= 0) return false;
+        final int threshold = AttendanceLoadManager.ATTEN_TOTAL_TIMESECOND;
 
         boolean completedAny = false;
         while (seconds > 0) {

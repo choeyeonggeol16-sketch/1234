@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.Attendance.AttendanceLoadManager;
 import l1j.server.server.model.Attendance.AttendanceRewardClaims;
+import l1j.server.server.model.Attendance.AttendanceScheduler;
 import l1j.server.server.model.Instance.L1PcInstance;
 import l1j.server.server.model.network.core.connection.CUserSocket;
 import l1j.server.server.packets.Protocol.MainServer.Proto.Attend.AttendanceGroupType;
@@ -39,6 +40,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         if (pc == null) return;
         final SC_ATTENDANCE_USER_DATA_EXTEND data = pc.getAttendanceData();
         if (data != null) {
+            AttendanceScheduler.getInstance().settle(pc);
             Proto.send(pc, data);
             return;
         }
@@ -299,45 +301,46 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
             } else if (needsGroups || savedDay < currentDay) {
                 userData.queueSnapshot(pc.getAccountName(), userData.bodyBytes());
             }
+            AttendanceScheduler.getInstance().register(pc, userData);
         }
     }
 
     // ────────────── 갱신 (타이머) ──────────────
 
-    private void handleUpdateTime(L1PcInstance pc, int second, boolean checkDayUpdate) throws IOException {
-        final byte[] snapshot;
-        synchronized (this) {
-            if (pc.getAttendanceData() != this || _userFlag == null || _groups == null) return;
-            final long day = checkDayUpdate ? atSecond(AttendanceLoadManager.attendanceDayMillis()) : attendanceDay;
-            if (checkDayUpdate && day <= attendanceDay) return;
+    private boolean elapsedSnapshotPending;
 
-            boolean changed = false;
-            final int activeGroupLimit = _userFlag.toInt();
-            for (int i = 0; i <= activeGroupLimit && i < _groups.size(); i++) {
-                UserAttendanceDataGroup group = _groups.get(i);
-                if (group != null) changed |= group.onUpdateTime(second);
-            }
-
-            if (checkDayUpdate) {
-                attendanceDay = day;
-                advanceDay(_userFlag == AttendanceUserFlag.USER_FLAG_PC_CAFE);
-                changed = true;
-            }
-            if (!changed) return;
-
-            snapshot = bodyBytes();
-            queueSnapshot(pc.getAccountName(), snapshot);
+    public synchronized void applyElapsedTime(L1PcInstance pc, int normalSeconds, int cafeSeconds) {
+        if (pc.getAttendanceData() != this || _groups == null) return;
+        for (UserAttendanceDataGroup group : _groups) {
+            if (group == null) continue;
+            final boolean cafe = group.get_groupType() == AttendanceGroupType.PC_CAFE;
+            elapsedSnapshotPending |= group.creditEligibleTime(cafe ? cafeSeconds : normalSeconds);
         }
-        // CacheD and the outgoing frame observe the same immutable revision.
+        publishElapsedSnapshot(pc);
+    }
+
+    public synchronized void advanceElapsedDay(L1PcInstance pc, long day) {
+        if (pc.getAttendanceData() != this || _groups == null) return;
+        if (day > attendanceDay) {
+            attendanceDay = day;
+            advanceDay(_userFlag == AttendanceUserFlag.USER_FLAG_PC_CAFE);
+            elapsedSnapshotPending = true;
+        }
+        publishElapsedSnapshot(pc);
+    }
+
+    private void publishElapsedSnapshot(L1PcInstance pc) {
+        if (!elapsedSnapshotPending) return;
+        final byte[] snapshot = bodyBytes();
+        queueSnapshot(pc.getAccountName(), snapshot);
+        elapsedSnapshotPending = false;
         Proto.sendBody(pc, ProtoMsg.SC_ATTENDANCE_USER_DATA_EXTEND, snapshot);
     }
 
-    public void onUpdateDay(L1PcInstance pc, int second) throws IOException {
-        handleUpdateTime(pc, second, true);
-    }
-
-    public void onUpdateTime(L1PcInstance pc, int second) throws IOException {
-        handleUpdateTime(pc, second, false);
+    public synchronized int secondsUntilCompletion(boolean cafe) {
+        final var group = AttendanceRewardClaims.findGroup(this,
+                cafe ? AttendanceGroupType.PC_CAFE : AttendanceGroupType.NORMAL);
+        return group == null ? -1 : group.secondsUntilCompletion();
     }
 
     // ────────────── indices ──────────────

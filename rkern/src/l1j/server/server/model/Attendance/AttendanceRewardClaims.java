@@ -26,6 +26,7 @@ public final class AttendanceRewardClaims {
 
     public static void claim(L1PcInstance pc, int index, AttendanceGroupType type, boolean sendAck) {
         if (pc == null || type == null || index < 0) return;
+        AttendanceScheduler.getInstance().settle(pc);
         final var data = pc.getAttendanceData();
         final String account = pc.getAccountName();
         final var reward = type.getBonus(index);

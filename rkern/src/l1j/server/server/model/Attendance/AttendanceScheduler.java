@@ -1,164 +1,273 @@
 package l1j.server.server.model.Attendance;
 
 import java.util.Calendar;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.model.Instance.L1PcInstance;
-import l1j.server.server.model.CWorld;
 import l1j.server.server.model.gametime.CDateTime;
 import l1j.server.server.model.gametime.CGameTime;
 import l1j.server.server.model.gametime.CTimeListener;
+import l1j.server.server.model.network.thread.CServerTimer;
+import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.packets.Protocol.MainServer.Proto.SC_ATTENDANCE_USER_DATA_EXTEND;
 
-public class AttendanceScheduler implements CTimeListener{
-	private static final int UPDATE_SECOND = 1;
-	public static final int ATTEN_SHD_RESULT_ERROR = -1;
-	public static final int ATTEN_SHD_RESULT_NONUPDATE = 0;
-	public static final int ATTEN_SHD_RESULT_ONUPDATE = 1;
-	
-	private static final AttendanceScheduler INSTANCE = new AttendanceScheduler();
-	public static AttendanceScheduler getInstance(){
-		return INSTANCE;
-	}
-	
-	private static final Logger LOG = Logger.getLogger(AttendanceScheduler.class.getName());
-	private final Runnable _updateTask = new AttendanceConsumer();
-	private int _accumulate_second;
-	// Counts are aggregated across scheduler saturation instead of accumulating
-	// one Runnable per second. Counters and admission gate use this monitor.
-	private int _pendingSeconds;
-	private int _pendingSecondsAfterDay;
-	private long _pendingDayMillis;
-	private boolean _updateQueued;
-	private volatile boolean _isrun;
-	private AttendanceScheduler() { }
+public final class AttendanceScheduler implements CTimeListener {
+    private static final Logger LOG = Logger.getLogger(AttendanceScheduler.class.getName());
+    private static final AttendanceScheduler INSTANCE = new AttendanceScheduler();
+    private static final long SECOND = TimeUnit.SECONDS.toNanos(1);
 
+    private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
+    private final Set<Session> retries = ConcurrentHashMap.newKeySet();
+    private volatile Window window;
+    private volatile boolean running;
+    private boolean dayQueued;
+    private boolean retryQueued;
 
-	public synchronized void run() {
-		if (_isrun) return;
-		final Calendar cal = CGameTime.getRealTimeCalendar();
-		final int period = AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND;
-		if (period <= 0) throw new IllegalStateException("Invalid attendance reset period: " + period);
-		_accumulate_second = (cal.get(Calendar.HOUR_OF_DAY) * 3600
-				+ cal.get(Calendar.MINUTE) * 60 + cal.get(Calendar.SECOND)) % period;
-		queueOverdueDay(cal.getTimeInMillis());
-		_isrun = true;
-		CGameTime.addRealListener(this, Calendar.SECOND);
-	}
-	
-	public synchronized void dispose() {
-		if (!_isrun) return;
-		_isrun = false;
-		CGameTime.removeRealListener(this, Calendar.SECOND);
-		_pendingSeconds = 0;
-		_pendingSecondsAfterDay = 0;
-		_pendingDayMillis = 0L;
-	}
+    private AttendanceScheduler() {}
 
-	private void queueOverdueDay(long now) {
-		final long storedDay = AttendanceLoadManager.attendanceDayMillis();
-		if (_pendingDayMillis == 0L && storedDay != 0L
-				&& now - storedDay >= AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND * 1000L) {
-			_pendingDayMillis = Math.floorDiv(now, 1000L) * 1000L;
-		}
-	}
-	
+    public static AttendanceScheduler getInstance() { return INSTANCE; }
 
+    public synchronized void run() {
+        if (running) return;
+        window = nextWindow(System.currentTimeMillis(), System.nanoTime());
+        running = true;
+        CGameTime.addRealListener(this, Calendar.SECOND);
+    }
 
+    public synchronized void dispose() {
+        if (!running) return;
+        running = false;
+        CGameTime.removeRealListener(this, Calendar.SECOND);
+        sessions.forEach((account, session) -> session.cancelTimer());
+        sessions.clear();
+        retries.clear();
+    }
 
+    private record Window(long day, long cutoffNanos) {}
 
-	@Override
-	public void onSecondChanged(CDateTime time) {
-		boolean submit = false;
-		synchronized (this) {
-			if (!_isrun) return;
-			_accumulate_second += UPDATE_SECOND;
-			if (_accumulate_second >= AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND) {
-				_accumulate_second = 0;
-				_pendingDayMillis = time.getSeconds() * 1000L;
-				_pendingSecondsAfterDay = 0;
-			} else if (_pendingDayMillis != 0L) {
-				if (_pendingSecondsAfterDay < Integer.MAX_VALUE) _pendingSecondsAfterDay++;
-			} else {
-				if (_pendingSeconds < Integer.MAX_VALUE) _pendingSeconds++;
-			}
-			if (!_updateQueued) {
-				_updateQueued = true;
-				submit = true;
-			}
-		}
-		if (!submit) return;
-		try {
-			CWorldWork.execute(_updateTask);
-		} catch (RejectedExecutionException rejected) {
-			synchronized (this) { _updateQueued = false; }
-			LOG.log(Level.WARNING, "Attendance update admission rejected; retry next second", rejected);
-		}
-	}
+    private static Window nextWindow(long wall, long nano) {
+        final long day = nextResetMillis(wall, AttendanceLoadManager.ATTEN_RESET_PERIOD_SECOND);
+        return new Window(day, nano + TimeUnit.MILLISECONDS.toNanos(day - wall));
+    }
 
-	class AttendanceConsumer implements Runnable {
-		@Override
-		public void run() {
-			final int before;
-			final long day;
-			synchronized (AttendanceScheduler.this) {
-				if (!_isrun) { _updateQueued = false; return; }
-				before = _pendingSeconds;
-				day = _pendingDayMillis;
-				_pendingSeconds = 0;
-			}
-			try {
-				// Apply pre-midnight ticks BEFORE the reset, and post-midnight
-				// ticks AFTER it. No worker remains blocked between clock ticks.
-				if (AttendanceLoadManager.attendanceDayMillis() == 0L) {
-					AttendanceLoadManager.loadAttendanceStartupCalendar();
-				}
-				if (before > 0) updatePlayers(before, false);
-				if (day != 0L) {
-					// Leave the pending boundary published until SQL succeeds so
-					// new ticks cannot be counted on the old side during a retry.
-					if (AttendanceLoadManager.attendanceDayMillis() < day) {
-						AttendanceLoadManager.updateServerStartupInfo(day);
-					}
-					final int after;
-					synchronized (AttendanceScheduler.this) {
-						if (!_isrun) return;
-						if (_pendingDayMillis == day) {
-							after = _pendingSecondsAfterDay;
-							_pendingDayMillis = 0L;
-							_pendingSecondsAfterDay = 0;
-						} else {
-							after = 0;
-						}
-					}
-					updatePlayers(UPDATE_SECOND, true);
-					if (after > 0) updatePlayers(after, false);
-				}
-			} catch (Exception error) {
-				synchronized (AttendanceScheduler.this) {
-					if (_isrun) queueOverdueDay(System.currentTimeMillis());
-				}
-				LOG.log(Level.WARNING, "Attendance update failed", error);
-			} finally {
-				synchronized (AttendanceScheduler.this) { _updateQueued = false; }
-			}
-		}
-	}
+    static long nextResetMillis(long wall, int resetSeconds) {
+        final Calendar local = CGameTime.getRealTimeCalendar();
+        local.setTimeInMillis(wall);
+        final long period = resetSeconds * 1000L;
+        if (period <= 0L) throw new IllegalStateException("Invalid attendance reset period");
+        final long elapsed = ((local.get(Calendar.HOUR_OF_DAY) * 60L + local.get(Calendar.MINUTE)) * 60L
+                + local.get(Calendar.SECOND)) * 1000L + local.get(Calendar.MILLISECOND);
+        return wall + period - elapsed % period;
+    }
 
-	private void updatePlayers(int seconds, boolean rollover) {
-		CWorld.getInstance().getAllPlayerStream().forEach(pc -> {
-			if (pc == null || pc.isLogoutStarted() || pc.is무인상점() || pc.getOnlineStatus() != 1) return;
-			final SC_ATTENDANCE_USER_DATA_EXTEND data = pc.getAttendanceData();
-			if (data == null) return;
-			try {
-				if (rollover) data.onUpdateDay(pc, seconds);
-				else data.onUpdateTime(pc, seconds);
-			} catch (Exception error) {
-				LOG.log(Level.WARNING, "Attendance player update failed: " + pc.getId(), error);
-			}
-		});
-	}
+    @Override
+    public synchronized void onSecondChanged(CDateTime time) {
+        if (!running) return;
+        final Window expected = window;
+        if (!dayQueued && (AttendanceLoadManager.attendanceDayMillis() == 0L
+                || time.getSeconds() * 1000L >= expected.day())) {
+            dayQueued = CWorldWork.tryExecute(() -> advanceDay(expected));
+        }
+        if (!retryQueued && !retries.isEmpty()) retryQueued = CWorldWork.tryExecute(this::retrySessions);
+    }
+
+    private void advanceDay(Window expected) {
+        try {
+            if (!running || window != expected) return;
+            if (AttendanceLoadManager.attendanceDayMillis() == 0L) {
+                AttendanceLoadManager.loadAttendanceStartupCalendar();
+            }
+            final long now = System.currentTimeMillis();
+            if (now < expected.day()) return;
+            if (AttendanceLoadManager.attendanceDayMillis() < expected.day()) {
+                AttendanceLoadManager.updateServerStartupInfo(expected.day());
+            }
+            // The old cutoff stays available to sessions until they have credited both sides.
+            window = nextWindow(now, System.nanoTime());
+            sessions.forEach((account, session) -> refresh(session));
+        } catch (RuntimeException failure) {
+            LOG.log(Level.WARNING, "Attendance day update failed; retrying", failure);
+        } finally {
+            synchronized (this) { dayQueued = false; }
+        }
+    }
+
+    void refreshConfiguration() {
+        sessions.forEach((account, session) -> refresh(session));
+    }
+
+    private void retrySessions() {
+        try {
+            retries.forEach(this::refresh);
+        } finally {
+            synchronized (this) { retryQueued = false; }
+        }
+    }
+
+    public void register(L1PcInstance pc, SC_ATTENDANCE_USER_DATA_EXTEND data) {
+        final String account = pc.getAccountName();
+        if (!running || account == null || account.isEmpty()) return;
+        synchronized (data) {
+            if (!running || pc.getAttendanceData() != data || pc.isLogoutStarted()) return;
+            final Session session = new Session(account, pc, data);
+            final Session previous = sessions.put(account, session);
+            if (previous != null) {
+                previous.cancelTimer();
+                retries.remove(previous);
+            }
+            refresh(session);
+        }
+    }
+
+    public void unregister(L1PcInstance pc, SC_ATTENDANCE_USER_DATA_EXTEND data) {
+        final String account = pc.getAccountName();
+        if (account == null) return;
+        final Session session = sessions.get(account);
+        if (session != null && session.pc == pc && session.data == data) {
+            synchronized (data) {
+                sessions.remove(account, session);
+                retries.remove(session);
+                session.cancelTimer();
+            }
+        }
+    }
+
+    // Call before and after an eligibility change so neither side borrows the other's time.
+    public void settle(L1PcInstance pc) {
+        final String account = pc.getAccountName();
+        if (account == null) return;
+        final Session session = sessions.get(account);
+        if (session != null && session.pc == pc) refresh(session);
+    }
+
+    private void refresh(Session session) {
+        synchronized (session.data) {
+            if (!session.current()) {
+                sessions.remove(session.account, session);
+                retries.remove(session);
+                session.cancelTimer();
+                return;
+            }
+            try {
+                session.credit(System.nanoTime());
+                session.captureEligibility();
+                if (session.arm()) retries.remove(session);
+                else retries.add(session);
+            } catch (RuntimeException failure) {
+                session.captureEligibility();
+                session.cancelTimer();
+                retries.add(session);
+                LOG.log(Level.WARNING, "Attendance update failed for character " + session.pc.getId(), failure);
+            }
+        }
+    }
+
+    private final class Session {
+        private final String account;
+        private final L1PcInstance pc;
+        private final SC_ATTENDANCE_USER_DATA_EXTEND data;
+        private final int stamp;
+        private final long epoch;
+        private Window period = window;
+        private long checkpoint = System.nanoTime();
+        private long normal;
+        private long cafe;
+        private long afterNormal;
+        private long afterCafe;
+        private boolean eligible;
+        private boolean pcCafe;
+        private volatile CServerTimer timer;
+        private long due;
+        private long generation;
+
+        Session(String account, L1PcInstance pc, SC_ATTENDANCE_USER_DATA_EXTEND data) {
+            this.account = account;
+            this.pc = pc;
+            this.data = data;
+            stamp = pc.getSessionStamp();
+            epoch = pc.getCacheDSessionEpoch();
+            captureEligibility();
+        }
+
+        boolean current() {
+            return running && sessions.get(account) == this && pc.getAttendanceData() == data
+                    && pc.getSessionStamp() == stamp && pc.getCacheDSessionEpoch() == epoch;
+        }
+
+        void captureEligibility() {
+            eligible = !pc.isLogoutStarted() && !pc.is무인상점() && pc.getOnlineStatus() == 1;
+            pcCafe = pc.PC방_버프;
+        }
+
+        private void accrue(long until) {
+            final long elapsed = Math.max(0L, until - checkpoint);
+            final long before = Math.min(elapsed, Math.max(0L, period.cutoffNanos() - checkpoint));
+            checkpoint = until;
+            if (!eligible) return;
+            normal += before;
+            afterNormal += elapsed - before;
+            if (pcCafe) {
+                cafe += before;
+                afterCafe += elapsed - before;
+            }
+        }
+
+        void credit(long now) {
+            final Window latest = window;
+            accrue(now);
+            if (period != latest) {
+                flushTime();
+                data.advanceElapsedDay(pc, AttendanceLoadManager.attendanceDayMillis());
+                period = latest;
+                normal = afterNormal;
+                cafe = afterCafe;
+                afterNormal = afterCafe = 0L;
+            }
+            flushTime();
+        }
+
+        private void flushTime() {
+            final int normalSeconds = (int) Math.min(Integer.MAX_VALUE, normal / SECOND);
+            final int cafeSeconds = (int) Math.min(Integer.MAX_VALUE, cafe / SECOND);
+            normal -= normalSeconds * SECOND;
+            cafe -= cafeSeconds * SECOND;
+            data.applyElapsedTime(pc, normalSeconds, cafeSeconds);
+        }
+
+        boolean arm() {
+            final long normalDelay = eligible ? delay(data.secondsUntilCompletion(false), normal) : Long.MAX_VALUE;
+            final long cafeDelay = eligible && pcCafe ? delay(data.secondsUntilCompletion(true), cafe) : Long.MAX_VALUE;
+            final long delay = Math.min(normalDelay, cafeDelay);
+            final long target = delay == Long.MAX_VALUE ? 0L : checkpoint + delay;
+            if (target == 0L || target > period.cutoffNanos()) {
+                cancelTimer();
+                return true;
+            }
+            if (timer != null && !timer.isCancelled() && due == target) return true;
+            cancelTimer();
+            due = target;
+            final long token = ++generation;
+            timer = CWorldWork.schedule(() -> {
+                synchronized (data) {
+                    if (token != generation) return;
+                    timer = null;
+                    refresh(this);
+                }
+            }, Math.max(1L, TimeUnit.NANOSECONDS.toMillis(target - System.nanoTime() + 999_999L)));
+            return timer != null;
+        }
+
+        void cancelTimer() {
+            final CServerTimer old = timer;
+            if (old != null) old.cancel();
+        }
+    }
+
+    private static long delay(int seconds, long remainder) {
+        return seconds < 0 ? Long.MAX_VALUE : Math.max(0L, seconds * SECOND - remainder);
+    }
 }

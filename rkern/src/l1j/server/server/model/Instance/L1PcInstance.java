@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
+import l1j.server.server.model.Attendance.AttendanceScheduler;
 import l1j.server.server.model.network.thread.CServerTimer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -378,16 +379,20 @@ public class L1PcInstance extends L1Character {
 	public boolean PC방_버프삭제중 = false;
 
 	public void setPC방_버프(boolean b) {
-		PC방_버프 = b;
 		SC_ATTENDANCE_USER_DATA_EXTEND userData = getAttendanceData();
 		if (userData != null) {
 			AttendanceUserFlag flag = b ? AttendanceUserFlag.USER_FLAG_PC_CAFE : AttendanceUserFlag.USER_FLAG_NORMAL;
 			final boolean changed;
 			synchronized (userData) {
+				AttendanceScheduler.getInstance().settle(this);
+				PC방_버프 = b;
 				changed = userData.get_userFlag() != flag;
 				if (changed) userData.set_userFlag(flag);
+				AttendanceScheduler.getInstance().settle(this);
 			}
 			if (changed) SC_ATTENDANCE_USER_DATA_EXTEND.send(this);
+		} else {
+			PC방_버프 = b;
 		}
 		SC_REST_EXP_INFO_NOTI.send(this);
 	}
@@ -1159,7 +1164,9 @@ public class L1PcInstance extends L1Character {
 	}
 
 	public void set무인상점(boolean c) {
+		AttendanceScheduler.getInstance().settle(this);
 		무인상점 = c;
+		AttendanceScheduler.getInstance().settle(this);
 	}
 
 	/** 혈맹버프 **/
@@ -2550,6 +2557,7 @@ public class L1PcInstance extends L1Character {
         }
         if (!LOGOUT_OWNER.compareAndSet(this, null, Thread.currentThread())) return;
         try {
+            AttendanceScheduler.getInstance().settle(this);
             try { l1j.server.server.model.CReplyChecker.FinishWaitingReplyByRequester(this); }
             catch (RuntimeException e) { _log.log(Level.WARNING, "Logout waiting reply cleanup failed: " + getId(), e); }
             suspendGroundSight();
@@ -2574,8 +2582,8 @@ public class L1PcInstance extends L1Character {
                 if (!is무인상점()) {
                     SC_ATTENDANCE_USER_DATA_EXTEND userData = getAttendanceData();
                     if (userData != null) {
-                        SC_ATTENDANCE_USER_DATA_EXTEND.update(getAccountName(), userData);
-                        setAttendanceData(null);
+                        try { SC_ATTENDANCE_USER_DATA_EXTEND.update(getAccountName(), userData); }
+                        finally { setAttendanceData(null); }
                     }
                 }
             } catch (RuntimeException e) { _log.log(Level.SEVERE, "Logout attendance save failed: " + getId(), e); }
@@ -2673,6 +2681,7 @@ public class L1PcInstance extends L1Character {
 	}
     /** Persist the attendance snapshot before handing the account to another PC. */
     public void savePrivateStoreAttendance() {
+        AttendanceScheduler.getInstance().settle(this);
         final SC_ATTENDANCE_USER_DATA_EXTEND data = getAttendanceData();
         if (data != null) SC_ATTENDANCE_USER_DATA_EXTEND.update(getAccountName(), data);
     }
@@ -4390,7 +4399,9 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	}
 
 	public void setOnlineStatus(int i) {
+		AttendanceScheduler.getInstance().settle(this);
 		_onlineStatus = i;
+		AttendanceScheduler.getInstance().settle(this);
 	}
 
     public int getHomeTownId() {
@@ -6916,7 +6927,9 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
 	private volatile SC_ATTENDANCE_USER_DATA_EXTEND _attendance_data;
 
 	public void setAttendanceData(SC_ATTENDANCE_USER_DATA_EXTEND attendance_data) {
+		final SC_ATTENDANCE_USER_DATA_EXTEND previous = _attendance_data;
 		_attendance_data = attendance_data;
+		if (previous != null && previous != attendance_data) AttendanceScheduler.getInstance().unregister(this, previous);
 	}
 
 	public SC_ATTENDANCE_USER_DATA_EXTEND getAttendanceData() {
