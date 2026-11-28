@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.set.hash.TIntHashSet;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import l1j.server.DatabaseFactory;
 import l1j.server.server.model.character.skill.SkillEffectContainer.ActiveSnapshot;
@@ -160,29 +161,11 @@ public class CharBuffTable {
         // this reservation cannot overtake it.
         CacheD.getInstance().submitSessionDbJobOrdered(charId, pc.getCacheDSessionEpoch(), () -> {
             final int[] snapshot = captureBuffRows(pc);
-            final int length = snapshot.length;
             return () -> {
                 try (Connection con = DatabaseFactory.getInstance().getConnection()) {
                     con.setAutoCommit(false);
                     try {
-                        try (PreparedStatement delete = con.prepareStatement(
-                                "DELETE FROM character_buff WHERE char_obj_id = ?")) {
-                            delete.setInt(1, charId);
-                            delete.executeUpdate();
-                        }
-                        if (length != 0) {
-                            try (PreparedStatement insert = con.prepareStatement(
-                                    "INSERT INTO character_buff SET char_obj_id = ?, skill_id = ?, remaining_time = ?, poly_id = ?")) {
-                                for (int i = 0; i < length; i += 3) {
-                                    insert.setInt(1, charId);
-                                    insert.setInt(2, snapshot[i]);
-                                    insert.setInt(3, snapshot[i + 1]);
-                                    insert.setInt(4, snapshot[i + 2]);
-                                    insert.addBatch();
-                                }
-                                insert.executeBatch();
-                            }
-                        }
+                        persistRows(con, charId, snapshot);
                         con.commit();
                     } catch (SQLException | RuntimeException e) {
                         try { con.rollback(); } catch (SQLException rollback) { e.addSuppressed(rollback); }
@@ -195,4 +178,84 @@ public class CharBuffTable {
             };
         });
     }
+
+    static void persistRows(Connection con, int charId, int[] snapshot) throws SQLException {
+        final var stored = new TIntArrayList(snapshot.length);
+        try (PreparedStatement select = con.prepareStatement(
+                "SELECT skill_id,remaining_time,poly_id FROM character_buff WHERE char_obj_id=? FOR UPDATE")) {
+            select.setInt(1, charId);
+            try (var rows = select.executeQuery()) {
+                while (rows.next()) {
+                    final int skill = rows.getInt(1);
+                    final int duration = rows.getInt(2);
+                    final boolean nullDuration = rows.wasNull();
+                    final int sprite = rows.getInt(3);
+                    if (nullDuration || rows.wasNull()) {
+                        // An old nullable row must be replaced using the canonical image.
+                        stored.clear();
+                        stored.add(Integer.MIN_VALUE);
+                        break;
+                    }
+                    stored.add(skill);
+                    stored.add(duration);
+                    stored.add(sprite);
+                }
+            }
+        }
+        if (sameImage(stored, snapshot)) return;
+        if (sameUniqueOrder(stored, snapshot)) {
+            try (PreparedStatement update = con.prepareStatement(
+                    "UPDATE character_buff SET remaining_time=?,poly_id=? WHERE char_obj_id=? AND skill_id=?")) {
+                for (int i = 0; i < snapshot.length; i += 3) {
+                    if (stored.getQuick(i + 1) == snapshot[i + 1] && stored.getQuick(i + 2) == snapshot[i + 2]) continue;
+                    update.setInt(1, snapshot[i + 1]);
+                    update.setInt(2, snapshot[i + 2]);
+                    update.setInt(3, charId);
+                    update.setInt(4, snapshot[i]);
+                    update.addBatch();
+                }
+                for (int count : update.executeBatch()) {
+                    if (count != 1 && count != java.sql.Statement.SUCCESS_NO_INFO)
+                        throw new SQLException("Character buff row changed during save");
+                }
+            }
+            return;
+        }
+
+        // Additions, removals and duplicate IDs keep the established insertion order.
+        if (!stored.isEmpty()) {
+            try (PreparedStatement delete = con.prepareStatement("DELETE FROM character_buff WHERE char_obj_id=?")) {
+                delete.setInt(1, charId);
+                delete.executeUpdate();
+            }
+        }
+        if (snapshot.length == 0) return;
+        try (PreparedStatement insert = con.prepareStatement(
+                "INSERT INTO character_buff (char_obj_id,skill_id,remaining_time,poly_id) VALUES (?,?,?,?)")) {
+            for (int i = 0; i < snapshot.length; i += 3) {
+                insert.setInt(1, charId);
+                insert.setInt(2, snapshot[i]);
+                insert.setInt(3, snapshot[i + 1]);
+                insert.setInt(4, snapshot[i + 2]);
+                insert.addBatch();
+            }
+            insert.executeBatch();
+        }
+    }
+
+    private static boolean sameImage(TIntArrayList stored, int[] snapshot) {
+        if (stored.size() != snapshot.length) return false;
+        for (int i = 0; i < snapshot.length; i++) if (stored.getQuick(i) != snapshot[i]) return false;
+        return true;
+    }
+
+    private static boolean sameUniqueOrder(TIntArrayList stored, int[] snapshot) {
+        if (stored.size() != snapshot.length) return false;
+        final var seen = new TIntHashSet(snapshot.length / 3);
+        for (int i = 0; i < snapshot.length; i += 3) {
+            if (stored.getQuick(i) != snapshot[i] || !seen.add(snapshot[i])) return false;
+        }
+        return true;
+    }
+
 }
