@@ -5,6 +5,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import l1j.server.Config;
+import l1j.server.server.Controller.AuraController;
 import l1j.server.server.model.Instance.L1PcInstance;
 
 public final class PartyMembershipRegression {
@@ -41,7 +42,29 @@ public final class PartyMembershipRegression {
                         "dissolution clears all member references");
             }
         }
-        System.out.println("PASS party concurrent invitation, quota, immutable roster, leader transfer and dissolution");
+        verifyCrownSkillReference();
+        System.out.println("PASS party invitations, quota, roster, leader transfer, dissolution and class-change aura cleanup");
+    }
+
+    private static void verifyCrownSkillReference() {
+        var crown = new L1PcInstance();
+        crown.setId(30);
+        crown.setName("fixtureCrown");
+        crown.setType(0);
+        var aura = AuraController.getInstance();
+
+        var partyWithoutSkill = CParty.acceptInvite(crown, player(31), 0);
+        check(partyWithoutSkill != null && !aura.getMember(crown), "unknown skill does not track a crown");
+        partyWithoutSkill.leaveMember(crown);
+
+        crown.AcquireSkill(121);
+        var partyWithSkill = CParty.acceptInvite(crown, player(32), 0);
+        check(partyWithSkill != null && aura.getMember(crown), "permanent skill tracks a crown");
+        crown.setType(1);
+        crown.setClassId(L1PcInstance.CLASSID_KNIGHT_MALE);
+        crown.DeleteAllAcquireSkills();
+        partyWithSkill.leaveMember(crown);
+        check(!aura.getMember(crown), "class change followed by party leave retires the old crown tracker");
     }
 
     private static L1PcInstance player(int id) {

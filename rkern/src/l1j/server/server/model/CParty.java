@@ -239,8 +239,9 @@ public class CParty {
     private static void cleanupEffects(Slot member) {
         if (!detached(member)) return;
         var pc = member.player;
-        if (pc.isCrown()) AuraController.getInstance().removeMember(pc);
-        if (pc.getPbavatar()) AuraController.getInstance().brave_end(pc);
+        var aura = AuraController.getInstance();
+        if (pc.isCrown() || aura.getMember(pc)) aura.removeMember(pc);
+        else if (pc.getPbavatar()) aura.brave_end(pc);
         if (pc._CubeEffect && detached(member)) {
             if (pc.hasSkillEffect(L1SkillId.CUBE_AVATAR)) pc.removeSkillEffect(L1SkillId.CUBE_AVATAR);
             if (pc.hasSkillEffect(L1SkillId.CUBE_RICH)) pc.removeSkillEffect(L1SkillId.CUBE_RICH);

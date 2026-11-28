@@ -2,6 +2,8 @@ import java.io.DataInputStream;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,12 +38,12 @@ import l1j.server.server.model.character.skill.acquire.CSkillMaster;
 import l1j.server.server.model.item.L1ItemId;
 import l1j.server.server.model.item.classchange.ClassChange;
 import l1j.server.server.model.map.L1V1Map;
+import l1j.server.server.model.network.buffer.Disassemble;
 import l1j.server.server.model.network.core.config.CIOConfig;
 import l1j.server.server.model.network.core.connection.CIOBufferPool;
 import l1j.server.server.model.network.core.connection.CIOServer;
 import l1j.server.server.model.network.core.connection.CUserSocket;
-import l1j.server.server.model.network.core.cs.packet.CS_BuySpell;
-import l1j.server.server.model.network.core.cs.packet.CS_ExchangeSpell;
+import l1j.server.server.model.network.packet.UserPacketCallbackMap;
 import l1j.server.server.model.network.core.session.CSessionLifecycle;
 import l1j.server.server.model.network.thread.CIOThreadCallback;
 import l1j.server.server.storage.CacheD;
@@ -235,11 +237,19 @@ public final class SkillAcquisitionRegression {
     }
 
     private void verifyNpc() throws Exception {
+        on(() -> {
+            spellPacket(Opcodes.C_BUY_SPELL, 2, 0);
+            spellPacket(Opcodes.C_EXCHANGE_SPELL, 2, 4);
+        });
+        drain();
+        check(itemCount(0) == 1000 && itemCount(1) == 600 && storedSkills().length == 0,
+                "truncated requests preserve both currencies and grant no skills");
+
         CountDownLatch release = new CountDownLatch(1);
         CountDownLatch paused = new CountDownLatch(1);
         var held = submit(() -> {
-            CS_BuySpell.handle(session, 1, 1, 0, 0);
-            CS_BuySpell.handle(session, 1, 1, 0, 0);
+            spellPacket(Opcodes.C_BUY_SPELL, 3, 0, 0, 8);
+            spellPacket(Opcodes.C_BUY_SPELL, 3, 0, 0, 8);
             paused.countDown();
             try {
                 if (!release.await(4, TimeUnit.SECONDS)) throw new AssertionError("CIO replay release");
@@ -260,21 +270,32 @@ public final class SkillAcquisitionRegression {
         held.get(5, TimeUnit.SECONDS);
         drain();
         check(player.HaveSkill(1) && player.HaveSkill(9), "owner replay publishes purchased skills");
-        on(() -> CS_BuySpell.handle(session, 1, 1, 0, 0));
+        on(() -> spellPacket(Opcodes.C_BUY_SPELL, 2, 0, 8));
         drain();
         check(itemCount(0) == 500, "known skills cannot repeatedly debit");
         execute("INSERT INTO character_skills(char_obj_id,skill_id,skill_name) VALUES(" + OWNER + ",2,'duplicate')");
-        on(() -> CS_BuySpell.handle(session, 6, 0, 0, 0));
+        on(() -> spellPacket(Opcodes.C_BUY_SPELL, 2, 1, 2));
         drain();
         check(itemCount(0) == 500 && !player.HaveSkill(3) && !contains(storedSkills(), 3), "SQL duplicate rolls back cash and other grants");
-        on(() -> CS_BuySpell.handle(session, 0, 0, 1, 0));
+        on(() -> spellPacket(Opcodes.C_BUY_SPELL, 1, 16));
         drain();
         check(itemCount(0) == 500 && !player.HaveSkill(17), "insufficient adena");
-        on(() -> CS_ExchangeSpell.handle(session, (1 << 4) | (1 << 5) | (1 << 9), false));
+        on(() -> spellPacket(Opcodes.C_EXCHANGE_SPELL, 4, 4, 4, 5, 9));
         drain();
         check(itemCount(1) == 180 && player.HaveSkill(5) && !player.HaveSkill(6) && player.HaveSkill(10),
                 "Horun keeps existing first-tier repeat price, partial selection and higher-tier free grant");
-        System.out.println("PASS NPC batch live replay, concurrent duplicates, database rollback, insufficient cost and Horun exchange");
+        System.out.println("PASS packet decoding, truncated and duplicate selections, NPC replay, rollback and Horun exchange");
+    }
+
+    private void spellPacket(int opcode, int count, int... spellIds) {
+        ByteBuffer payload = ByteBuffer.allocate(3 + Integer.BYTES * spellIds.length).order(ByteOrder.LITTLE_ENDIAN);
+        payload.put((byte) opcode).putShort((short) count);
+        for (int spellId : spellIds) payload.putInt(spellId);
+        Disassemble packet = new Disassemble();
+        packet.reset(payload, 0, payload.position());
+        packet.readUnsignedByte();
+        check(UserPacketCallbackMap.gPacketTableFromClient[opcode & 0xff].execute(packet, session),
+                "registered NPC skill packet");
     }
 
     private void verifyBookAndEquipment() throws Exception {
