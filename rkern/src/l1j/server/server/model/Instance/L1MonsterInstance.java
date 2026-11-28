@@ -5,7 +5,6 @@ import java.util.ArrayList;
 
 import l1j.server.Config;
 import l1j.server.server.ActionCodes;
-import l1j.server.server.Controller.TimeMapController;
 import l1j.server.server.model.world.CWorldWork;
 import l1j.server.server.datatables.ClanTable;
 import l1j.server.server.model.npc.spawn.boss.CBossNpcMakerDB;
@@ -51,7 +50,6 @@ import l1j.server.server.shared.L1Type;
 import l1j.server.server.shared.listener.MonsterDeathHandler;
 import l1j.server.server.shared.listener.MonsterTransformHandler;
 import l1j.server.server.templates.L1Npc;
-import l1j.server.server.templates.L1TimeMap;
 import l1j.server.server.types.Point;
 import l1j.server.server.utils.CommonUtil;
 import l1j.server.server.utils.GameUtils;
@@ -1090,12 +1088,9 @@ l1j.server.server.model.network.core.broadcast.CSharedBroadcast.sendRecipient(gr
     }
 
 	private void handleWorldEvents(L1Character lastAttacker) {
-	    // 문 열기 및 타임맵 처리
+	    // 몬스터 사망 시 연결된 문을 연다.
 	    if (getNpcTemplate().getDoor() > 0) {
 	        int doorId = getNpcTemplate().getDoor();
-	        if (getNpcTemplate().getCountId() > 0) {
-	            TimeMapController.getInstance().add(new L1TimeMap(getNpcTemplate().getCountId(), 7200, doorId));
-	        }
 	        L1DoorInstance door = DoorSpawnTable.getInstance().getDoor(doorId);
 	        if (door != null) door.open(); 
 	    }

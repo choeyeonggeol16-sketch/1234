@@ -1050,7 +1050,6 @@ public final class CObjectDB {
     				npc.setAmountFixed(rs.getBoolean("amount_fixed"));
     				npc.setChangeHead(rs.getBoolean("change_head"));
     				npc.setDoor(rs.getInt("spawnlist_door"));
-    				npc.setCountId(rs.getInt("count_map"));
     				npc.setCantResurrect(rs.getBoolean("cant_resurrect"));
     				npc.setShapeChange(rs.getBoolean("shape_change"));
 
