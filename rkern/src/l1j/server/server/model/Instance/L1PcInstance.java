@@ -4551,13 +4551,12 @@ for (L1PcInstance pc : CWorld.getInstance().getAllPlayers()) {
     public boolean saveInventoryIfReady() {
         if (noPlayerCK || noPlayerRobot || noPlayerck2) return true;
         final CUserInventory inventory = getInventory();
-        final List<L1ItemInstance> items = inventory.getItemSnapshot();
         final long sessionEpoch = getCacheDSessionEpoch();
         boolean ready = true;
         RuntimeException firstFailure = null;
-        for (int i = 0, size = items.size(); i < size; i++) {
+        for (L1ItemInstance item : inventory.autosaveCandidates()) {
             try {
-                if (!inventory.saveDirtyItemIfReady(items.get(i), sessionEpoch)) ready = false;
+                if (!inventory.saveDirtyItemIfReady(item, sessionEpoch)) ready = false;
             } catch (RuntimeException failure) {
                 if (firstFailure == null) firstFailure = failure;
             }

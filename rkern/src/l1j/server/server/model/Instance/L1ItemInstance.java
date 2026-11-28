@@ -261,10 +261,14 @@ public class L1ItemInstance extends L1Object {
 	/** 인형 착용 여부 **/
 
 	private void notePersistenceChange() {
-		if (!CItemList.AUDIT_PERSISTENCE) return;
 		final CItemList list = inventoryLinkOwner;
-		if (list != null) list.notePersistenceChange(this);
+		if (list != null && list.tracksPersistence()) list.notePersistenceChange(this);
 	}
+
+    /** A write can make a previously reverted live image dirty again when it commits. */
+    public void persistedImageChanged() {
+        notePersistenceChange();
+    }
 
 	public boolean isSpecialEnchantable() {
 		return (_specialEnchant & 0xFF) == 1;
@@ -468,7 +472,7 @@ public class L1ItemInstance extends L1Object {
                 final int previousId = getId();
                 super.setId(id);
                 list.objectIdChanged(this, previousId);
-                if (CItemList.AUDIT_PERSISTENCE) list.notePersistenceObjectIdChange(this, previousId);
+                list.notePersistenceObjectIdChange(this, previousId);
                 return;
             }
         }

@@ -233,6 +233,7 @@ public class MySqlCharactersItemStorage extends CharactersItemStorage {
                 if ((mask & (1L << 16)) != 0) status.town_name = hotelTown;
                 if ((mask & (1L << 17)) != 0) status.specialEnchant = special;
             }
+            item.persistedImageChanged();
         }
         private static Timestamp copyTime(Timestamp t) {
             if (t == null) return null;

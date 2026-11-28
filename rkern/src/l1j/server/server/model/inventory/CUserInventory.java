@@ -103,7 +103,7 @@ public class CUserInventory extends CInventory {
 
 	public CUserInventory(L1PcInstance owner) {
 		_owner = owner;
-		if (CItemList.AUDIT_PERSISTENCE) _items.enablePersistenceAudit();
+		_items.enablePersistenceTracking();
 		_arrowId = 0;
 		_stingId = 0;
 	}
@@ -714,12 +714,17 @@ public class CUserInventory extends CInventory {
 
     private static final long ALL_ITEM_SAVE_COLUMNS = (1L << 18) - 1L;
 
+    public Iterable<L1ItemInstance> autosaveCandidates() {
+        if (CItemList.AUDIT_PERSISTENCE) return getItemSnapshot();
+        return java.util.Arrays.asList(_items.dirtyPersistenceCandidates());
+    }
+
     /** The autosave membership snapshot may contain an item which has since moved. */
     public boolean saveDirtyItemIfReady(L1ItemInstance item, long sessionEpoch) {
         if (item == null) return true;
-        final long revision = CItemList.AUDIT_PERSISTENCE ? _items.persistenceAuditRevision() : 0;
+        final long revision = _items.persistenceRevision();
         final int columns = item.getRecordingColumns();
-        if (CItemList.AUDIT_PERSISTENCE && _items.hasMissedPersistenceChange(item, columns, revision)) {
+        if (_items.hasMissedPersistenceChange(item, columns, revision) && CItemList.AUDIT_PERSISTENCE) {
             System.getLogger(CUserInventory.class.getName()).log(System.Logger.Level.WARNING,
                     "Dirty audit missed item {0}, columns {1}", item.getId(), columns);
         }

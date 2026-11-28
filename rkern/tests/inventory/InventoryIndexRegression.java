@@ -90,7 +90,7 @@ public final class InventoryIndexRegression {
 
     private static void dirtyAuditMutations() {
         var list = new CItemList();
-        list.enablePersistenceAudit();
+        list.enablePersistenceTracking();
         var row = item(3002, CANDLE, LIGHT_DESCRIPTION, 10);
         list.Push(row);
         List<Runnable> writes = List.of(
@@ -106,17 +106,20 @@ public final class InventoryIndexRegression {
         int fields = 0;
         for (Runnable write : writes) {
             row.getLastStatus().updateAll();
-            check(!list.hasMissedPersistenceChange(row, 0, list.persistenceAuditRevision()), "retire clean candidate");
+            check(!list.hasMissedPersistenceChange(row, 0, list.persistenceRevision()), "retire clean candidate");
+            check(list.dirtyPersistenceCandidates().length == 0, "clean candidate removed");
             write.run();
+            check(list.dirtyPersistenceCandidates().length == 1
+                    && list.dirtyPersistenceCandidates()[0] == row, "track the same live item");
             int columns = row.getRecordingColumns();
             check(Integer.bitCount(columns) == 1
-                    && !list.hasMissedPersistenceChange(row, columns, list.persistenceAuditRevision()),
+                    && !list.hasMissedPersistenceChange(row, columns, list.persistenceRevision()),
                     "mark the changed persisted column " + columns);
             fields |= columns;
         }
         check(Integer.bitCount(fields) == 18, "all columns are exercised");
         check(list.Pop(row), "unlink dirty row");
-        check(!list.hasMissedPersistenceChange(row, fields, list.persistenceAuditRevision()),
+        check(!list.hasMissedPersistenceChange(row, fields, list.persistenceRevision()),
                 "ignore stale snapshot after unlink");
     }
 
@@ -126,11 +129,19 @@ public final class InventoryIndexRegression {
         row.setLastUsed(lastUsed);
         row.getLastStatus().updateAll();
 
+        var list = new CItemList();
+        list.enablePersistenceTracking();
+        list.Push(row);
         row.setCount(9);
         ItemSnapshot write = ItemSnapshot.capture(row, 77);
         row.setCount(10);
-        row.setChargeCount(2);
+        check(row.getRecordingColumns() == 0, "live reversal matches previous SQL image");
+        list.hasMissedPersistenceChange(row, 0, list.persistenceRevision());
+        check(list.dirtyPersistenceCandidates().length == 0, "temporarily clean reversal");
         write.finish(2L);
+        check(list.dirtyPersistenceCandidates().length == 1
+                && list.dirtyPersistenceCandidates()[0] == row, "SQL acknowledgement reactivates reversal");
+        row.setChargeCount(2);
         check(row.getLastStatus().count == 9, "acknowledge the committed count");
         check((row.getRecordingColumns() & CUserInventory.COL_COUNT) != 0, "reverted count still needs SQL");
         check(row.getLastStatus().chargeCount == 0, "partial acknowledgement changed another column");
