@@ -81,6 +81,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
     public static void update(String account, SC_ATTENDANCE_USER_DATA_EXTEND userData) {
         if (account == null || userData == null) return;
         synchronized (userData) {
+            userData.queuePendingInitialSnapshot(account);
             userData.queueSnapshot(account, userData.bodyBytes());
         }
     }
@@ -89,7 +90,8 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         final long day = attendanceDay;
         if (day <= 0L) return;
         final String indices = createIndices();
-        CacheD.getInstance().submitDbJobOrdered(account, () -> saveSnapshot(account, bytes, indices, day));
+        CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(account),
+                () -> saveSnapshot(account, bytes, indices, day));
     }
 
     /** Stage exactly one claim on the caller's inventory receipt connection. */
@@ -257,7 +259,7 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         final String indices = createIndices();
         final long day = attendanceDay;
         if (day <= 0L) return;
-        CacheD.getInstance().submitDbJobOrdered(account, () -> {
+        CacheD.getInstance().submitDbJobRetryOrdered(CacheD.accountOrderKey(account), () -> {
             try (Connection con = DatabaseFactory.getInstance().getConnection();
                  PreparedStatement ps = con.prepareStatement(
                          "INSERT INTO attendance_userinfo (account, attendance_data, attendance_indices, attendance_calendar) "
@@ -296,17 +298,15 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         if (savedDay > 0L && savedDay < currentDay && !needsGroups) userData.advanceDay(cafe);
         synchronized (userData) {
             pc.setAttendanceData(userData);
-            if (!snapshot.present) {
-                userData.insertInitialSnapshot(pc.getAccountName());
-            } else if (needsGroups || savedDay < currentDay) {
-                userData.queueSnapshot(pc.getAccountName(), userData.bodyBytes());
-            }
-            AttendanceScheduler.getInstance().register(pc, userData);
+            userData.initialSnapshotPending = !snapshot.present;
+            userData.elapsedSnapshotPending = snapshot.present && (needsGroups || savedDay < currentDay);
+            if (!AttendanceScheduler.getInstance().register(pc, userData)) userData.publishElapsedSnapshot(pc);
         }
     }
 
     // ────────────── 갱신 (타이머) ──────────────
 
+    private boolean initialSnapshotPending;
     private boolean elapsedSnapshotPending;
 
     public synchronized void applyElapsedTime(L1PcInstance pc, int normalSeconds, int cafeSeconds) {
@@ -329,7 +329,14 @@ public class SC_ATTENDANCE_USER_DATA_EXTEND extends ProtoPacket {
         publishElapsedSnapshot(pc);
     }
 
+    private void queuePendingInitialSnapshot(String account) {
+        if (!initialSnapshotPending) return;
+        insertInitialSnapshot(account);
+        initialSnapshotPending = false;
+    }
+
     private void publishElapsedSnapshot(L1PcInstance pc) {
+        queuePendingInitialSnapshot(pc.getAccountName());
         if (!elapsedSnapshotPending) return;
         final byte[] snapshot = bodyBytes();
         queueSnapshot(pc.getAccountName(), snapshot);

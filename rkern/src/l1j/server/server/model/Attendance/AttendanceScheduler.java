@@ -87,7 +87,7 @@ public final class AttendanceScheduler implements CTimeListener {
                 AttendanceLoadManager.updateServerStartupInfo(expected.day());
             }
             // The old cutoff stays available to sessions until they have credited both sides.
-            window = nextWindow(now, System.nanoTime());
+            window = nextWindow(System.currentTimeMillis(), System.nanoTime());
             sessions.forEach((account, session) -> refresh(session));
         } catch (RuntimeException failure) {
             LOG.log(Level.WARNING, "Attendance day update failed; retrying", failure);
@@ -108,11 +108,11 @@ public final class AttendanceScheduler implements CTimeListener {
         }
     }
 
-    public void register(L1PcInstance pc, SC_ATTENDANCE_USER_DATA_EXTEND data) {
+    public boolean register(L1PcInstance pc, SC_ATTENDANCE_USER_DATA_EXTEND data) {
         final String account = pc.getAccountName();
-        if (!running || account == null || account.isEmpty()) return;
+        if (!running || account == null || account.isEmpty()) return false;
         synchronized (data) {
-            if (!running || pc.getAttendanceData() != data || pc.isLogoutStarted()) return;
+            if (!running || pc.getAttendanceData() != data || pc.isLogoutStarted()) return false;
             final Session session = new Session(account, pc, data);
             final Session previous = sessions.put(account, session);
             if (previous != null) {
@@ -120,6 +120,7 @@ public final class AttendanceScheduler implements CTimeListener {
                 retries.remove(previous);
             }
             refresh(session);
+            return true;
         }
     }
 
